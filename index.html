@@ -1,0 +1,2193 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Fragebogen, der deine Spielidee Schritt für Schritt aufbaut und daraus ein Spielkonzept und einen exakten KI-Bauauftrag macht.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Game-Bauplan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: Blaupausen-Papier, oben fixe Leiste mit Fortschritt; links Bereichsliste, rechts Fragekarte mit „drückbaren“ Antwort-Kacheln */
+:root {
+  --paper: #EDF0F8; --surface: #FFFFFF; --surface2: #F5F7FC; --ink: #171A33; --muted: #5A6084; --line: #D3D8EA; --line2: #B9C0DA;
+  --accent: #2D3CCB; --accent-ink: #FFFFFF; --accent-soft: #E3E6FF; --sun: #FFC53D; --sun-ink: #2E2100;
+  --warn: #A84B10; --warn-bg: #FFF0E3; --info: #2D5B8A; --info-bg: #E6F0FA; --ok: #1C8455;
+  --grid: rgba(45, 60, 203, .07); --tl1: 88%; --tl2: 76%; --code-bg: #171A33; --code-ink: #E7E9FB;
+  --f-disp: "Bungee", "Arial Black", Impact, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0F1128; --surface: #191C3A; --surface2: #14173180; --ink: #E8EAFA; --muted: #9BA1CA; --line: #2C3160; --line2: #3B4180;
+  --accent: #8D99FF; --accent-ink: #0E1030; --accent-soft: #252B66; --sun: #FFC53D; --sun-ink: #2E2100;
+  --warn: #FFAA6E; --warn-bg: #3A2414; --info: #8EC2F5; --info-bg: #15294A; --ok: #4CD596;
+  --grid: rgba(141, 153, 255, .06); --tl1: 34%; --tl2: 24%; --code-bg: #0A0C1E; --code-ink: #DADDF7; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #0F1128; --surface: #191C3A; --surface2: #14173180; --ink: #E8EAFA; --muted: #9BA1CA; --line: #2C3160; --line2: #3B4180;
+  --accent: #8D99FF; --accent-ink: #0E1030; --accent-soft: #252B66; --sun: #FFC53D; --sun-ink: #2E2100;
+  --warn: #FFAA6E; --warn-bg: #3A2414; --info: #8EC2F5; --info-bg: #15294A; --ok: #4CD596;
+  --grid: rgba(141, 153, 255, .06); --tl1: 34%; --tl2: 24%; --code-bg: #0A0C1E; --code-ink: #DADDF7; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 16px/1.5 var(--f-body);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px; min-height: 100%; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Top bar */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 2px solid var(--ink); }
+.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
+.logo { font-family: var(--f-disp); font-size: 18px; letter-spacing: .02em; display: flex; align-items: center; gap: 8px; white-space: nowrap; background: none; border: 0; padding: 0; }
+.logo i { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; color: var(--accent-ink); font-style: normal; font-size: 13px; box-shadow: 2px 2px 0 var(--ink); }
+.prog { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bar { flex: 1; height: 10px; border-radius: 99px; background: var(--line); overflow: hidden; border: 1.5px solid var(--ink); }
+.bar span { display: block; height: 100%; background: var(--sun); transition: width .3s; }
+.prog small { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 13px; }
+.topbtns { display: flex; gap: 8px; margin-left: auto; }
+
+/* Buttons */
+.btn { border: 2px solid var(--ink); background: var(--surface); border-radius: 10px; padding: 9px 16px; font-weight: 700; box-shadow: 0 3px 0 var(--ink); transition: transform .08s, box-shadow .08s; white-space: nowrap; }
+.btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { box-shadow: none; border-color: transparent; background: transparent; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); background: var(--surface); border-color: var(--line); }
+.btn.danger { color: var(--warn); }
+.btn.big { font-size: 18px; padding: 13px 26px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.sm { padding: 6px 12px; font-size: 14px; }
+.link { background: none; border: 0; color: var(--accent); text-decoration: underline; padding: 0; font-weight: 700; }
+
+main { padding-block: 28px 64px; }
+.eyebrow { font-family: var(--f-disp); font-size: 13px; letter-spacing: .08em; color: var(--accent); margin: 0 0 8px; }
+.fine { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
+
+/* Start */
+.start { display: grid; gap: 34px; max-width: 980px; }
+.hero h1 { font-family: var(--f-disp); font-weight: 400; font-size: clamp(30px, 5.4vw, 54px); line-height: 1.05; letter-spacing: -.005em; max-width: 16ch; }
+.hl { background: linear-gradient(transparent 58%, var(--sun) 58%, var(--sun) 92%, transparent 92%); padding: 0 .08em; color: var(--ink); }
+.lead { font-size: 18px; max-width: 62ch; color: var(--muted); margin: 16px 0 0; }
+.step h2 { font-size: 20px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.stepn { font-family: var(--f-disp); width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: var(--ink); color: var(--paper); font-size: 15px; }
+.levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.lvl { text-align: left; background: var(--surface); border: 2px solid var(--line2); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 4px 0 var(--line2); transition: transform .1s; }
+.lvl:hover { transform: translateY(-2px); }
+.lvl.on { border-color: var(--ink); box-shadow: 0 4px 0 var(--ink); background: var(--accent-soft); }
+.lvl b { font-size: 19px; }
+.lvl-tag { font-size: 13px; font-weight: 700; color: var(--accent); }
+.lvl small { color: var(--muted); font-size: 14px; flex: 1; }
+.lvl-n { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); margin-top: 6px; }
+.lvl-bars { display: flex; gap: 3px; margin-bottom: 6px; }
+.lvl-bars i { width: 14px; height: 8px; border-radius: 2px; background: var(--line); }
+.lvl-bars i.f { background: var(--accent); }
+.secpick { display: flex; flex-wrap: wrap; gap: 8px; }
+.secchip { border: 2px solid var(--line2); background: var(--surface); border-radius: 99px; padding: 6px 14px 6px 10px; display: flex; gap: 6px; align-items: center; font-size: 15px; color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line2); }
+.secchip.on { border-color: var(--ink); color: var(--ink); text-decoration: none; box-shadow: 0 2px 0 var(--ink); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+/* Quiz layout */
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; align-items: start; }
+.secnav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 72px); display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - 100px); overflow-y: auto; padding-right: 4px; }
+.navi { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; text-align: left; background: none; border: 0; border-radius: 8px; padding: 6px 8px; font-size: 14px; color: var(--muted); }
+.navi:hover { background: var(--surface); color: var(--ink); }
+.navi.cur { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
+.navi.done .navi-c { color: var(--ok); }
+.navi-c { font-variant-numeric: tabular-nums; font-size: 12px; }
+.qcard { background: var(--surface); border: 2px solid var(--ink); border-radius: 18px; padding: clamp(18px, 3vw, 32px); box-shadow: 0 6px 0 var(--ink); min-width: 0; }
+.qmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+.seclabel { font-size: 14px; font-weight: 700; color: var(--accent); }
+.qcount { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; }
+.pill { font-size: 12px; font-weight: 700; background: var(--sun); color: var(--sun-ink); padding: 2px 9px; border-radius: 99px; letter-spacing: .03em; }
+.pill.soft { background: var(--accent-soft); color: var(--ink); }
+.qtitle { font-size: clamp(22px, 3vw, 30px); line-height: 1.2; }
+.hint { color: var(--muted); margin: 8px 0 0; }
+.opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; margin-top: 22px; }
+.opts.wide { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.opt { position: relative; text-align: left; display: flex; flex-direction: column; background: var(--surface); border: 2px solid var(--line2); border-radius: var(--r); padding: 0; overflow: hidden; box-shadow: 0 4px 0 var(--line2); transition: transform .1s, box-shadow .1s, border-color .1s; }
+.opt:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--line2); }
+.opt:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line2); }
+.opt.on { border-color: var(--accent); box-shadow: 0 4px 0 var(--accent); background: var(--accent-soft); }
+.opt.ai { border-style: dashed; box-shadow: none; background: var(--surface2); }
+.opt.ai.on { border-style: solid; box-shadow: 0 4px 0 var(--accent); }
+.pic { display: grid; place-items: center; aspect-ratio: 3 / 2; max-width: 100%; background: linear-gradient(140deg, hsl(var(--h) 80% var(--tl1)), hsl(calc(var(--h) + 40) 70% var(--tl2))); border-bottom: 2px solid var(--line2); overflow: hidden; }
+.opt.on .pic { border-bottom-color: var(--accent); }
+.opt.ai .pic { background: repeating-linear-gradient(45deg, var(--surface2) 0 8px, var(--line) 8px 9px); }
+.pic svg { width: 100%; height: 100%; display: block; }
+.emo { font-size: clamp(38px, 5vw, 48px); line-height: 1; filter: drop-shadow(0 3px 0 rgba(0,0,0,.12)); }
+.pal { display: flex; width: 100%; height: 100%; }
+.pal i { flex: 1; }
+.otx { display: flex; flex-direction: column; gap: 3px; padding: 11px 13px 13px; }
+.otx b { font-size: 16px; line-height: 1.25; }
+.otx small { color: var(--muted); font-size: 13.5px; line-height: 1.4; }
+.opt kbd { position: absolute; top: 8px; left: 8px; font: 600 11px var(--f-mono); background: var(--surface); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 5px; padding: 1px 5px; opacity: .85; }
+.tick { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--ink); background: var(--surface); }
+.opt.on .tick { background: var(--accent); border-color: var(--accent); }
+.opt.on .tick::after { content: ""; position: absolute; left: 7px; top: 2px; width: 6px; height: 12px; border: solid var(--accent-ink); border-width: 0 3px 3px 0; transform: rotate(45deg); }
+.badge { position: absolute; top: 8px; right: 8px; background: var(--sun); color: var(--sun-ink); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; border: 1.5px solid var(--ink); }
+.txt { width: 100%; margin-top: 22px; font: inherit; font-size: 18px; padding: 14px 16px; border: 2px solid var(--ink); border-radius: 12px; background: var(--surface2); color: var(--ink); resize: vertical; }
+.qnav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 26px; padding-top: 18px; border-top: 2px dashed var(--line); }
+.qnav .sp { flex: 1; }
+.kb { font-size: 13px; }
+
+.qcol { display: grid; gap: 16px; min-width: 0; }
+.idea { background: var(--sun); color: var(--sun-ink); border: 2px solid var(--ink); border-radius: 16px; padding: 14px 18px; box-shadow: 0 4px 0 var(--ink); }
+.idea-h { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 14px; }
+.idea-h b { font-family: var(--f-disp); font-weight: 400; letter-spacing: .03em; }
+.idea-h small { margin-left: auto; font-variant-numeric: tabular-nums; }
+.idea-bricks { display: flex; gap: 3px; }
+.idea-bricks i { width: 18px; height: 10px; border-radius: 2px; border: 1.5px solid var(--sun-ink); }
+.idea-bricks i.f { background: var(--sun-ink); }
+.idea p { margin: 8px 0 0; font-size: 16px; line-height: 1.45; max-width: 75ch; }
+.doc { background: var(--surface); border: 2px solid var(--ink); border-radius: 16px; padding: clamp(20px, 4vw, 44px); box-shadow: 0 6px 0 var(--ink); max-width: 860px; min-width: 0; }
+.doc h1 { font-family: var(--f-disp); font-weight: 400; font-size: clamp(28px, 4.5vw, 42px); line-height: 1.05; }
+.doc .lead2 { font-size: 18px; line-height: 1.5; margin: 14px 0 6px; max-width: 68ch; }
+.doc h2 { font-size: 20px; margin: 30px 0 10px; padding-top: 14px; border-top: 2px dashed var(--line); color: var(--accent); }
+.doc p, .doc li { max-width: 70ch; }
+.doc ol, .doc ul { padding-left: 22px; display: grid; gap: 6px; margin: 0; }
+.doc ol li::marker { font-weight: 700; color: var(--accent); }
+.kv { display: grid; margin: 0; }
+.kv div { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.kv dt { color: var(--muted); font-size: 14px; }
+.kv dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.aistatus { margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--accent-soft); font-weight: 700; }
+.h2s { font-size: 18px; margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; }
+.h2s small { color: var(--muted); font-weight: 400; font-size: 14px; }
+@media (max-width: 560px) { .kv div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+.cloud { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--accent-soft); border: 2px solid var(--ink); border-radius: 14px; padding: 12px 14px; }
+.cloud > div { flex: 1 1 260px; display: grid; gap: 2px; min-width: 0; }
+.cloud small { color: var(--muted); }
+.cloud .fine { flex-basis: 100%; margin: 0; }
+.sharelink { flex: 1 1 240px; min-width: 0; font: 14px var(--f-mono); padding: 8px 10px; border: 2px solid var(--line2); border-radius: 8px; background: var(--surface); color: var(--ink); }
+/* Ergebnis */
+.result { display: grid; gap: 20px; }
+.rhead { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between; }
+.rhead h1 { font-family: var(--f-disp); font-weight: 400; font-size: clamp(30px, 5vw, 48px); line-height: 1.05; }
+.stats { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); margin: 10px 0 0; font-variant-numeric: tabular-nums; }
+.stats b { color: var(--ink); }
+.rbtns { display: flex; flex-wrap: wrap; gap: 10px; }
+.alerts { display: grid; gap: 8px; }
+.alert { margin: 0; padding: 10px 14px; border-radius: 10px; font-size: 15px; }
+.alert b { margin-right: 6px; }
+.alert.warn { background: var(--warn-bg); color: var(--warn); }
+.alert.info { background: var(--info-bg); color: var(--info); }
+.tabs { display: flex; gap: 6px; overflow-x: auto; border-bottom: 2px solid var(--ink); }
+.tab { border: 2px solid transparent; border-bottom: 0; background: none; padding: 10px 16px; border-radius: 10px 10px 0 0; font-weight: 700; color: var(--muted); white-space: nowrap; margin-bottom: -2px; }
+.tab.on { background: var(--surface); border-color: var(--ink); color: var(--ink); }
+.panel { display: grid; gap: 16px; min-width: 0; }
+.panelbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.panelbar p { margin: 0; color: var(--muted); }
+pre.code { margin: 0; background: var(--code-bg); color: var(--code-ink); font: 13.5px/1.6 var(--f-mono); padding: 22px; border-radius: 14px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; max-height: 70vh; overflow-y: auto; border: 2px solid var(--ink); }
+.sumtext { background: var(--surface); border: 2px solid var(--ink); border-radius: 16px; padding: 22px; box-shadow: 0 5px 0 var(--ink); }
+.sumtext .big { font-size: 19px; line-height: 1.5; margin: 0 0 16px; max-width: 70ch; }
+.profile { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 20px; margin: 0; }
+.profile dt { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.profile dd { margin: 2px 0 0; font-weight: 700; }
+.scards { columns: 3 300px; column-gap: 16px; }
+.scard { break-inside: avoid; background: var(--surface); border: 1.5px solid var(--line2); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+.scard h3 { font-size: 16px; margin-bottom: 8px; }
+.scard dl { margin: 0; display: grid; }
+.row { display: grid; grid-template-columns: minmax(0, 44%) minmax(0, 1fr); gap: 10px; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: 7px 4px; font-size: 14px; border-radius: 4px; }
+.row:hover { background: var(--accent-soft); }
+.row dt { color: var(--muted); }
+.row dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.row dd.aiv { color: var(--accent); font-weight: 400; font-style: italic; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.chk { width: 100%; display: flex; gap: 14px; align-items: flex-start; text-align: left; background: var(--surface); border: 1.5px solid var(--line2); border-radius: 12px; padding: 13px 15px; }
+.chk b { display: block; }
+.chk small { color: var(--muted); font-size: 14px; }
+.chk .box { flex: none; width: 24px; height: 24px; border: 2px solid var(--ink); border-radius: 6px; margin-top: 1px; position: relative; }
+.chk.on { opacity: .62; }
+.chk.on b { text-decoration: line-through; }
+.chk.on .box { background: var(--ok); border-color: var(--ok); }
+.chk.on .box::after { content: ""; position: absolute; left: 6px; top: 1px; width: 6px; height: 12px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .secnav { position: static; flex-direction: row; overflow-x: auto; max-height: none; padding-bottom: 4px; }
+  .navi { grid-template-columns: auto auto; white-space: nowrap; }
+  .navi-n { display: none; }
+  .navi.cur .navi-n { display: inline; }
+  .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .opts, .opts.wide { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .otx { padding: 9px 10px 11px; }
+  .otx b { font-size: 15px; }
+  .otx small { font-size: 12.5px; }
+  .prog small { display: none; }
+  .logo span { display: none; }
+  .kb { display: none; }
+  .qnav .btn { padding: 9px 12px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head><body>
+
+<header class="top"><div class="wrap">
+  <button class="logo" data-act="tostart" aria-label="Zum Start"><i>GB</i><span>Game-Bauplan</span></button>
+  <div class="prog" id="prog" hidden><div class="bar"><span id="progFill"></span></div><small id="progTxt"></small></div>
+  <div class="topbtns">
+    <button class="btn sm" id="btnResult" data-act="toresult" hidden>Auswertung</button>
+    <button class="btn sm ghost" id="btnStart" data-act="tostart" hidden>Start</button>
+  </div>
+</div></header>
+<main class="wrap" id="app"></main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+/* Game-Bauplan – Fragenkatalog */
+const AI = "__ai";
+const S = [], Q = [];
+let _sec;
+function sec(id, name, icon, desc) { _sec = id; S.push({ id, name, icon, desc }); }
+function q(id, label, title, opts, x) {
+  Q.push(Object.assign({ id, label, title, sec: _sec, l: 1, t: "s",
+    opts: (opts || []).map(o => ({ i: o[0], v: o[1], d: o[2] || "",
+      sc: (o[3] && typeof o[3] === "object") ? o[3] : null, x: o[3] === "x" || o[4] === "x" })) }, x || {}));
+}
+function has(a, id, ...vals) {
+  const v = a[id];
+  if (v == null || v === AI) return false;
+  return Array.isArray(v) ? v.some(x => vals.includes(x)) : vals.includes(v);
+}
+const iff = (id, ...vals) => a => has(a, id, ...vals);
+const kids = iff("age", "3–6 Jahre", "6–10 Jahre");
+const youngish = iff("age", "3–6 Jahre", "6–10 Jahre", "Alle Altersgruppen");
+const mobileApp = iff("platforms", "iPhone/iPad (iOS)", "Android");
+const touch = iff("platforms", "iPhone/iPad (iOS)", "Android", "Browser (Web)");
+const desk = iff("platforms", "Browser (Web)", "PC/Mac", "Konsole");
+const web = iff("platforms", "Browser (Web)");
+const multiPlat = a => Array.isArray(a.platforms) && a.platforms.length > 1;
+const mpAny = a => Array.isArray(a.mp) && a.mp.some(x => x !== "Nur Einzelspieler" && x !== AI);
+const online = iff("mp", "Online", "Asynchron (zeitversetzt)");
+const local = iff("mp", "Lokal am selben Bildschirm", "Lokal im selben WLAN");
+const pvp = iff("mpKind", "Gegeneinander (PvP)", "Beides", "Teams gegeneinander");
+const hasStory = iff("storyAmount", "Leichte Geschichte", "Story im Mittelpunkt");
+const someStory = iff("storyAmount", "Kurzes Intro", "Leichte Geschichte", "Story im Mittelpunkt");
+const ads = iff("monet", "Kostenlos mit Werbung", "Werbung + In-App-Käufe");
+const iap = iff("monet", "Kostenlos mit In-App-Käufen", "Werbung + In-App-Käufe");
+const stores = iff("launchWhere", "Apple App Store", "Google Play", "Steam", "Konsolen-Stores");
+const appStores = iff("launchWhere", "Apple App Store", "Google Play");
+const publicLaunch = a => Array.isArray(a.launchWhere) && a.launchWhere.some(x => x !== "Nur privat" && x !== AI);
+const or = (...f) => a => f.some(g => g(a));
+const and = (...f) => a => f.every(g => g(a));
+
+/* ---------- Spielsysteme ---------- */
+const SYS = [
+  ["plat", "🦘", "Jump'n'Run / Plattformer", "Wie Super Mario: Figur läuft und springt durch Level mit Abgründen, Hindernissen und Gegnern. Kern: präzises Springen und Timing."],
+  ["runner", "🏃", "Endless Runner / Arcade", "Wie Subway Surfers: Figur läuft automatisch; Spieler weicht aus, springt, sammelt. Ziel: so weit wie möglich kommen, Highscore."],
+  ["act", "⚔️", "Action / Nahkampf", "Wie Zelda-Kämpfe oder Beat'em ups: Echtzeit-Kämpfe gegen Gegner mit Angriffen, Ausweichen und Kombos."],
+  ["shoot", "🎯", "Shooter / Ballern", "Wie Fortnite oder Space Invaders: Zielen und Schießen auf Gegner oder Ziele (auch gewaltfrei: Wasser, Farbe, Raumschiffe). Kern: Treffen und Bewegen."],
+  ["tbs", "♟️", "Rundenstrategie", "Wie Schach oder Into the Breach: Abwechselnde Züge, Einheiten auf einem Spielfeld, taktisches Planen ohne Zeitdruck."],
+  ["td", "🏰", "Tower Defense / Echtzeitstrategie", "Wie Bloons TD oder Clash Royale: Türme oder Einheiten platzieren, um Gegnerwellen aufzuhalten, oder Armeen in Echtzeit steuern."],
+  ["puz", "🧩", "Puzzle / Knobelspiel", "Wie Candy Crush oder Tetris: Rätsel lösen, kombinieren, Muster erkennen. Denken statt Reflexe."],
+  ["sim", "🏗️", "Aufbau / Simulation / Management", "Wie Die Sims, Overcooked oder Stardew Valley: Etwas aufbauen und verwalten (Restaurant, Stadt, Farm …), Ressourcen und Kunden managen."],
+  ["rpg", "🧙", "Rollenspiel (RPG)", "Wie Pokémon: Figur entwickelt sich durch Erfahrung, Ausrüstung und Quests; Werte, Story und Entscheidungen."],
+  ["rogue", "🎲", "Roguelike / Roguelite", "Wie Vampire Survivors: Kurze, zufällig generierte Durchläufe. Bei Niederlage beginnt man neu, behält aber ggf. Meta-Fortschritt."],
+  ["race", "🏎️", "Rennspiel", "Wie Mario Kart: Fahrzeuge steuern, auf Strecken gegen Zeit oder Gegner fahren."],
+  ["sand", "⛏️", "Sandbox / Crafting", "Wie Minecraft: Offene Welt, Ressourcen abbauen, Gegenstände herstellen, frei bauen."],
+  ["adv", "🗺️", "Abenteuer / Story-Spiel", "Wie ein interaktiver Film: Erkunden, Gegenstände benutzen, mit Figuren sprechen, eine Geschichte erleben."],
+  ["rhy", "🎵", "Rhythmus / Musik", "Wie Guitar Hero: Im Takt der Musik tippen oder bewegen. Timing zur Musik ist der Kern."],
+  ["idle", "⏳", "Idle / Clicker", "Wie Cookie Clicker: Tippen und Upgrades kaufen; Fortschritt läuft auch automatisch weiter."],
+  ["party", "🎉", "Party / Minispiel-Sammlung", "Wie Mario Party: Viele kurze, unterschiedliche Minispiele, oft für mehrere Spieler."],
+  ["sport", "⚽", "Sportspiel", "Wie FIFA: Echte oder erfundene Sportarten spielen."],
+  ["card", "🃏", "Karten / Deckbuilder", "Wie UNO oder Hearthstone: Karten sammeln, Decks bauen, Karten taktisch ausspielen."],
+  ["surv", "🔥", "Survival", "Wie Don't Starve: Überleben trotz Hunger, Kälte und Gefahren; sammeln, bauen, verteidigen."],
+  ["horror", "👻", "Horror / Grusel", "Wie Five Nights at Freddy's: Spannung und Angst; Verstecken, Flüchten und Erkunden statt Kämpfen."]
+];
+const SYSN = Object.fromEntries(SYS.map(s => [s[0], s[2]]));
+const QUIZ_OPT = "Unsicher – kurzes Quiz machen";
+const coreName = a => a.core === QUIZ_OPT ? a.coreQuiz : a.core;
+const coreIs = (...keys) => a => keys.some(k => SYSN[k] === coreName(a) || SYSN[k] === a.coreMix);
+const sysOpts = () => SYS.map(s => [s[1], s[2], s[3]]);
+
+/* ---------- Bild-Vorschauen (SVG) ---------- */
+const sv = (inner, bg) => `<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="120" height="80" fill="${bg}"/>${inner}</svg>`;
+function pix(rows, col, x, y, s) {
+  let o = "";
+  rows.forEach((r, j) => [...r].forEach((c, i) => { if (col[c]) o += `<rect x="${x + i * s}" y="${y + j * s}" width="${s}" height="${s}" fill="${col[c]}"/>`; }));
+  return o;
+}
+function cube(x, y, s, t, l, r) {
+  const h = s / 2;
+  return `<polygon points="${x},${y} ${x + s},${y - h} ${x + 2 * s},${y} ${x + s},${y + h}" fill="${t}"/>` +
+    `<polygon points="${x},${y} ${x + s},${y + h} ${x + s},${y + h + s} ${x},${y + s}" fill="${l}"/>` +
+    `<polygon points="${x + s},${y + h} ${x + 2 * s},${y} ${x + 2 * s},${y + s} ${x + s},${y + h + s}" fill="${r}"/>`;
+}
+const ART = {
+  pixel: sv(pix(["..1111..", ".122221.", "12322321", "12422421", "12222221", ".122221.", "..1..1..", ".11..11."], { 1: "#2B1D0E", 2: "#F2A541", 3: "#FFFFFF", 4: "#2B1D0E" }, 44, 18, 4) +
+    pix(["111111111111", "222222222222"], { 1: "#6AB04C", 2: "#8B5A2B" }, 0, 56, 10) +
+    pix(["..11..", ".1111.", "111111"], { 1: "#FFFFFF" }, 8, 8, 4) + pix(["111"], { 1: "#F9D423" }, 86, 36, 6), "#8ED1FC"),
+  cartoon: sv(`<circle cx="60" cy="42" r="24" fill="#FF8A5B" stroke="#1E1E1E" stroke-width="3"/><circle cx="51" cy="37" r="7" fill="#fff" stroke="#1E1E1E" stroke-width="2"/><circle cx="69" cy="37" r="7" fill="#fff" stroke="#1E1E1E" stroke-width="2"/><circle cx="53" cy="38" r="3" fill="#1E1E1E"/><circle cx="71" cy="38" r="3" fill="#1E1E1E"/><path d="M48 50 Q60 62 72 50" fill="none" stroke="#1E1E1E" stroke-width="3" stroke-linecap="round"/><path d="M10 14 l6 0 M13 11 l0 6 M100 18 l8 0 M104 14 l0 8" stroke="#1E1E1E" stroke-width="2.5"/>`, "#FFE08A"),
+  lowpoly: sv(`<polygon points="0,80 30,30 55,80" fill="#5C6BC0"/><polygon points="30,30 55,80 60,48" fill="#3F51B5"/><polygon points="45,80 80,18 120,80" fill="#7986CB"/><polygon points="80,18 120,80 95,50" fill="#5C6BC0"/><polygon points="80,18 88,30 72,32" fill="#E8EAF6"/><polygon points="0,80 120,80 120,70 60,66 0,72" fill="#283593"/><polygon points="96,10 104,6 108,14 100,18" fill="#FFD54F"/>`, "#1A237E"),
+  real: sv(`<defs><radialGradient id="rg1" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#F4E3C1"/><stop offset=".55" stop-color="#B07A3B"/><stop offset="1" stop-color="#3B2410"/></radialGradient><linearGradient id="rg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9DB8CF"/><stop offset="1" stop-color="#E9E3D6"/></linearGradient></defs><rect width="120" height="80" fill="url(#rg2)"/><rect y="56" width="120" height="24" fill="#6E6656"/><ellipse cx="62" cy="62" rx="22" ry="5" fill="#2C2820" opacity=".55"/><circle cx="60" cy="40" r="20" fill="url(#rg1)"/>`, "#9DB8CF"),
+  hand: sv(`<circle cx="40" cy="44" r="20" fill="#F6A6A1" opacity=".55"/><circle cx="76" cy="36" r="18" fill="#9ED3C6" opacity=".6"/><circle cx="62" cy="54" r="16" fill="#F7D488" opacity=".55"/><path d="M22 46 C 24 30, 42 22, 56 30 S 80 22, 92 34 S 98 58, 78 60 S 40 66, 28 58 S 21 50, 22 46" fill="none" stroke="#4A4036" stroke-width="2" stroke-linecap="round"/><path d="M14 70 q 10 -4 20 0 t 20 0 t 20 0 t 20 0 t 20 0" fill="none" stroke="#4A4036" stroke-width="1.6"/>`, "#FBF6EC"),
+  flat: sv(`<rect x="16" y="30" width="30" height="30" rx="2" fill="#FF6B6B"/><circle cx="66" cy="45" r="15" fill="#4ECDC4"/><polygon points="88,60 102,30 116,60" fill="#FFD93D"/><rect x="0" y="66" width="120" height="14" fill="#2D3047"/>`, "#F1F2F6"),
+  voxel: sv(cube(30, 40, 14, "#7BD389", "#4C9A5B", "#3A7A47") + cube(58, 40, 14, "#7BD389", "#4C9A5B", "#3A7A47") + cube(44, 33, 14, "#C9A26B", "#9C7643", "#7D5C30") + cube(44, 19, 14, "#8FD3FF", "#5AA9D6", "#3B85B0"), "#20304A"),
+  anime: sv(`<defs><linearGradient id="an1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD1E8"/><stop offset="1" stop-color="#C9B6FF"/></linearGradient></defs><rect width="120" height="80" fill="url(#an1)"/><path d="M28 40 Q60 12 92 40 Q60 58 28 40Z" fill="#fff" stroke="#2A1B3D" stroke-width="3"/><ellipse cx="60" cy="40" rx="12" ry="15" fill="#7B4FD6"/><ellipse cx="60" cy="43" rx="6" ry="8" fill="#2A1B3D"/><circle cx="55" cy="33" r="4" fill="#fff"/><circle cx="65" cy="47" r="2" fill="#fff"/><path d="M26 30 L34 24 M94 30 L86 24" stroke="#2A1B3D" stroke-width="3" stroke-linecap="round"/><path d="M14 66 l3 -7 l3 7 l-7 -4 h8z M100 16 l2 -5 l2 5 l-5 -3 h6z" fill="#fff"/>`, "#FFD1E8"),
+  neon: sv(`<defs><linearGradient id="ne1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD319"/><stop offset="1" stop-color="#FF2975"/></linearGradient></defs><circle cx="60" cy="38" r="20" fill="url(#ne1)"/><rect x="38" y="36" width="44" height="2.5" fill="#1B0B33"/><rect x="38" y="42" width="44" height="3" fill="#1B0B33"/><rect x="38" y="49" width="44" height="4" fill="#1B0B33"/><rect y="56" width="120" height="24" fill="#1B0B33"/><path d="M0 56 H120 M0 62 H120 M0 70 H120 M60 56 L60 80 M60 56 L30 80 M60 56 L0 76 M60 56 L90 80 M60 56 L120 76" stroke="#F222FF" stroke-width="1.2"/>`, "#1B0B33"),
+  paper: sv(`<path d="M0 66 Q30 50 60 62 T120 58 V80 H0Z" fill="#8C6A43" transform="translate(2 3)"/><path d="M0 66 Q30 50 60 62 T120 58 V80 H0Z" fill="#C49A6C"/><circle cx="88" cy="24" r="12" fill="#B9852A" transform="translate(2 3)"/><circle cx="88" cy="24" r="12" fill="#F2C14E"/><path d="M24 58 L38 26 L52 58Z" fill="#3E6B48" transform="translate(2 3)"/><path d="M24 58 L38 26 L52 58Z" fill="#6BA368"/>`, "#E9DCC6"),
+  side: sv(`<rect y="62" width="120" height="18" fill="#6AB04C"/><rect x="62" y="40" width="28" height="6" fill="#8B5A2B"/><rect x="96" y="28" width="20" height="6" fill="#8B5A2B"/><rect x="22" y="46" width="10" height="16" rx="2" fill="#E74C3C"/><circle cx="27" cy="42" r="5" fill="#F5CBA7"/><path d="M40 52 l8 0 m-3 -3 l3 3 l-3 3" stroke="#1E1E1E" stroke-width="2" fill="none"/><circle cx="76" cy="34" r="3" fill="#F9D423"/><circle cx="104" cy="22" r="3" fill="#F9D423"/>`, "#8ED1FC"),
+  top: sv(`<path d="M0 20 H120 M0 40 H120 M0 60 H120 M20 0 V80 M40 0 V80 M60 0 V80 M80 0 V80 M100 0 V80" stroke="#5E9C47" stroke-width="1"/><circle cx="20" cy="20" r="9" fill="#2E7D32"/><circle cx="100" cy="60" r="9" fill="#2E7D32"/><circle cx="90" cy="20" r="7" fill="#2E7D32"/><rect x="30" y="50" width="20" height="16" fill="#A1887F"/><circle cx="62" cy="40" r="7" fill="#E74C3C" stroke="#7B1E15" stroke-width="2"/><path d="M62 32 L58 37 H66Z" fill="#7B1E15"/>`, "#7CB860"),
+  iso: sv(cube(18, 44, 14, "#9CCC65", "#7CB342", "#558B2F") + cube(46, 44, 14, "#9CCC65", "#7CB342", "#558B2F") + cube(32, 51, 14, "#9CCC65", "#7CB342", "#558B2F") + cube(60, 51, 14, "#9CCC65", "#7CB342", "#558B2F") + cube(74, 44, 14, "#9CCC65", "#7CB342", "#558B2F") + cube(46, 30, 14, "#FFB74D", "#F57C00", "#E65100"), "#2B3A55"),
+  third: sv(`<rect y="40" width="120" height="40" fill="#7CB860"/><polygon points="52,40 68,40 100,80 20,80" fill="#B0A79A"/><rect x="50" y="52" width="20" height="26" rx="4" fill="#3949AB"/><circle cx="60" cy="47" r="8" fill="#5D4037"/>`, "#9AD0F5"),
+  first: sv(`<rect y="40" width="120" height="40" fill="#6D7B8D"/><path d="M0 80 L52 40 M120 80 L68 40 M30 80 L56 40 M90 80 L64 40" stroke="#4A5566" stroke-width="1.5"/><rect x="56" y="30" width="8" height="10" fill="#8E5B3A"/><circle cx="60" cy="38" r="5" fill="none" stroke="#fff" stroke-width="1.5"/><path d="M60 30 V34 M60 42 V46 M52 38 H56 M64 38 H68" stroke="#fff" stroke-width="1.5"/><path d="M84 80 L92 56 L110 54 L118 80Z" fill="#F0C29B"/><rect x="88" y="50" width="22" height="8" rx="2" fill="#37474F"/>`, "#BFD6EA"),
+  fixed: sv(`<rect x="22" y="8" width="76" height="64" rx="4" fill="#ECEFF1" stroke="#37474F" stroke-width="2"/>${[0, 1, 2, 3].map(i => [0, 1, 2].map(j => `<rect x="${28 + i * 17}" y="${14 + j * 18}" width="14" height="14" rx="3" fill="${["#EF5350", "#42A5F5", "#66BB6A", "#FFCA28"][(i + j) % 4]}"/>`).join("")).join("")}`, "#455A64"),
+  d2: sv(`<rect x="34" y="20" width="40" height="40" fill="#FF7043"/><rect y="66" width="120" height="14" fill="#5D4037"/>`, "#FFF3E0"),
+  d25: sv(cube(40, 46, 20, "#FFAB91", "#FF7043", "#D84315").replace(/<polygon points="[^"]*" fill="#FF7043"\/>/, "") + `<rect x="40" y="46" width="20" height="20" fill="#FF7043"/><rect y="70" width="120" height="10" fill="#5D4037"/>`, "#FFF3E0"),
+  d3: sv(cube(36, 40, 22, "#FFAB91", "#FF7043", "#D84315") + `<ellipse cx="58" cy="74" rx="26" ry="4" fill="#000" opacity=".15"/>`, "#FFF3E0")
+};
+
+/* ======================================================= */
+sec("vision", "Vision & Grundidee", "💡", "Worum geht es, wie fühlt es sich an, wie groß wird es?");
+q("nameStyle", "Namensstil", "Was für einen Namen soll dein Spiel bekommen?", [
+  ["⚡", "Kurz & knackig", "Ein oder zwei Wörter, leicht zu merken (z. B. für App-Icons)."],
+  ["😜", "Lustiges Wortspiel", "Ein Wortwitz, der zum Thema passt."],
+  ["🦊", "Name der Hauptfigur", "Das Spiel heißt wie die Spielfigur."],
+  ["📝", "Beschreibend", "Der Name sagt sofort, worum es geht."],
+  ["🗝️", "Episch & geheimnisvoll", "Klingt nach Abenteuer und macht neugierig."],
+  ["📍", "Mit Ort oder Marke", "Enthält den Namen eines Ortes, Geschäfts oder Vereins."]], { h: "Die KI schlägt dir passend zu deinem Stil drei Namen vor." });
+q("feeling", "Kerngefühl", "Welches Gefühl soll das Spiel auslösen?", [
+  ["😌", "Entspannung", "Ruhig und stressfrei, kein Zeitdruck, beruhigende Farben und Klänge."],
+  ["⚡", "Nervenkitzel", "Adrenalin, knappe Situationen, schnelle Entscheidungen."],
+  ["😂", "Lachen & Spaß", "Lustige Animationen, überraschende Momente, Slapstick."],
+  ["👻", "Gänsehaut", "Spannung, Unsicherheit, Grusel-Atmosphäre."],
+  ["🏅", "Stolz & Meisterschaft", "Schwierige Herausforderungen, die man durch Übung meistert."],
+  ["🧭", "Neugier & Entdecken", "Geheimnisse, neue Orte, Belohnung fürs Erkunden."],
+  ["🎨", "Kreativität", "Der Spieler gestaltet, baut und drückt sich selbst aus."],
+  ["🥊", "Wettkampf", "Sich mit anderen messen, Sieg und Niederlage zählen."]], { t: "m", max: 2, h: "Wähle bis zu zwei." });
+q("session", "Rundendauer", "Wie lange dauert eine typische Spielsitzung?", [
+  ["⏱️", "1–3 Minuten", "Ultrakurze Runden, sofort spielbar ohne Ladezeit, ideal für Wartezeiten."],
+  ["☕", "5–10 Minuten", "Kurze Sitzung: ein paar Level oder eine Partie."],
+  ["🛋️", "15–30 Minuten", "Mittlere Sitzung mit spürbarem Fortschritt."],
+  ["🌙", "30–60 Minuten", "Längere Sitzungen mit Raum für Story und komplexe Aufgaben."],
+  ["♾️", "Stundenlang", "Tiefes Spiel ohne festes Sitzungsende."]]);
+q("scope", "Umfang", "Wie groß soll das Spiel werden?", [
+  ["🌱", "Mini-Prototyp", "Eine Kernmechanik, ein Level oder Bildschirm. Ziel: die Idee testen."],
+  ["🧸", "Kleines Spiel", "Ca. 5–10 Level oder 30–60 Minuten Inhalt, komplett und poliert."],
+  ["🏘️", "Mittleres Spiel", "Ca. 20–50 Level oder mehrere Welten, 3–8 Stunden Inhalt."],
+  ["🏰", "Großes Spiel", "100+ Level oder offene Welt, 10+ Stunden Inhalt."],
+  ["♾️", "Endlos / prozedural", "Inhalte werden zufällig erzeugt, unbegrenzt spielbar."]]);
+q("tone", "Grundton", "Welchen Grundton hat dein Spiel?", [
+  ["🌈", "Fröhlich & kindlich", "Bunt und freundlich, keine echten Gefahren."],
+  ["🤪", "Humorvoll", "Witze und Übertreibung, nimmt sich nicht ernst."],
+  ["🛡️", "Episch & heroisch", "Große Momente, Heldenreise, mitreißend."],
+  ["🌑", "Düster & ernst", "Bedrückende Stimmung, ernste Themen."],
+  ["🍂", "Melancholisch & poetisch", "Ruhig, nachdenklich, emotional."],
+  ["🌀", "Absurd & surreal", "Traumartig und verrückt, auf charmante Art unlogisch."]], { l: 2 });
+q("pace", "Tempo", "Wie schnell soll sich das Spiel anfühlen?", [
+  ["🐢", "Gemütlich", "Kein Zeitdruck, der Spieler bestimmt das Tempo."],
+  ["🚶", "Mittel", "Gleichmäßiges Tempo mit gelegentlichen Spannungsspitzen."],
+  ["🏃", "Schnell", "Ständige Action, schnelle Reaktionen nötig."],
+  ["🌪️", "Hektisch", "Viele Dinge gleichzeitig, maximale Reizdichte."],
+  ["🎢", "Wechselnd", "Bewusster Wechsel zwischen ruhigen und hektischen Phasen."]], { l: 2 });
+q("usp", "Alleinstellungsmerkmal", "Was soll dein Spiel besonders machen?", [
+  ["💡", "Neue Mechanik", "Eine ungewöhnliche Spielidee, die es so selten gibt."],
+  ["🖼️", "Einzigartiger Look", "Der Grafikstil ist das Aushängeschild."],
+  ["📜", "Starke Geschichte", "Story und Figuren sind das Herzstück."],
+  ["😄", "Humor", "Das Spiel ist vor allem lustig."],
+  ["👯", "Gemeinsam spielen", "Das Erlebnis mit anderen steht im Mittelpunkt."],
+  ["🧱", "Selbst gestalten", "Spieler erschaffen eigene Inhalte."],
+  ["🎓", "Lernwert", "Man lernt beim Spielen etwas."],
+  ["🏪", "Echter Ort oder Marke", "Spielt an einem echten Ort oder für eine echte Marke (z. B. Restaurant, Verein)."]], { l: 2, t: "m" });
+q("purpose", "Projektziel", "Wofür entsteht das Spiel?", [
+  ["🎈", "Hobby & Spaß", "Für mich selbst, zum Lernen und Ausprobieren."],
+  ["🎁", "Für Familie oder Freunde", "Als Geschenk oder für eine bestimmte Gruppe."],
+  ["💼", "Portfolio", "Zeigen, was ich kann (Bewerbung, Showreel)."],
+  ["💶", "Geld verdienen", "Kommerzieller Erfolg ist ein Ziel."],
+  ["🏫", "Bildung", "Für Schule, Unterricht oder Lernzwecke."],
+  ["📣", "Marketing für Firma/Verein", "Das Spiel bewirbt ein Geschäft, einen Verein oder eine Marke."]], { l: 2 });
+q("ending", "Spielende", "Hat das Spiel ein richtiges Ende?", [
+  ["🎬", "Ja, mit Abspann", "Klares Ende nach dem letzten Level oder Kapitel."],
+  ["🔁", "Ende plus Weiterspielen", "Nach dem Ende gibt es Zusatzinhalte (Postgame)."],
+  ["📈", "Endlos mit Highscore", "Kein Ende; Ziel ist eine möglichst hohe Punktzahl."],
+  ["📅", "Wächst ständig weiter", "Das Spiel wird mit Updates und Saisons immer erweitert."]], { l: 2 });
+
+/* ======================================================= */
+sec("idea", "Spielidee", "🧠", "Deine Idee wird Baustein für Baustein aufgebaut: Was tust du, warum, wo und was macht es besonders?");
+q("ideaRef", "Lieblingsspiele", "Welche Spiele magst du selbst? (Nur als Gefühl, nicht zum Kopieren.)", [
+  ["🍄", "Super Mario & Co.", "Hüpfen und Level schaffen.", { plat: 3 }], ["🍬", "Candy Crush & Co.", "Kurze Knobelrunden.", { puz: 3 }],
+  ["⛏️", "Minecraft & Co.", "Frei bauen und entdecken.", { sand: 3, surv: 1 }], ["🪂", "Fortnite & Co.", "Gegen andere antreten.", { shoot: 3 }],
+  ["🏎️", "Mario Kart & Co.", "Wilde Rennen mit Freunden.", { race: 3 }], ["⚡", "Pokémon & Co.", "Sammeln und Teams stärken.", { rpg: 3 }],
+  ["🏠", "Die Sims & Co.", "Leben und Häuser gestalten.", { sim: 3 }], ["🚇", "Subway Surfers & Co.", "Endlos rennen und ausweichen.", { runner: 3 }],
+  ["⚽", "FIFA & Co.", "Sport.", { sport: 3 }], ["🏰", "Clash Royale & Co.", "Taktik in kurzen Duellen.", { td: 2, card: 2 }],
+  ["🗡️", "Zelda & Co.", "Abenteuer, Rätsel und Kämpfe.", { adv: 2, act: 2 }], ["🕵️", "Among Us & Co.", "Gemeinsam lachen und rätseln.", { party: 3 }],
+  ["👨‍🍳", "Overcooked & Co.", "Hektisch zusammen kochen.", { sim: 2, party: 2 }], ["🧛", "Vampire Survivors & Co.", "Immer stärker gegen Massen.", { rogue: 3 }]], { t: "m", max: 3, h: "Bis zu drei. So versteht die KI dein Wunsch-Spielgefühl, ohne dass du Fachbegriffe kennen musst." });
+q("ideaVerb", "Hauptaktion", "Was macht der Spieler die meiste Zeit?", [
+  ["🦘", "Springen", "", { plat: 4, runner: 2 }], ["💨", "Laufen & Ausweichen", "", { runner: 4, plat: 1 }], ["🎯", "Schießen & Werfen", "", { shoot: 4, sport: 1 }],
+  ["⚔️", "Kämpfen", "", { act: 4, rpg: 2, rogue: 1 }], ["🧱", "Bauen", "", { sand: 3, sim: 2, td: 2 }], ["🪙", "Sammeln", "", { idle: 2, plat: 1, runner: 1, sand: 1 }],
+  ["🧤", "Fangen", "", { runner: 2, party: 2, sim: 1 }], ["🍳", "Kochen & Zubereiten", "", { sim: 4, party: 1 }], ["🔗", "Kombinieren & Verbinden", "", { puz: 4, card: 1 }],
+  ["🏎️", "Fahren & Steuern", "", { race: 4 }], ["🥷", "Schleichen & Verstecken", "", { horror: 3, adv: 1 }], ["🧺", "Sortieren & Ordnen", "", { puz: 3, sim: 1 }],
+  ["✏️", "Zeichnen", "", { puz: 2, party: 2 }], ["📣", "Andere anführen", "", { tbs: 3, td: 3 }], ["💱", "Handeln & Verkaufen", "", { sim: 3, idle: 2 }],
+  ["🧭", "Erkunden", "", { adv: 3, rpg: 2, sand: 1, surv: 1 }], ["🃏", "Karten ausspielen", "", { card: 5 }], ["🎵", "Im Takt tippen", "", { rhy: 5 }]], { t: "m", max: 2, h: "Wähle bis zu zwei. Das ist der wichtigste Baustein deiner Idee.", wide: 0 });
+q("ideaGoal", "Ziel des Spielers", "Warum macht der Spieler das? Was ist sein Ziel?", [
+  ["🛟", "Jemanden retten", "", { adv: 1, plat: 1, rpg: 1 }], ["🏃", "Entkommen", "", { runner: 2, horror: 2 }], ["🏁", "Ans Ziel kommen", "", { plat: 2, race: 2 }],
+  ["📈", "Größer & erfolgreicher werden", "", { sim: 2, idle: 3, rpg: 1 }], ["🥇", "Andere besiegen", "", { shoot: 1, sport: 2, card: 1, act: 1 }],
+  ["🗂️", "Alles einsammeln", "", { plat: 1, adv: 1 }], ["🏰", "Etwas verteidigen", "", { td: 4, surv: 1 }], ["📦", "Aufträge erfüllen", "", { sim: 3 }],
+  ["🧩", "Rätsel lösen", "", { puz: 3, adv: 2 }], ["🔥", "Überleben", "", { surv: 4, horror: 1, rogue: 1 }], ["🏅", "Den Highscore knacken", "", { runner: 3, rhy: 1 }],
+  ["🎨", "Etwas Eigenes erschaffen", "", { sand: 4 }]]);
+q("ideaChallenge", "Herausforderung", "Was macht es schwierig?", [
+  ["⏳", "Zeitdruck", ""], ["👾", "Gegner", ""], ["🕳️", "Gefährliche Wege & Fallen", ""], ["📉", "Knappe Ressourcen", ""],
+  ["🧠", "Knifflige Logik", ""], ["🆚", "Andere Spieler", ""], ["🌪️", "Immer mehr gleichzeitig", ""], ["🎳", "Unberechenbare Physik", ""], ["😌", "Gar nichts, es ist entspannt", "", "x"]], { t: "m", max: 2 });
+q("ideaTwist", "Der Clou", "Was ist der besondere Kniff, den andere Spiele nicht haben?", [
+  ["🙃", "Schwerkraft umdrehen", "Oben und unten lassen sich tauschen."], ["⏪", "Zeit beeinflussen", "Zurückspulen, anhalten oder verlangsamen."],
+  ["👯", "Zwei Figuren gleichzeitig", "Der Spieler steuert zwei Dinge auf einmal."], ["🌗", "Welt verwandelt sich", "Die Welt ändert sich ständig, z. B. Tag/Nacht oder zwei Dimensionen."],
+  ["1️⃣", "Alles mit einer Taste", "Extrem simpel zu bedienen, schwer zu meistern."], ["🔍", "Größe ändern", "Figur wird winzig oder riesig."],
+  ["🔄", "Rollentausch", "Mal Jäger, mal Gejagter."], ["🎨", "Farben wechseln", "Nur Dinge in der aktiven Farbe existieren."],
+  ["🧲", "Alles hängt zusammen", "Jede Aktion löst eine Kettenreaktion aus."], ["👍", "Kein Kniff, klassisch gut", "Bekanntes Prinzip, perfekt umgesetzt."]]);
+q("ideaEscalation", "Steigerung", "Wie wird das Spiel mit der Zeit spannender?", [
+  ["🚀", "Mehr Tempo", ""], ["👹", "Neue Gegner & Hindernisse", ""], ["✨", "Neue Fähigkeiten", ""], ["📜", "Neue Regeln pro Welt", "Jede Welt bringt eine neue Mechanik."],
+  ["🤹", "Mehr gleichzeitig", ""], ["🫥", "Weniger Hilfen", ""]], { t: "m", max: 3 });
+q("ideaStart", "Die ersten Sekunden", "Was passiert in den ersten 10 Sekunden?", [
+  ["💥", "Sofort Action", "Kein Menü, direkt losspielen."], ["🎬", "Kurze Story-Szene", "Ein paar Bilder erklären, worum es geht."],
+  ["🛝", "Spielplatz zum Ausprobieren", "Gefahrloser Bereich, um die Steuerung zu lernen."], ["🌱", "Bei null anfangen", "Leeres Feld, der Spieler beginnt zu bauen."]], { l: 2 });
+q("ideaWow", "Wow-Moment", "Welcher Moment soll Spieler „Wow!“ sagen lassen?", [
+  ["😮‍💨", "Rettung in letzter Sekunde", ""], ["💥", "Riesige Kettenreaktion", ""], ["🔐", "Geheimnis entdeckt", ""], ["🔥", "Perfekte Kombo", ""],
+  ["🏙️", "Etwas Großes fertig gebaut", ""], ["😈", "Freunde ausgetrickst", ""], ["🐉", "Riesiger Gegner besiegt", ""]], { l: 2 });
+q("ideaFinale", "Finale", "Wie endet ein Level oder Abschnitt?", [
+  ["🐲", "Bosskampf", ""], ["🏃", "Finale Flucht oder Rennen", ""], ["🧩", "Das größte Rätsel", ""], ["📖", "Auflösung der Geschichte", ""],
+  ["🏆", "Abrechnung mit Punkten", "Sterne, Punkte und Rangliste."], ["🎉", "Einfach geschafft", "Kurze Jubel-Animation, weiter geht's."]], { l: 2 });
+q("ideaRule", "Sonderregel", "Gibt es eine besondere Regel?", [
+  ["🚫", "Niemals stehen bleiben", ""], ["💸", "Jede Aktion kostet etwas", ""], ["1️⃣", "Nur ein Versuch", ""], ["💥", "Alles ist zerstörbar", ""],
+  ["🕊️", "Man kann nicht angreifen", ""], ["👁️", "Man sieht nur einen kleinen Ausschnitt", ""], ["➖", "Keine Sonderregel", ""]], { l: 3 });
+q("ideaPerfect", "Perfekter Zug", "Was passiert, wenn dem Spieler etwas perfekt gelingt?", [
+  ["🎆", "Punkte-Explosion", ""], ["🐌", "Kurze Zeitlupe", ""], ["🎶", "Musik wird intensiver", ""], ["🙌", "Figur jubelt", ""], ["🎁", "Bonus-Belohnung", ""]], { l: 3, t: "m" });
+/* ======================================================= */
+sec("audience", "Zielgruppe", "👥", "Für wen ist das Spiel und was ist tabu?");
+q("age", "Alter", "Für welches Alter ist das Spiel?", [
+  ["🧸", "3–6 Jahre", "Kleinkinder: riesige Buttons, kein Text, kein echtes Scheitern, Elternschranke."],
+  ["🪁", "6–10 Jahre", "Grundschulkinder: einfache Wörter, klare Symbole, schnelle Erfolgserlebnisse."],
+  ["🛹", "10–13 Jahre", "Ältere Kinder: mehr Herausforderung, einfache Texte."],
+  ["🎧", "13–17 Jahre", "Jugendliche: Wettkampf, Coolness, soziale Features."],
+  ["💼", "Erwachsene 18+", "Komplexere Systeme, ernstere Themen möglich."],
+  ["👨‍👩‍👧", "Alle Altersgruppen", "Familienfreundlich, aber mit Tiefe für Ältere."]]);
+q("skill", "Spielerfahrung", "Wie viel Spielerfahrung haben deine Spieler?", [
+  ["🌱", "Kaum bis keine", "Muss ohne Vorwissen sofort verständlich sein."],
+  ["🙂", "Gelegenheitsspieler", "Kennt Handyspiele, will schnellen Spaß ohne Lernkurve."],
+  ["🎮", "Erfahrene Spieler", "Kennt die Genre-Konventionen, mag Tiefe."],
+  ["🔥", "Hardcore-Profis", "Sucht maximale Herausforderung und Optimierung."]]);
+q("reading", "Lesefähigkeit", "Können deine Spieler lesen?", [
+  ["🔣", "Nein, nur Symbole", "Kein Text im Spiel. Alles über Bilder, Animationen und Ton."],
+  ["🔤", "Ein bisschen", "Nur einzelne kurze Wörter; Wichtiges zusätzlich mit Symbol."],
+  ["📖", "Ja, problemlos", "Normale Texte sind in Ordnung."]], { l: 2, if: youngish });
+q("whereplay", "Spielsituation", "Wo und wann wird hauptsächlich gespielt?", [
+  ["🚌", "Unterwegs", "Bus und Bahn, oft ohne Ton und mit einer Hand."],
+  ["🍽️", "Beim Warten", "Restaurant, Arztpraxis, Schlange: kurze Pausen, jederzeit unterbrechbar."],
+  ["🛋️", "Auf der Couch", "Entspannt, längere Sitzungen, mit Ton."],
+  ["🖥️", "Am Schreibtisch", "PC oder Laptop, volle Konzentration."],
+  ["👫", "Mit anderen im Raum", "Mehrere Leute schauen zu oder spielen mit."],
+  ["🛏️", "Vor dem Schlafen", "Ruhig, dunkle Umgebung, kurze Sitzungen."]], { l: 2, t: "m" });
+q("languages", "Sprachen im Spiel", "In welchen Sprachen gibt es das Spiel?", [
+  ["🇩🇪", "Deutsch", ""], ["🇬🇧", "Englisch", ""], ["🇫🇷", "Französisch", ""], ["🇪🇸", "Spanisch", ""], ["🇮🇹", "Italienisch", ""], ["🇹🇷", "Türkisch", ""],
+  ["🇯🇵", "Japanisch", ""], ["🔣", "Sprachfrei", "Nur Symbole, keine Übersetzung nötig.", "x"]], { t: "m", h: "Alle Texte werden in einer Sprachdatei gesammelt, damit später weitere Sprachen leicht dazukommen." });
+q("taboo", "Tabu-Inhalte", "Was darf auf keinen Fall im Spiel vorkommen?", [
+  ["🩸", "Blut", "Keine Blutdarstellung."],
+  ["💥", "Gewalt gegen Menschen", "Keine realistische Gewalt gegen Menschen."],
+  ["😱", "Grusel", "Keine Jumpscares, Monster oder Angstszenen."],
+  ["🤬", "Schimpfwörter", "Keine Kraftausdrücke."],
+  ["🎰", "Glücksspiel", "Keine Lootboxen, Glücksräder gegen Geld oder Casino-Elemente."],
+  ["💬", "Kontakt mit Fremden", "Keine Kommunikation mit unbekannten Spielern."],
+  ["📺", "Werbung", "Keine Werbeeinblendungen."],
+  ["💳", "Echtgeld-Käufe", "Keine In-App-Käufe."],
+  ["✅", "Keine Einschränkungen", "Nichts davon ist ausgeschlossen.", "x"]], { l: 2, t: "m" });
+q("parents", "Eltern-Funktionen", "Welche Funktionen brauchen Eltern?", [
+  ["🔒", "Elternbereich mit Sperre", "Einstellungen, Links und Käufe erst nach Elternschranke (z. B. Rechenaufgabe)."],
+  ["⏲️", "Spielzeit-Limit", "Eltern können die tägliche Spielzeit begrenzen."],
+  ["📨", "Fortschrittsübersicht", "Eltern sehen, was das Kind gespielt oder gelernt hat."],
+  ["🚫", "Keine", "Keine Elternfunktionen nötig.", "x"]], { l: 3, t: "m", if: kids });
+q("rating", "Altersfreigabe", "Welche Alterseinstufung strebst du an?", [
+  ["🟢", "USK 0 / PEGI 3", "Für alle freigegeben."],
+  ["🟡", "USK 6 / PEGI 7", "Leichte Comic-Gewalt, minimal gruselig."],
+  ["🟠", "USK 12 / PEGI 12", "Fantasy-Gewalt, etwas Spannung."],
+  ["🔴", "USK 16 / PEGI 16", "Realistischere Gewalt, ernste Themen."],
+  ["⛔", "USK 18 / PEGI 18", "Nur für Erwachsene."]], { l: 3 });
+q("motivation", "Motivatoren", "Was motiviert deine Spieler am meisten weiterzuspielen?", [
+  ["🗂️", "Sammeln", "Alles einsammeln und komplettieren."],
+  ["📊", "Zahlen steigen", "Werte, Level, Highscores verbessern."],
+  ["📖", "Wie geht's weiter?", "Neugier auf die Story."],
+  ["🥇", "Andere schlagen", "Ranglisten und Duelle."],
+  ["🌳", "Etwas wachsen sehen", "Basis, Stadt oder Figur entwickelt sich sichtbar."],
+  ["🧠", "Neues lernen", "Neue Fähigkeiten und Wissen."],
+  ["🌿", "Abschalten", "Ein entspannter Rückzugsort."]], { l: 3, t: "m" });
+
+/* ======================================================= */
+sec("platform", "Plattform & Geräte", "📱", "Wo läuft dein Spiel und unter welchen Bedingungen?");
+q("platforms", "Plattformen", "Auf welchen Geräten soll das Spiel laufen?", [
+  ["🌐", "Browser (Web)", "Läuft direkt im Browser auf Handy und PC, ohne Download."],
+  ["🍎", "iPhone/iPad (iOS)", "Native App im Apple App Store."],
+  ["🤖", "Android", "App im Google Play Store."],
+  ["💻", "PC/Mac", "Desktop-Spiel für Windows und macOS."],
+  ["🎮", "Konsole", "Nintendo Switch, PlayStation oder Xbox."],
+  ["🥽", "VR/AR", "Virtual-Reality-Brille oder Augmented Reality."]], { t: "m" });
+q("primaryPlat", "Hauptplattform", "Für welche Plattform wird zuerst optimiert?", [
+  ["📱", "Handy zuerst", "Design und Steuerung primär für Touchscreens."],
+  ["🖥️", "PC zuerst", "Primär für Maus/Tastatur und große Bildschirme."],
+  ["🎮", "Konsole zuerst", "Primär für Controller und Fernseher."],
+  ["⚖️", "Alle gleichwertig", "Jede Plattform bekommt eigene, gleichwertige Anpassungen."]], { l: 2, if: multiPlat });
+q("orientation", "Bildschirmausrichtung", "In welcher Ausrichtung wird auf dem Handy gespielt?", [
+  ["📱", "Hochformat", "Einhändig spielbar, ideal für unterwegs."],
+  ["📲", "Querformat", "Breiteres Sichtfeld, mit zwei Händen."],
+  ["🔄", "Beides", "Layout passt sich automatisch an die Drehung an."]], { if: touch });
+q("tablet", "Tablets", "Wie sollen Tablets unterstützt werden?", [
+  ["📱", "Nur Handy-Layout", "Läuft auf Tablets, wird aber nur hochskaliert."],
+  ["📐", "Eigenes Tablet-Layout", "Die Oberfläche nutzt den großen Bildschirm sinnvoll."],
+  ["🖼️", "Tablet zuerst", "Hauptsächlich für Tablets gestaltet."]], { l: 3, if: mobileApp });
+q("deviceClass", "Geräteleistung", "Wie leistungsstark sind die Zielgeräte?", [
+  ["🐌", "Auch alte Geräte", "Muss auf 5+ Jahre alten Einsteiger-Handys flüssig laufen."],
+  ["⚖️", "Mittelklasse", "Aktuelle Durchschnittsgeräte."],
+  ["🚀", "High-End", "Nur neue, starke Geräte; maximale Grafik."]], { l: 3 });
+q("internet", "Internet", "Braucht das Spiel eine Internetverbindung?", [
+  ["✈️", "Komplett offline", "Funktioniert ohne jede Verbindung."],
+  ["🔌", "Offline, online optional", "Ranglisten oder Cloud nur, wenn Netz da ist."],
+  ["📶", "Nur online", "Ständige Verbindung nötig."]], { l: 2 });
+q("webLaunch", "Web-Start", "Wie wird die Web-Version gestartet?", [
+  ["🔗", "Einfacher Link", "URL öffnen und sofort spielen."],
+  ["📲", "Installierbar (PWA)", "Kann zum Homescreen hinzugefügt werden und läuft offline."],
+  ["🔳", "QR-Code vor Ort", "z. B. auf Tischaufstellern, Flyern oder Plakaten."],
+  ["🧩", "In Website eingebettet", "Läuft in einer bestehenden Website (iframe oder Widget)."]], { l: 2, t: "m", if: web });
+q("pcWindow", "Fenstermodus", "Wie läuft das Spiel auf PC-Bildschirmen?", [
+  ["🖥️", "Vollbild", "Startet im Vollbild."],
+  ["🪟", "Fenster", "Startet im Fenster, frei skalierbar."],
+  ["🔀", "Wählbar", "Vollbild, Fenster und Auflösung in den Einstellungen wählbar."]], { l: 4, if: iff("platforms", "PC/Mac") });
+q("size", "Download-Größe", "Wie groß darf das Spiel maximal sein?", [
+  ["🪶", "Unter 10 MB", "Extrem schlank, lädt sofort (ideal fürs Web)."],
+  ["📦", "Unter 100 MB", "Kann ohne WLAN geladen werden."],
+  ["🗃️", "Unter 1 GB", "Normale App-Größe."],
+  ["🏔️", "Egal", "Größe spielt keine Rolle."]], { l: 4 });
+
+/* ======================================================= */
+sec("core", "Gameplay-System", "🎮", "Das Herz deines Spiels: wie es funktioniert. Mit Quiz, falls du unsicher bist.");
+q("core", "Spielsystem", "Welches Spielsystem passt am besten zu deiner Idee?", sysOpts().concat([["❓", QUIZ_OPT, "Ein paar Fragen zu deinen Vorlieben, dann schlägt das Quiz ein System vor."]]), { wide: 1, h: "Die Liste ist nach deinen bisherigen Antworten sortiert. Ganz unten gibt es ein Quiz, falls du unsicher bist." });
+const quiz = a => a.core === QUIZ_OPT;
+q("qz1", "Quiz 1", "Was machst du in deiner Freizeit am liebsten?", [
+  ["⚽", "Sport & Bewegung", "", { sport: 3, race: 2, runner: 2, plat: 1 }],
+  ["🧩", "Knobeln & Rätseln", "", { puz: 3, tbs: 2, card: 1, adv: 1 }],
+  ["🧱", "Bauen & Basteln", "", { sand: 3, sim: 3, td: 1 }],
+  ["📚", "Bücher, Filme, Serien", "", { adv: 3, rpg: 2, horror: 1 }],
+  ["👾", "Mit Freunden zocken", "", { party: 3, shoot: 2, act: 1, sport: 1 }],
+  ["🎧", "Musik hören oder machen", "", { rhy: 4, runner: 1 }]], { if: quiz, noAi: true, quiz: 1 });
+q("qz2", "Quiz 2", "Wie willst du dich im Spiel fühlen?", [
+  ["⚡", "Schnell & geschickt", "", { plat: 3, runner: 3, race: 2, rhy: 1 }],
+  ["🧠", "Schlau", "", { puz: 3, tbs: 3, card: 2, td: 1 }],
+  ["💪", "Mächtig & stark", "", { act: 3, rpg: 2, shoot: 2, rogue: 1 }],
+  ["🎨", "Kreativ", "", { sand: 3, sim: 2 }],
+  ["😌", "Entspannt", "", { sim: 2, idle: 3, puz: 1, adv: 1 }],
+  ["😨", "Angespannt", "", { horror: 4, surv: 2 }]], { if: quiz, noAi: true, quiz: 1 });
+q("qz4", "Quiz 4", "Reflexe oder Nachdenken?", [
+  ["⚡", "Nur Reflexe", "", { runner: 3, shoot: 2, rhy: 2, race: 2 }],
+  ["🎯", "Eher Reflexe", "", { plat: 3, act: 2, sport: 2 }],
+  ["⚖️", "Gute Mischung", "", { rogue: 3, rpg: 1, surv: 2, td: 1 }],
+  ["🤔", "Eher Nachdenken", "", { td: 2, card: 2, sim: 2, adv: 1 }],
+  ["🧘", "Nur Nachdenken, in Ruhe", "", { puz: 3, tbs: 3 }]], { if: quiz, noAi: true, quiz: 1 });
+q("qz6", "Quiz 6", "Was ist dir in einem Spiel am wichtigsten?", [
+  ["📈", "Stärker werden", "", { rpg: 3, idle: 2, rogue: 2 }],
+  ["🥇", "Gewinnen & Highscore", "", { runner: 2, sport: 2, race: 2, shoot: 1, party: 1 }],
+  ["📖", "Eine gute Geschichte", "", { adv: 4, rpg: 1, horror: 1 }],
+  ["🕊️", "Freiheit, alles zu tun", "", { sand: 4, surv: 2 }],
+  ["🧩", "Die perfekte Lösung finden", "", { puz: 3, tbs: 1, card: 1 }],
+  ["🏙️", "Etwas Großes erschaffen", "", { sim: 4, td: 1 }]], { if: quiz, noAi: true, quiz: 1 });
+q("qz7", "Quiz 7", "Welches Bild spricht dich am meisten an?", [
+  ["🏰", "Eine Burg mit Türmen", "", { td: 3, tbs: 2 }],
+  ["🏎️", "Ein Rennwagen", "", { race: 4 }],
+  ["🗡️", "Ein Schwert", "", { act: 3, rpg: 2 }],
+  ["🃏", "Ein Kartenstapel", "", { card: 4 }],
+  ["🔦", "Eine Taschenlampe im Dunkeln", "", { horror: 3, surv: 2, adv: 1 }],
+  ["🎤", "Ein Mikrofon", "", { rhy: 3, party: 2 }],
+  ["🪓", "Eine Axt im Wald", "", { surv: 3, sand: 2 }],
+  ["🍕", "Eine Pizza", "", { sim: 3, runner: 1, party: 1 }]], { if: quiz, noAi: true, quiz: 1 });
+q("qz8", "Quiz 8", "Was machst du, wenn du in einem Spiel scheiterst?", [
+  ["🔁", "Sofort nochmal!", "", { rogue: 3, plat: 2, runner: 2 }],
+  ["😤", "Ich will es unbedingt knacken", "", { act: 2, plat: 2, shoot: 1 }],
+  ["🙂", "Hauptsache kein Stress", "", { sim: 2, idle: 3, puz: 1, adv: 1 }],
+  ["🧐", "Ich überlege, was schiefging", "", { tbs: 3, puz: 2, card: 2 }]], { if: quiz, noAi: true, quiz: 1 });
+q("coreQuiz", "Spielsystem", "Dein Quiz-Ergebnis. Welches System nimmst du?", [], { if: quiz, dyn: 1, h: "Sortiert nach Übereinstimmung mit deinen Quiz-Antworten." });
+q("coreMix", "Zweites System", "Soll ein zweites System beigemischt werden?", [["➖", "Nein, nur eins", "Das Spiel bleibt beim Kernsystem."]].concat(sysOpts()), { l: 3, h: "Beispiele: Roguelike + Kartenspiel, Plattformer + Puzzle, Simulation + Idle." });
+
+/* Kern-spezifische Fragen */
+q("platJump", "Sprunggefühl", "Wie soll sich das Springen anfühlen?", [
+  ["🎯", "Präzise & schnell", "Sofortige Reaktion; Sprunghöhe hängt davon ab, wie lange gedrückt wird; Coyote-Time und Sprung-Puffer."],
+  ["🪶", "Schwebend & weich", "Lange Flugphase und viel Kontrolle in der Luft."],
+  ["🪨", "Realistisch & schwer", "Trägheit, Schwung, wenig Kontrolle in der Luft."],
+  ["🤖", "Automatisch", "Die Figur springt von selbst; der Spieler steuert Richtung oder Timing."]], { l: 2, if: coreIs("plat") });
+q("platMoves", "Bewegungsfähigkeiten", "Welche Bewegungen kann die Figur?", [
+  ["⏫", "Doppelsprung", "Ein zweiter Sprung in der Luft."], ["🧱", "Wandsprung", "Von Wänden abspringen und an ihnen rutschen."],
+  ["💨", "Dash", "Kurzer, schneller Vorstoß in eine Richtung."], ["🪂", "Gleiten", "Langsames Fallen und Segeln."],
+  ["🛝", "Rutschen", "Unter Hindernissen hindurchrutschen."], ["🧗", "Klettern", "Leitern, Ranken, Kanten hochziehen."],
+  ["🏊", "Schwimmen", "Bewegung unter Wasser."], ["⬇️", "Stampfangriff", "Von oben auf Gegner oder Blöcke stampfen."]], { l: 2, t: "m", if: coreIs("plat") });
+q("platHazards", "Hindernisse", "Welche Hindernisse gibt es?", [
+  ["🔺", "Stacheln", ""], ["🕳️", "Abgründe", ""], ["↔️", "Bewegliche Plattformen", ""], ["⬇️", "Zerbrechende Plattformen", ""],
+  ["🪚", "Sägeblätter", ""], ["🌋", "Steigende Lava oder Wasser", ""], ["💣", "Kanonen & Geschosse", ""], ["🌬️", "Wind & Strömung", ""]], { l: 3, t: "m", if: coreIs("plat") });
+q("runDir", "Laufrichtung", "Wie läuft die Figur?", [
+  ["➡️", "Seitlich", "Von links nach rechts, springen und ducken."],
+  ["⬆️", "Nach vorne in Spuren", "In die Tiefe, Wechsel zwischen 3 Spuren."],
+  ["🔝", "Nach oben", "Vertikal von Plattform zu Plattform."],
+  ["🐦", "Fliegen per Tippen", "Jeder Tipp lässt die Figur aufsteigen, sonst fällt sie."]], { l: 2, if: coreIs("runner") });
+q("runInput", "Runner-Eingabe", "Wie reagiert der Spieler?", [
+  ["👆", "Ein-Tipp", "Nur eine Aktion (z. B. springen)."], ["👉", "Wischen", "Wischen nach oben, unten, links, rechts."], ["📐", "Neigen", "Gerät kippen zum Lenken."]], { l: 3, if: coreIs("runner") });
+q("runSpeed", "Tempo-Steigerung", "Wie verändert sich das Tempo?", [
+  ["➖", "Konstant", "Gleiches Tempo, Schwierigkeit über Hindernisse."], ["📈", "Steigt langsam", "Tempo wächst sanft mit der Distanz."], ["🚀", "Steigt stark", "Wird schnell sehr hektisch."]], { l: 3, if: coreIs("runner") });
+q("actCombat", "Kampfgefühl", "Was macht dir beim Kämpfen in Spielen am meisten Spaß?", [
+  ["💥", "Wild draufhauen", "Viele schnelle Treffer, laut und chaotisch."],
+  ["⏱️", "Den richtigen Moment abpassen", "Gegner beobachten und genau dann zuschlagen oder blocken."],
+  ["🤸", "Geschickt ausweichen", "Elegant um Angriffe herumtanzen."],
+  ["✨", "Coole Spezialkräfte", "Seltene, besonders starke Angriffe einsetzen."]], { l: 2, t: "m", max: 2, if: coreIs("act") });
+q("actEnemies", "Gegnermenge", "Lieber gegen wenige starke oder viele schwache Gegner?", [
+  ["🤺", "Wenige starke", "Jeder Kampf ist ein Duell."], ["👥", "Kleine Gruppen", "Ein paar Gegner gleichzeitig."], ["🧟", "Riesige Massen", "Hunderte schwache Gegner auf einmal."]], { l: 3, if: coreIs("act") });
+q("actWeapons", "Kampf-Look", "Wie soll der Kampf aussehen?", [
+  ["🧙", "Fantasy", "Wie in Märchen und Sagen."], ["🪖", "Realistisch", "Wie es in echt aussehen könnte."], ["🥄", "Albern", "Mit Kissen, Kochlöffeln und Quatsch."],
+  ["🥋", "Ohne Waffen", "Nur mit Körper und Geschick."], ["🚀", "Futuristisch", "Hightech und Laser."]], { l: 2, if: coreIs("act", "rpg") , h: "Die KI denkt sich passend dazu die Waffen und Angriffe aus." });
+q("shootType", "Shooter-Sicht", "Wie erlebst du das Zielen und Schießen?", [
+  ["🔝", "Von oben", "Man sieht die Figur von oben und schießt in alle Richtungen."],
+  ["➡️", "Von der Seite", "Laufen und schießen wie in einem Jump'n'Run."],
+  ["🧍", "Hinter der Figur", "Man sieht die Figur von hinten."],
+  ["👁️", "Durch die Augen", "Man sieht nur die eigenen Hände."],
+  ["🔄", "Schießt von selbst", "Du musst nur ausweichen und Verbesserungen wählen."],
+  ["🚀", "Mit einem Raumschiff", "Fliegen und Gegnerwellen abschießen."]], { l: 2, if: coreIs("shoot") });
+q("shootAim", "Zielen", "Wie leicht soll das Treffen sein?", [
+  ["🧲", "Sehr leicht", "Das Spiel hilft stark beim Zielen."], ["🤏", "Etwas Hilfe", ""], ["🎯", "Nur mit Können", "Kein bisschen Hilfe."]], { l: 3, if: coreIs("shoot") });
+q("tbsGrid", "Spielfeld", "Wie sieht das Spielfeld aus?", [
+  ["⬛", "Quadrate", "Schachbrett-artiges Raster."], ["⬡", "Sechsecke", "Hexfelder, sechs Nachbarn."], ["🌫️", "Frei", "Bewegung nach Reichweite ohne Raster."], ["🗂️", "Keine Karte", "Nur Karten oder Menüs."]], { l: 2, if: coreIs("tbs") });
+q("tbsFog", "Überraschungen", "Soll man immer sehen, was der Gegner macht?", [
+  ["🌫️", "Nein, Überraschungen!", "Man sieht nur, was in der Nähe der eigenen Figuren ist."], ["👀", "Ja, alles sichtbar", "Wie beim Schach."]], { l: 3, if: coreIs("tbs") });
+q("tdType", "Verteidigung", "Wie willst du dich verteidigen?", [
+  ["🛤️", "Türme an den Weg stellen", "Gegner laufen einen festen Weg."], ["🌀", "Den Weg selbst bauen", "Mit Mauern ein Labyrinth legen."],
+  ["↔️", "In mehreren Reihen", "Gegner kommen in Bahnen, du besetzt die Bahnen."], ["⚔️", "Eigene Armee schicken", "Truppen bauen und losschicken."]], { l: 2, if: coreIs("td") });
+q("puzType", "Rätselart", "Welche Art Rätsel?", [
+  ["💎", "Match-3", "Drei Gleiche tauschen und kombinieren."], ["🪀", "Physik", "Objekte fallen, rollen, schwingen."],
+  ["🧊", "Logik & Schieben", "Blöcke schieben, Wege finden."], ["🔤", "Wörter", "Buchstaben und Begriffe."],
+  ["🔢", "Zahlen & Mathe", "Rechnen und Zahlenrätsel."], ["🔀", "Zusammenführen (Merge)", "Zwei Gleiche ergeben ein besseres Objekt."],
+  ["〰️", "Linien verbinden", "Punkte oder Rohre verbinden."], ["🔍", "Versteckte Objekte", "Dinge in Bildern finden."], ["🧺", "Sortieren & Stapeln", "Farben oder Dinge ordnen."]], { l: 2, t: "m", if: coreIs("puz") });
+q("puzHints", "Tipps", "Wie bekommt man Hilfe bei Rätseln?", [
+  ["💡", "Unbegrenzte Tipps", ""], ["🪙", "Begrenzt, verdienbar", "Tipps kosten Spielwährung."], ["🚫", "Keine Tipps", ""]], { l: 2, if: coreIs("puz") });
+q("puzLimit", "Begrenzung", "Wie wird ein Rätsel begrenzt?", [
+  ["♾️", "Ohne Limit", "Beliebig viel Zeit und Züge."], ["🔢", "Zuglimit", "Maximale Anzahl Züge."], ["⏳", "Zeitlimit", "Countdown pro Rätsel."]], { l: 3, if: coreIs("puz") });
+q("simType", "Simulationsart", "Was wird aufgebaut oder verwaltet?", [
+  ["🍕", "Restaurant / Laden", "Kunden bedienen, Speisen zubereiten, ausbauen."], ["🏙️", "Stadt", "Gebäude, Straßen, Bewohner."], ["🌾", "Farm", "Anbauen, Ernten, Tiere."],
+  ["🦁", "Zoo / Freizeitpark", "Gehege oder Attraktionen, Besucher."], ["🏢", "Firma / Tycoon", "Produktion, Handel, Expansion."], ["🏡", "Lebenssimulation", "Alltag einer Figur."], ["🚜", "Beruf / Fahrzeug", "Einen Job realistisch ausführen."]], { l: 2, if: coreIs("sim") });
+q("simDepth", "Planen & Rechnen", "Wie viel Planen und Rechnen macht dir Spaß?", [
+  ["🪁", "Kaum", "Einfach loslegen, wenige Zahlen."], ["⚙️", "Etwas", "Ein bisschen planen lohnt sich."], ["🏭", "Viel", "Ich liebe Tabellen und Optimierung."]], { l: 3, if: coreIs("sim") });
+q("simCustomers", "Kundenverhalten", "Wie verhalten sich Kunden oder Bewohner?", [
+  ["⏳", "Geduldsbalken", "Warten nur begrenzt."], ["💭", "Wünsche als Sprechblase", "Zeigen ihre Bestellung als Bild."], ["⭐", "Bewertungen", "Geben Sterne, die den Ruf beeinflussen."],
+  ["👑", "Besondere Gäste", "VIPs oder Kritiker mit Sonderwünschen."], ["🗣️", "Eigene Persönlichkeit", "Stammkunden mit Namen und Geschichten."]], { l: 3, t: "m", if: coreIs("sim") });
+q("rpgCombat", "RPG-Kampf", "Wie sollen Kämpfe ablaufen?", [
+  ["🔁", "Abwechselnd in Ruhe", "Wie ein Brettspiel: erst du, dann der Gegner."], ["⚔️", "Live und direkt", "Selbst steuern und kämpfen."],
+  ["🤖", "Läuft von selbst", "Du stellst dein Team zusammen, der Kampf läuft automatisch."]], { l: 2, if: coreIs("rpg") });
+q("rpgClasses", "Spezialisierung", "Soll man sich auf eine Rolle festlegen?", [
+  ["🛡️", "Ja, feste Rollen", "z. B. Krieger, Magier, Heiler."], ["🌿", "Nein, alles frei mischbar", ""], ["➖", "Egal, nur Ausrüstung zählt", ""]], { l: 3, if: coreIs("rpg") });
+q("rogueRun", "Run-Länge", "Wie lange dauert ein kompletter Durchlauf?", [
+  ["⏱️", "Ca. 10 Minuten", ""], ["🕐", "20–30 Minuten", ""], ["🕰️", "Ca. 60 Minuten", ""]], { l: 2, if: coreIs("rogue") });
+q("rogueMeta", "Nach dem Scheitern", "Was soll bleiben, wenn ein Versuch scheitert?", [
+  ["🧊", "Nichts", "Jeder Versuch startet bei null."], ["📈", "Etwas Stärke", "Man wird von Versuch zu Versuch dauerhaft etwas stärker."], ["🔓", "Neues freigeschaltet", "Neue Figuren oder Gegenstände für die nächsten Versuche."]], { l: 2, if: coreIs("rogue") });
+q("raceType", "Rennstil", "Wie fühlt sich das Fahren an?", [
+  ["🕹️", "Arcade", "Einfach, schnell, spektakuläre Drifts."], ["🍄", "Kart mit Items", "Power-ups und Waffen auf der Strecke."], ["🏁", "Simulation", "Realistische Physik und Tuning."], ["🚧", "Ausweichen endlos", "Verkehr ausweichen, so weit wie möglich."]], { l: 2, if: coreIs("race") });
+q("raceVehicles", "Fahrzeuge", "Womit wird gefahren?", [
+  ["🚗", "Autos", ""], ["🏍️", "Motorräder", ""], ["🚤", "Boote", ""], ["✈️", "Flugzeuge", ""], ["🐎", "Tiere", ""], ["🛸", "Fantasie-Fahrzeuge", ""]], { l: 3, t: "m", if: coreIs("race") });
+q("sandBuild", "Bausystem", "Wie wird gebaut?", [
+  ["🧊", "Blöcke im Raster", "Würfel platzieren und abbauen."], ["🪑", "Freies Platzieren", "Objekte frei drehen und setzen."], ["🌉", "Physikbasiert", "Konstruktionen müssen halten."]], { l: 2, if: coreIs("sand") });
+q("sandGoal", "Sandbox-Ziel", "Gibt es ein Ziel?", [
+  ["🕊️", "Kein Ziel", "Reines Kreativspielen."], ["🎯", "Lockere Ziele", "Optionale Aufgaben als Anreiz."], ["🔥", "Überlebensmodus", "Zusätzlich Gefahren und Ressourcenknappheit."]], { l: 3, if: coreIs("sand") });
+q("advInteract", "Erzählform", "Wie interagiert man im Abenteuer?", [
+  ["👆", "Point & Click", "Auf Dinge tippen, um sie zu untersuchen."], ["🚶", "Direkte Steuerung", "Figur frei bewegen."], ["💬", "Dialog-lastig (Visual Novel)", "Viel Text und Entscheidungen."], ["⌨️", "Text-Adventure", "Alles in Textform."]], { l: 2, if: coreIs("adv") });
+q("advPuzzles", "Abenteuer-Rätsel", "Welche Rätsel enthält das Abenteuer?", [
+  ["🎒", "Inventarrätsel", "Gegenstände kombinieren und benutzen."], ["🏛️", "Umgebungsrätsel", "Mechanismen in der Welt lösen."], ["➖", "Keine", "Fokus nur auf Story."]], { l: 3, t: "m", if: coreIs("adv") });
+q("rhyInput", "Rhythmus-Eingabe", "Wie spielt man im Takt?", [
+  ["👆", "Noten antippen", "Fallende Noten im richtigen Moment treffen."], ["👉", "Wischen", "Richtungen im Takt."], ["🦘", "Bewegen im Takt", "Figur bewegt sich nur im Beat."], ["🥁", "Instrumente", "Virtuelle Instrumente spielen."]], { l: 2, if: coreIs("rhy") });
+q("partyCount", "Minispiel-Anzahl", "Wie viele Minispiele?", [
+  ["5️⃣", "Ca. 5", ""], ["🔟", "10–20", ""], ["💯", "50+", ""]], { l: 2, if: coreIs("party") });
+q("sportType", "Sportart", "Welche Sportart?", [
+  ["⚽", "Fußball", ""], ["🏀", "Basketball", ""], ["🎾", "Tennis / Schläger", ""], ["⛳", "Golf / Minigolf", ""], ["🛹", "Extremsport", ""], ["🥏", "Erfundener Sport", ""]], { l: 2, if: coreIs("sport") });
+q("cardMode", "Kartenspiel-Art", "Welche Art Kartenspiel?", [
+  ["🧗", "Deckbuilder-Run", "Im Einzelspieler-Lauf das Deck verbessern."], ["🆚", "Sammelkarten-Duell", "Gegen andere mit eigenem Deck."], ["🂡", "Klassisches Kartenspiel", "Bekannte Regeln digital."], ["🧘", "Solitär-ähnlich", "Alleine Karten ordnen."]], { l: 2, if: coreIs("card") });
+q("survNeeds", "Bedürfnisse", "Welche Bedürfnisse muss man im Blick behalten?", [
+  ["🍖", "Hunger", ""], ["💧", "Durst", ""], ["🔥", "Wärme", ""], ["😴", "Schlaf", ""], ["❤️", "Gesundheit", ""], ["🧠", "Psyche", ""]], { l: 2, t: "m", if: coreIs("surv") });
+q("survThreat", "Bedrohung", "Was ist die größte Gefahr?", [
+  ["🌙", "Gegner in der Nacht", ""], ["⛈️", "Wetter & Natur", ""], ["👥", "Andere Spieler", ""], ["📉", "Knappe Ressourcen", ""]], { l: 3, t: "m", if: coreIs("surv") });
+q("horrorType", "Horror-Art", "Welche Art Grusel?", [
+  ["🧠", "Psychologisch", "Unbehagen, Wahrnehmung täuscht."], ["👹", "Verfolgung", "Ein Monster jagt den Spieler."], ["💥", "Jumpscares", "Plötzliche Schreckmomente."], ["🌫️", "Atmosphärisch", "Leise Spannung, kaum Schocks."]], { l: 2, if: coreIs("horror") });
+q("coreLoop", "Spielkreislauf", "Welcher Kreislauf beschreibt dein Spiel am besten?", [
+  ["🔁", "Spielen → Belohnung → Upgrade", "Level spielen, Belohnung bekommen, stärker werden, schwerere Level."],
+  ["🧭", "Erkunden → Finden → Freischalten", "Neue Orte entdecken, Dinge finden, neue Bereiche öffnen."],
+  ["🏗️", "Sammeln → Bauen → Wachsen", "Ressourcen sammeln, bauen, das Erbaute erzeugt mehr."],
+  ["🏁", "Runde → Punkte → Rangliste", "Kurze Runde, Punktzahl, mit sich oder anderen vergleichen."],
+  ["📖", "Kapitel → Entscheidung → Folgen", "Story erleben, entscheiden, Konsequenzen spüren."],
+  ["🎲", "Run → Scheitern → Neu & besser", "Durchlauf, scheitern, mit neuem Wissen oder Meta-Upgrades erneut."]], { l: 2 });
+q("structure", "Levelstruktur", "Wie ist die Spielwelt aufgebaut?", [
+  ["🗺️", "Einzelne Level mit Levelkarte", "Level nacheinander freischalten."],
+  ["🚪", "Hub-Welt mit Toren", "Zentraler Ort, von dem aus Level betreten werden."],
+  ["🌍", "Offene Welt", "Eine große, frei begehbare Welt."],
+  ["➡️", "Endloser Lauf", "Ein einziger, unendlicher Abschnitt."],
+  ["🎲", "Zufällig generierte Runs", "Jeder Durchlauf erzeugt neue Abschnitte."],
+  ["🏟️", "Eine Arena / ein Spielfeld", "Immer derselbe Ort, Variation durch Regeln."]]);
+q("health", "Treffer", "Was passiert, wenn die Spielfigur getroffen wird?", [
+  ["❤️", "Sie hält einiges aus", "Mehrere Treffer, Leben auffüllbar."], ["☝️", "Ein Treffer reicht", "Sofort vorbei, dafür schneller Neustart."],
+  ["3️⃣", "Ein paar Versuche", "z. B. 3 Leben, dann Neustart."], ["♾️", "Nichts Schlimmes", "Kurz zurückgesetzt, keine Leben."]], { l: 2 });
+q("failPenalty", "Rückschlag", "Wenn man scheitert: Wie weit muss man zurück?", [
+  ["⚡", "Fast gar nicht", "Direkt kurz vor der Stelle weiter."], ["🚩", "Ein Stück", "Bis zur Hälfte des Abschnitts."], ["🔄", "Ganz an den Anfang", "Das Level beginnt neu."],
+  ["🎲", "Alles von vorn", "Der ganze Durchlauf beginnt neu."]], { l: 2 });
+q("extraSystems", "Zusatzsysteme", "Welche zusätzlichen Systeme soll es geben?", [
+  ["🔨", "Crafting", "Aus Materialien Gegenstände herstellen."], ["🎁", "Beute & Items", "Gegenstände mit Werten finden."], ["🌳", "Fähigkeitenbaum", "Punkte in Fähigkeiten investieren."],
+  ["🏠", "Basisbau", "Eigene Basis errichten und ausbauen."], ["💱", "Handel", "Kaufen und verkaufen."], ["🗨️", "Dialogsystem", "Gespräche mit Antwortmöglichkeiten."],
+  ["🎯", "Quests & Aufträge", ""], ["📷", "Fotomodus", ""], ["🎰", "Minispiele", "Kleine Nebenspiele im Spiel."], ["➖", "Keine", "", "x"]], { l: 2, t: "m" });
+
+/* ======================================================= */
+sec("mechanics", "Mechaniken & Features", "⚙️", "Sammelobjekte, Gegner, Physik und alle kleinen Spielelemente.");
+q("collect", "Sammelobjekte", "Was kann man einsammeln?", [
+  ["🪙", "Münzen", ""], ["⭐", "Sterne", ""], ["💎", "Edelsteine", ""], ["🃏", "Sammelkarten / Sticker", ""], ["🗝️", "Schlüssel", ""], ["🔮", "Geheime Objekte", "Versteckte Bonus-Gegenstände."], ["➖", "Nichts", "", "x"]],  { t: "m" });
+q("powerups", "Power-ups", "Welche Power-ups gibt es?", [
+  ["🛡️", "Schild", "Schützt vor einem Treffer."], ["🧲", "Magnet", "Zieht Sammelobjekte an."], ["⚡", "Turbo", "Kurz schneller."], ["🌟", "Unverwundbar", "Kurz unbesiegbar."],
+  ["✖️2", "Doppelte Punkte", ""], ["🐌", "Zeitlupe", "Alles außer dem Spieler wird langsamer."], ["➖", "Keine", "", "x"]], { l: 2, t: "m" });
+q("enemies", "Gegner", "Wie viele verschiedene Gegner soll es geben?", [
+  ["🕊️", "Keine Gegner", "Nur Umgebung und Aufgaben als Herausforderung."], ["🐌", "Wenige einfache", "2–4 Gegnertypen mit klaren Mustern."],
+  ["👾", "Viele Typen", "Jeder Gegnertyp hat ein eigenes Verhalten."], ["🐉", "Viele Typen plus Bosse", "Inklusive großer Bosskämpfe."]], { if: a => !has(a, "ideaChallenge", "Gar nichts, es ist entspannt") });
+q("bosses", "Bosskämpfe", "Wie sehen Bosskämpfe aus?", [
+  ["🏁", "Am Ende jeder Welt", ""], ["🔀", "Mehrere Phasen", "Boss verändert sein Verhalten im Kampf."], ["🧩", "Rätsel-Bosse", "Besiegen durch Umgebung statt durch Schaden."], ["🌟", "Selten, dafür episch", ""]], { l: 3, t: "m", if: iff("enemies", "Viele Typen plus Bosse") });
+q("enemyAI", "Gegner-Verhalten", "Wie schlau sollen Gegner wirken?", [
+  ["🔁", "Leicht durchschaubar", "Machen immer dasselbe; man lernt sie auswendig."], ["👀", "Aufmerksam", "Bemerken dich und verfolgen dich."],
+  ["🧠", "Gerissen", "Arbeiten zusammen und stellen Fallen."]], { l: 3, if: a => a.enemies && a.enemies !== "Keine Gegner" });
+q("npcs", "Nicht-Spieler-Figuren", "Welche Figuren leben außer dem Spieler in der Welt?", [
+  ["🛒", "Händler", ""], ["❗", "Auftraggeber", ""], ["🏘️", "Bewohner mit Tagesablauf", ""], ["🧑‍🏫", "Mentor / Helfer", ""], ["➖", "Keine", "", "x"]], { l: 3, t: "m" });
+q("physics", "Bewegung der Dinge", "Wie sollen sich Dinge im Spiel bewegen?", [
+  ["🕹️", "Wie im Zeichentrick", "Vorhersehbar und einfach."], ["🌍", "Wie in echt", "Dinge fallen, rollen und prallen realistisch ab."],
+  ["🤸", "Wackelig & lustig", "Alles schwabbelt, kippt und fliegt herum."]], { l: 3 });
+q("interact", "Interaktive Welt", "Womit kann man in der Welt interagieren?", [
+  ["💥", "Zerstörbare Objekte", ""], ["🔘", "Schalter & Türen", ""], ["📦", "Schiebbare Kisten", ""], ["🐾", "Tiere", ""], ["🗣️", "Figuren ansprechen", ""], ["🪜", "Kletterbare Objekte", ""]], { l: 3, t: "m" });
+q("secrets", "Geheimnisse", "Wie viele Geheimnisse sind versteckt?", [
+  ["🔍", "Viele", "Geheime Räume, Abkürzungen, Bonuslevel."], ["🥚", "Ein paar Easter Eggs", "Kleine Überraschungen."], ["➖", "Keine", ""]], { l: 3 });
+q("inventory", "Gepäck", "Wie viele Dinge trägt die Figur mit sich herum?", [
+  ["➖", "Gar keine", ""], ["🎒", "Ein paar", "Eine Handvoll Gegenstände zur schnellen Auswahl."], ["🧳", "Eine ganze Tasche voll", "Viele Dinge zum Sortieren."]], { l: 3 });
+q("procedural", "Abwechslung", "Soll jede Runde gleich aussehen oder jedes Mal anders?", [
+  ["✍️", "Immer gleich", "Man kann Level auswendig lernen."], ["🎲", "Etwas anders", "Bekannt, aber mit Überraschungen."], ["🌀", "Jedes Mal komplett neu", ""]], { l: 3 });
+/* ======================================================= */
+sec("controls", "Steuerung", "🕹️", "Wie der Spieler das Spiel bedient.");
+q("inputTouch", "Touch-Steuerung", "Wie wird auf dem Touchscreen gesteuert?", [
+  ["👆", "Tippen", "Auf Dinge oder den Bildschirm tippen."], ["👉", "Wischen", "Wischgesten für Richtungen."], ["🕹️", "Virtueller Joystick + Buttons", "Steuerkreuz links, Aktionsknöpfe rechts."],
+  ["📐", "Neigen", "Gerät kippen (Bewegungssensor)."], ["✋", "Ziehen & Ablegen", "Objekte mit dem Finger verschieben."], ["⏺️", "Halten & Loslassen", "Ein Finger, Dauer zählt."]], { t: "m", if: touch });
+q("inputDesk", "PC-Bedienung", "Womit spielt man am Computer?", [
+  ["⌨️", "Tastatur", ""], ["🖱️", "Maus", ""], ["🖱️⌨️", "Maus und Tastatur", ""], ["🎮", "Gamepad", ""]], { t: "m", if: desk });
+q("controller", "Gamepad", "Soll man auch mit einem Gamepad spielen können?", [
+  ["✅", "Ja", ""], ["❌", "Nein", ""]], { l: 3, if: desk });
+q("actions", "Bedienung", "Wie kompliziert darf die Bedienung sein?", [
+  ["1️⃣", "Ein Finger reicht", "Nur tippen oder eine Taste."], ["2️⃣", "Ein paar Knöpfe", "2–3 Aktionen."],
+  ["🎮", "Wie ein Konsolenspiel", "Viele Knöpfe, aber gut lernbar."], ["🎹", "Profi-Steuerung", "Komplex, für Kenner."]]);
+q("controlFeel", "Steuergefühl", "Wie soll sich die Steuerung anfühlen?", [
+  ["⚡", "Direkt & knackig", "Sofortige Reaktion ohne Verzögerung."], ["🧈", "Mit Schwung", "Leichte Trägheit beim Starten und Stoppen."], ["🏋️", "Schwer & realistisch", "Gewicht spürbar."]], { l: 3 });
+q("haptics", "Vibration", "Soll das Handy vibrieren?", [
+  ["📳", "Bei wichtigen Momenten", "Treffer, Erfolge, Fehler."], ["🎚️", "Fein bei jeder Aktion", "Dezentes Feedback bei Tipp, Sprung, Sammeln."], ["➖", "Gar nicht", ""]], { l: 3, if: mobileApp });
+/* ======================================================= */
+sec("world", "Welt & Setting", "🌍", "Wo und wann spielt dein Spiel?");
+q("setting", "Setting", "In welcher Welt spielt dein Spiel?", [
+  ["🧚", "Fantasy", "Magie, Burgen, Fabelwesen."], ["🚀", "Sci-Fi / Weltraum", "Raumschiffe, Planeten, Technik."], ["🏙️", "Moderne Stadt", "Heutige Welt, Straßen, Gebäude."],
+  ["🌲", "Natur & Wald", ""], ["🐠", "Unterwasser", ""], ["🏰", "Mittelalter", ""], ["☢️", "Endzeit", "Zerstörte Welt nach einer Katastrophe."],
+  ["🍭", "Süßigkeiten & Cartoon", "Fantasiewelt aus Essen oder Spielzeug."], ["⚙️", "Steampunk", "Dampfmaschinen und Zahnräder."], ["🤠", "Wilder Westen", ""],
+  ["🏛️", "Antike", "Ägypten, Griechenland, Rom."], ["🍽️", "Küche & Restaurant", "Alles rund ums Essen und Kochen."], ["🔷", "Abstrakt", "Formen und Farben statt echter Orte."]]);
+q("biomes", "Gebiete", "Welche Gebiete gibt es?", [
+  ["🌳", "Wald", ""], ["🏜️", "Wüste", ""], ["❄️", "Schnee & Eis", ""], ["🌋", "Vulkan", ""], ["🕳️", "Höhlen", ""], ["🏢", "Stadt", ""],
+  ["🏖️", "Strand", ""], ["🪐", "Weltall", ""], ["🐸", "Sumpf", ""], ["☁️", "Wolken & Himmel", ""], ["🏠", "Innenräume", ""]], { t: "m" });
+q("worldSize", "Weltgröße", "Wie groß ist die begehbare Welt?", [
+  ["🏘️", "Klein", "In wenigen Minuten durchquert."], ["🗺️", "Mittel", "Mehrere Gebiete, Schnellreise hilfreich."], ["🌏", "Riesig", "Stundenlanges Erkunden."]], { l: 2, if: iff("structure", "Offene Welt", "Hub-Welt mit Toren") });
+q("era", "Epoche", "Wann spielt die Geschichte?", [
+  ["🦕", "Urzeit", ""], ["📜", "Vergangenheit", ""], ["📱", "Gegenwart", ""], ["🛸", "Zukunft", ""], ["⌛", "Zeitlos", ""]], { l: 3 });
+q("dayNight", "Tag & Nacht", "Gibt es einen Tag-Nacht-Wechsel?", [
+  ["➖", "Nein", ""], ["🌗", "Nur optisch", "Licht ändert sich, Gameplay nicht."], ["🌙", "Mit Auswirkungen", "Nachts andere Gegner, Läden zu usw."]], { l: 3 });
+q("weather", "Wetter", "Gibt es Wetter?", [
+  ["➖", "Nein", ""], ["🌧️", "Nur optisch", ""], ["⛈️", "Mit Auswirkungen", "Regen macht rutschig, Wind verweht usw."]], { l: 3 });
+q("realPlace", "Echter Ort", "Basiert die Welt auf einem echten Ort?", [
+  ["🪄", "Komplett erfunden", ""], ["🗺️", "Inspiriert von echten Orten", ""], ["📍", "Nachbau eines echten Ortes", "z. B. das eigene Restaurant, die eigene Stadt."]], { l: 3 });
+q("travel", "Fortbewegung", "Wie bewegt man sich durch die Welt?", [
+  ["🚶", "Zu Fuß", ""], ["🚲", "Fahrzeuge", ""], ["🐴", "Reittiere", ""], ["⚡", "Schnellreise", ""], ["🕊️", "Fliegen", ""], ["🌀", "Teleporter", ""]], { l: 3, t: "m", if: iff("structure", "Offene Welt", "Hub-Welt mit Toren") });
+q("population", "Belebtheit", "Wie belebt ist die Welt?", [
+  ["🏜️", "Leer", "Fast niemand außer dem Spieler."], ["🧍", "Ein paar Figuren", ""], ["🐦", "Voller Leben", "Tiere, Passanten, Bewegung im Hintergrund."]], { l: 4 });
+
+/* ======================================================= */
+sec("story", "Story & Figuren", "📖", "Geschichte, Spielfigur und Charaktere.");
+q("storyAmount", "Story-Umfang", "Wie viel Geschichte hat das Spiel?", [
+  ["➖", "Keine Story", "Reines Gameplay."], ["🎞️", "Kurzes Intro", "Ein paar Sätze oder Bilder zum Start."],
+  ["📗", "Leichte Geschichte", "Roter Faden zwischen den Leveln."], ["📚", "Story im Mittelpunkt", "Die Geschichte treibt das Spiel an."]]);
+q("storyTheme", "Story-Thema", "Worum geht es in der Geschichte?", [
+  ["🦸", "Rettung", "Jemanden oder etwas retten."], ["🧭", "Abenteuerreise", "Aufbruch ins Unbekannte."], ["🤝", "Freundschaft", ""], ["🕵️", "Geheimnis lösen", ""],
+  ["🔥", "Überleben", ""], ["📈", "Vom Nichts nach oben", "Klein anfangen, groß rauskommen."], ["⚖️", "Rache / Gerechtigkeit", ""]], { l: 2, if: someStory });
+q("storyTell", "Erzählweise", "Wie wird die Geschichte erzählt?", [
+  ["🎬", "Zwischensequenzen", ""], ["💬", "Textboxen", ""], ["🎙️", "Sprachausgabe", ""], ["🏚️", "Durch die Umgebung", "Details in der Welt erzählen."],
+  ["🗯️", "Comic-Bilder", ""], ["📔", "Tagebücher & Notizen", ""]], { l: 3, t: "m", if: hasStory });
+q("choices", "Entscheidungen", "Beeinflusst der Spieler die Geschichte?", [
+  ["➡️", "Linear", "Feste Geschichte."], ["🔀", "Kleine Entscheidungen", "Ändern Dialoge, nicht das Ende."], ["🌳", "Verzweigt mit mehreren Enden", ""]], { l: 3, if: hasStory });
+q("hero", "Spielfigur", "Wer oder was ist die Spielfigur?", [
+  ["🧑", "Mensch", ""], ["🦊", "Tier", ""], ["🤖", "Roboter", ""], ["🐲", "Fantasiewesen", ""], ["⚪", "Objekt / Form", "z. B. Ball, Würfel, Pizza."],
+  ["🚗", "Fahrzeug", ""], ["🧑‍🎨", "Selbst erstellter Avatar", ""], ["🫥", "Keine sichtbare Figur", "z. B. Puzzle oder Ego-Sicht."]]);
+q("heroGender", "Geschlecht der Figur", "Welches Geschlecht hat die Hauptfigur?", [
+  ["👧", "Weiblich", ""], ["👦", "Männlich", ""], ["🧑", "Neutral / keins", ""], ["🔀", "Wählbar", ""]], { l: 3, if: iff("hero", "Mensch", "Tier", "Fantasiewesen", "Roboter") });
+q("heroPersonality", "Charakter der Figur", "Welche Persönlichkeit hat die Spielfigur?", [
+  ["🤐", "Stumm", "Spieler projiziert sich hinein."], ["😜", "Witzig", ""], ["🦁", "Mutig", ""], ["🙃", "Tollpatschig", ""], ["😎", "Cool", ""], ["🥺", "Schüchtern", ""]], { l: 3 });
+q("custom", "Anpassung", "Was kann der Spieler an seiner Figur anpassen?", [
+  ["👕", "Outfits & Skins", ""], ["🎨", "Farben", ""], ["🙂", "Gesicht & Körper", ""], ["🪖", "Sichtbare Ausrüstung", ""], ["🏷️", "Name", ""], ["➖", "Nichts", "", "x"]], { l: 2, t: "m" });
+q("roster", "Spielbare Figuren", "Wie viele spielbare Figuren gibt es?", [
+  ["1️⃣", "Eine feste", ""], ["🔢", "Mehrere zur Auswahl", "Mit unterschiedlichen Fähigkeiten."], ["🔁", "Team, jederzeit wechselbar", ""]], { l: 3 });
+q("companion", "Begleiter", "Hat die Spielfigur einen Begleiter?", [
+  ["➖", "Nein", ""], ["🐕", "Tier", ""], ["🧚", "Helfer-Wesen", "Gibt Tipps."], ["👥", "KI-Gruppe", ""], ["🎙️", "Erzähler", "Kommentiert das Geschehen."]], { l: 3 });
+q("villain", "Gegenspieler", "Wer ist der Gegenspieler?", [
+  ["➖", "Keiner", ""], ["😈", "Klassischer Bösewicht", ""], ["🌗", "Grauzone", "Mit nachvollziehbaren Motiven."], ["🌪️", "Naturgewalt", ""], ["🪞", "Der Spieler selbst", "Innere Konflikte."]], { l: 3, if: hasStory });
+q("humor", "Humor-Art", "Welche Art Humor?", [
+  ["➖", "Kein Humor", ""], ["🔤", "Wortwitz", ""], ["🍌", "Slapstick", ""], ["🪞", "Selbstironisch & Meta", ""], ["🖤", "Schwarzer Humor", ""]], { l: 3, if: iff("tone", "Humorvoll", "Absurd & surreal") });
+
+/* ======================================================= */
+sec("graphics", "Grafik & Kunststil", "🎨", "Wie dein Spiel aussieht.");
+q("dimension", "Dimension", "2D oder 3D?", [
+  [ART.d2, "2D", "Flache Grafik, Sprites."], [ART.d25, "2.5D", "3D-Grafik, aber Spiel auf einer Ebene."], [ART.d3, "3D", "Volle räumliche Welt."]]);
+q("artStyle", "Kunststil", "Welcher Grafikstil?", [
+  [ART.pixel, "Pixel-Art", "Retro-Look aus sichtbaren Pixeln."], [ART.cartoon, "Cartoon / Comic", "Kräftige Konturen, übertriebene Formen."],
+  [ART.lowpoly, "Low-Poly", "Kantige 3D-Formen mit flachen Farbflächen."], [ART.real, "Realistisch", "Fotonah, echte Materialien und Licht."],
+  [ART.hand, "Handgezeichnet", "Wie Buntstift oder Aquarell."], [ART.flat, "Flat & minimalistisch", "Einfache Formen, klare Farben."],
+  [ART.voxel, "Voxel", "Alles aus kleinen Würfeln."], [ART.anime, "Anime", "Japanischer Zeichentrick-Stil."],
+  [ART.neon, "Neon / Synthwave", "Leuchtende Linien auf dunklem Grund."], [ART.paper, "Papier & Bastel", "Wie ausgeschnittenes Papier mit Schatten."]], { wide: 1 });
+q("palette", "Farbpalette", "Welche Farben dominieren?", [
+  ["pal:#FF595E,#FFCA3A,#8AC926,#1982C4,#6A4C93", "Bunt & knallig", ""], ["pal:#FFD6E0,#FFEFB5,#C1F0DB,#C7D9FF,#E3D1FF", "Pastell", ""],
+  ["pal:#0B0C10,#1F2833,#45525E,#66737F,#8A1C1C", "Dunkel & düster", ""], ["pal:#6B4F2A,#A47148,#D6B88D,#7C8C4A,#3F5A36", "Natürlich & erdig", ""],
+  ["pal:#0D0221,#FF2A6D,#05D9E8,#D1F7FF,#F9C80E", "Neon", ""], ["pal:#111111,#555555,#999999,#DDDDDD,#FFFFFF", "Schwarz-Weiß", ""],
+  ["pal:#0F380F,#306230,#8BAC0F,#9BBC0F,#CADC9F", "Retro begrenzt", "Wenige Farben wie alte Konsolen."]], { l: 2 });
+q("animation", "Animationsstil", "Wie sind Bewegungen animiert?", [
+  ["🎞️", "Wenige Bilder (retro)", "Bewusst ruckelig."], ["🌊", "Flüssig", ""], ["🫧", "Gummi-artig", "Quetschen und Dehnen, sehr lebendig."], ["🏃", "Realistisch", "Wie echte Bewegungen."]], { l: 3 });
+q("effects", "Effekte", "Welche visuellen Effekte gibt es?", [
+  ["✨", "Partikel", "Funken, Staub, Glitzer."], ["📳", "Bildschirmwackeln", ""], ["💡", "Leuchten & Glow", ""], ["🎉", "Konfetti bei Erfolgen", ""],
+  ["💥", "Explosionen", ""], ["🌫️", "Nebel & Tiefenunschärfe", ""], ["➖", "Minimal", "", "x"]], { l: 3, t: "m" });
+q("assets", "Eigenes Material", "Hast du eigene Bilder, Fotos oder Zeichnungen, die ins Spiel sollen?", [
+  ["✏️", "Ja, eigene Zeichnungen", ""], ["📷", "Ja, Fotos", "z. B. vom eigenen Laden, Logo, Produkten."], ["🎨", "Nein, die KI soll alles machen", ""], ["👩‍🎨", "Ein Künstler macht das", ""]], { l: 2, t: "m" });
+/* ======================================================= */
+sec("camera", "Kamera & Perspektive", "🎥", "Aus welcher Sicht man spielt.");
+q("perspective", "Perspektive", "Aus welcher Sicht wird gespielt?", [
+  [ART.side, "Seitenansicht", "Klassisch von der Seite."], [ART.top, "Von oben", "Draufsicht (Top-Down)."],
+  [ART.iso, "Isometrisch", "Schräg von oben, wie ein Diorama."], [ART.third, "Third-Person", "Kamera hinter der Figur."],
+  [ART.first, "Ego-Perspektive", "Aus den Augen der Figur."], [ART.fixed, "Fester Bildschirm", "Alles passt auf einen Screen."]]);
+/* ======================================================= */
+sec("audio", "Sound & Musik", "🎵", "Wie dein Spiel klingt.");
+q("music", "Musikstil", "Welche Musik passt?", [
+  ["👾", "Chiptune (8-Bit)", ""], ["🎻", "Orchester", ""], ["🎛️", "Elektronisch", ""], ["☕", "Lo-Fi / Chill", ""], ["🎸", "Rock / Metal", ""],
+  ["🪕", "Akustisch / Folk", ""], ["🎷", "Jazz / Lounge", ""], ["🎶", "Fröhlich-verspielt", "Kinderliedartig, Xylophon, Ukulele."], ["🔇", "Keine Musik", ""]]);
+q("musicDyn", "Musikwechsel", "Wie verhält sich die Musik?", [
+  ["🔁", "Ein Stück in Schleife", ""], ["🗺️", "Eigenes Stück pro Bereich", ""], ["🎚️", "Dynamisch", "Wird intensiver bei Gefahr."], ["📻", "Spieler wählt", ""]], { l: 3 });
+q("sfx", "Soundeffekte", "Wie klingen die Soundeffekte?", [
+  ["📟", "Retro-Piepser", ""], ["🎈", "Cartoon", "Boing, Plopp, Quietsch."], ["🔊", "Realistisch", ""], ["🫧", "Sanft & minimal", ""]], { l: 2 });
+q("voice", "Stimmen", "Gibt es Stimmen?", [
+  ["➖", "Keine", ""], ["😮", "Laute & Ausrufe", "Kurze Geräusche wie 'Hey!' oder 'Juhu!'."], ["🗣️", "Fantasiesprache", ""], ["🎙️", "Volle Sprachausgabe", ""], ["📢", "Nur Erzähler", ""]], { l: 3 });
+/* ======================================================= */
+sec("progression", "Fortschritt & Belohnung", "🏆", "Was den Spieler dranbleiben lässt.");
+q("progress", "Fortschritts-Arten", "Wie macht der Spieler Fortschritt?", [
+  ["🔓", "Neue Level freischalten", ""], ["⬆️", "Erfahrung & Level-Ups", ""], ["🪄", "Neue Fähigkeiten", ""], ["👕", "Kosmetik", ""],
+  ["📖", "Story-Kapitel", ""], ["🏅", "Highscore verbessern", ""], ["🏗️", "Basis oder Laden wächst", ""]], { t: "m" });
+q("upgrades", "Upgrades", "Wie werden Dinge verbessert?", [
+  ["➖", "Gar nicht", ""], ["📶", "Einfache Stufen", "Stufe 1 → 2 → 3."], ["🌳", "Fähigkeitenbaum", "Verzweigte Entscheidungen."], ["🛡️", "Ausrüstung mit Werten", ""]], { l: 2 });
+q("achievements", "Erfolge", "Gibt es Erfolge (Achievements)?", [
+  ["➖", "Nein", ""], ["🏅", "Im Spiel", "Eigene Erfolgsliste."], ["🍏", "Plattform-Erfolge", "Game Center, Google Play Games, Steam."]], { l: 2 });
+q("leaderboard", "Ranglisten", "Gibt es Ranglisten?", [
+  ["➖", "Keine", ""], ["📱", "Lokal", "Nur auf dem Gerät."], ["👫", "Freunde", ""], ["🌍", "Weltweit", ""], ["📅", "Wöchentlich zurückgesetzt", ""]], { l: 2 });
+q("rewardPace", "Belohnungsrhythmus", "Wie oft gibt es Belohnungen?", [
+  ["🍬", "Ständig kleine", ""], ["🎁", "Regelmäßig mittlere", ""], ["🏆", "Selten, dafür groß", ""]], { l: 3 });
+q("daily", "Tägliche Anreize", "Gibt es Gründe, täglich zu spielen?", [
+  ["➖", "Nein", "Kein Druck, täglich zu spielen."], ["🎁", "Tägliche Belohnung", ""], ["📋", "Tägliche Aufgaben", ""], ["🔥", "Serien-Bonus", "Mehr Belohnung für Tage am Stück."]], { l: 3, t: "m" });
+q("levelRating", "Level-Bewertung", "Wie wird ein Level bewertet?", [
+  ["⭐", "1–3 Sterne", ""], ["⏱️", "Bestzeit", ""], ["💯", "Prozent", ""], ["➖", "Gar nicht", ""]], { l: 3 });
+q("unlocks", "Freischaltbares", "Was kann man freischalten?", [
+  ["🧑", "Figuren", ""], ["🗺️", "Level / Welten", ""], ["👕", "Outfits", ""], ["🎮", "Spielmodi", ""], ["🎵", "Musik", ""], ["🖼️", "Galerie & Konzeptkunst", ""]], { l: 3, t: "m" });
+/* ======================================================= */
+sec("difficulty", "Schwierigkeit & Balancing", "⚖️", "Wie schwer das Spiel ist und wie es sich anpasst.");
+q("diff", "Grundschwierigkeit", "Wie schwer ist das Spiel?", [
+  ["🍼", "Sehr leicht", "Jeder schafft es."], ["🙂", "Leicht", ""], ["😐", "Mittel", ""], ["😤", "Schwer", ""], ["💀", "Bockschwer", "Nur für Profis."]]);
+q("diffModes", "Schwierigkeitsgrade", "Kann man die Schwierigkeit einstellen?", [
+  ["1️⃣", "Eine feste Stufe", ""], ["🎚️", "Wählbar", "Leicht, Mittel, Schwer."], ["🤖", "Passt sich automatisch an", "Wird leichter, wenn man oft scheitert."], ["🧩", "Einzelne Hilfen", "Z. B. Unverwundbarkeit oder Zeitlupe einzeln einschaltbar."]], { l: 2 });
+q("failHelp", "Hilfe bei Frust", "Was passiert, wenn man oft scheitert?", [
+  ["💡", "Tipp anzeigen", ""], ["⏭️", "Level überspringen", ""], ["🛡️", "Kleine Erleichterung", "Etwas mehr Leben oder Zeit."], ["➖", "Nichts", "", "x"]], { l: 3, t: "m" });
+q("skillLuck", "Können vs. Glück", "Was entscheidet über Erfolg?", [
+  ["🎯", "Nur Können", ""], ["🎯🎲", "Meist Können", ""], ["⚖️", "Halb-halb", ""], ["🎲", "Meist Glück", ""]], { l: 3 });
+/* ======================================================= */
+sec("multiplayer", "Multiplayer & Social", "🌐", "Allein oder gemeinsam?");
+q("mp", "Spielmodi", "Wie viele Menschen spielen zusammen?", [
+  ["🧍", "Nur Einzelspieler", "", "x"], ["🛋️", "Lokal am selben Bildschirm", "Gemeinsam an einem Gerät."], ["📶", "Lokal im selben WLAN", ""],
+  ["🌐", "Online", "Über das Internet in Echtzeit."], ["📨", "Asynchron (zeitversetzt)", "Züge oder Geister-Läufe, nicht gleichzeitig."]], { t: "m" });
+q("mpKind", "Zusammenspiel", "Spielt man mit- oder gegeneinander?", [
+  ["🤝", "Miteinander (Koop)", ""], ["🆚", "Gegeneinander (PvP)", ""], ["👥", "Teams gegeneinander", ""], ["🔀", "Beides", ""]], { if: mpAny });
+q("mpCount", "Spielerzahl", "Wie viele Spieler gleichzeitig?", [
+  ["2️⃣", "2", ""], ["4️⃣", "2–4", ""], ["8️⃣", "4–8", ""], ["👥", "8–32", ""], ["🏟️", "100+", ""]], { l: 2, if: mpAny });
+q("splitScreen", "Bildschirmaufteilung", "Wie teilen sich lokale Spieler den Bildschirm?", [
+  ["🖼️", "Gemeinsames Bild", "Alle auf einem Bild."], ["◫", "Geteilter Bildschirm", ""], ["🔁", "Abwechselnd", "Gerät weitergeben."]], { l: 3, if: iff("mp", "Lokal am selben Bildschirm") });
+q("matchmaking", "Mitspieler", "Mit wem spielt man online?", [
+  ["🔑", "Nur mit Freunden", "Per Einladungscode oder Link."], ["🎲", "Mit Fremden", "Zufällige Mitspieler."], ["🔀", "Beides", ""]], { l: 2, if: online });
+q("bots", "Bots", "Füllen Computergegner freie Plätze?", [
+  ["🤖", "Ja", ""], ["➖", "Nein", ""]], { l: 3, if: mpAny });
+q("pvpFair", "Fairness", "Wie fair ist das Gegeneinander?", [
+  ["⚖️", "Alle gleich stark", ""], ["🛡️", "Ausrüstung zählt", ""], ["🎚️", "Handicap-System", "Stärkere bekommen Nachteile."]], { l: 3, if: pvp });
+q("comms", "Kommunikation", "Wie kommunizieren Spieler?", [
+  ["➖", "Gar nicht", "", "x"], ["😀", "Emotes & Schnellnachrichten", "Vordefinierte Nachrichten, sicher für Kinder."], ["⌨️", "Text-Chat mit Filter", ""], ["🎙️", "Sprach-Chat", ""]], { l: 2, t: "m", if: online });
+q("social", "Soziale Funktionen", "Welche sozialen Funktionen gibt es?", [
+  ["👫", "Freundesliste", ""], ["📤", "Ergebnisse teilen", "Screenshot oder Link mit Punktzahl."], ["🛡️", "Clans / Gilden", ""], ["🎁", "Geschenke senden", ""], ["➖", "Keine", "", "x"]], { l: 2, t: "m" });
+/* ======================================================= */
+sec("ui", "Menüs & Oberfläche", "🧭", "Bildschirmanzeigen, Menüs und Einstieg.");
+q("uiStyle", "Oberflächen-Stil", "Wie sehen Menüs und Anzeigen aus?", [
+  ["▫️", "Minimal", "Wenig, klar, unaufdringlich."], ["🎈", "Verspielt", "Runde Formen, Hüpf-Animationen."], ["🛰️", "Futuristisch", ""],
+  ["🌍", "In der Welt", "Anzeigen sind Teil der Spielwelt (z. B. Schild statt Menü)."], ["📜", "Klassisch Fantasy", "Holz, Pergament, Gold."], ["👾", "Retro-Pixel", ""]], { });
+q("hud", "Bildschirm-Anzeigen", "Wie voll darf der Bildschirm beim Spielen sein?", [
+  ["▫️", "Fast leer", "Nur das Allernötigste."], ["🔢", "Ein paar Anzeigen", "z. B. Punkte und Leben."], ["📊", "Alles im Blick", "Karte, Ziele, Werte, alles da."]], { l: 2 });
+q("font", "Schrift", "Welche Schriftart passt?", [
+  ["🅰️", "Rund & freundlich", ""], ["👾", "Pixel-Schrift", ""], ["📜", "Elegant mit Serifen", ""], ["🔤", "Modern & klar", ""], ["✍️", "Handschrift", ""], ["💥", "Comic", ""]], { l: 3 });
+q("buttons", "Button-Form", "Wie sehen Buttons aus?", [
+  ["💊", "Rund & weich", ""], ["⬛", "Eckig & kantig", ""], ["✏️", "Handgezeichnet", ""], ["🔲", "Mit 3D-Kante", "Wirken drückbar."]], { l: 4 });
+
+/* ======================================================= */
+sec("monetization", "Monetarisierung", "💰", "Ob und wie das Spiel Geld verdient.");
+q("monet", "Geschäftsmodell", "Wie soll das Spiel (ggf.) Geld verdienen?", [
+  ["🎁", "Komplett kostenlos", "Keine Werbung, keine Käufe."], ["💶", "Einmalkauf (Premium)", "Einmal bezahlen, alles enthalten."],
+  ["📺", "Kostenlos mit Werbung", ""], ["🛒", "Kostenlos mit In-App-Käufen", ""], ["📺🛒", "Werbung + In-App-Käufe", ""],
+  ["🔁", "Abo", "Monatlicher Beitrag."], ["📣", "Marketing-Spiel (gratis)", "Kostenlos, wirbt für ein Geschäft oder eine Marke."]]);
+q("price", "Preis", "Was soll das Spiel kosten?", [
+  ["🪙", "0,99 €", ""], ["💶", "2,99 €", ""], ["💶", "4,99 €", ""], ["💶", "9,99 €", ""], ["💰", "19,99 € oder mehr", ""]], { l: 2, if: iff("monet", "Einmalkauf (Premium)") });
+q("adTypes", "Werbeformen", "Welche Werbung gibt es?", [
+  ["🎥", "Freiwillige Belohnungsvideos", "Video ansehen für Bonus."], ["⏸️", "Zwischen Leveln (Interstitial)", ""], ["🏷️", "Banner", ""], ["🚫", "Werbefrei per Kauf", ""]], { l: 2, t: "m", if: ads });
+q("adFreq", "Werbe-Häufigkeit", "Wie oft kommt Werbung zwischen Leveln?", [
+  ["2️⃣", "Alle 2 Level", ""], ["5️⃣", "Alle 5 Level", ""], ["⏰", "Höchstens alle 5 Minuten", ""], ["🐢", "Selten", ""]], { l: 3, if: iff("adTypes", "Zwischen Leveln (Interstitial)") });
+q("iapTypes", "In-App-Käufe", "Was kann man kaufen?", [
+  ["👕", "Kosmetik", ""], ["💎", "Währungspakete", ""], ["⏩", "Zeitersparnis", ""], ["🎁", "Starterpaket", ""], ["🗺️", "Inhalte (Level, Welten)", ""], ["🎟️", "Saison-Pass", ""], ["🚫", "Werbefrei", ""]], { l: 2, t: "m", if: iap });
+q("p2w", "Kaufvorteile", "Darf man sich Vorteile kaufen?", [
+  ["⚖️", "Nein, nur Optik", "Keine spielerischen Vorteile durch Geld."], ["🤏", "Etwas Zeitersparnis", ""], ["💪", "Ja", ""]], { l: 2, if: iap });
+q("lootbox", "Zufallskäufe", "Gibt es Käufe mit zufälligem Inhalt?", [
+  ["🚫", "Nein", ""], ["🎰", "Ja, mit Wahrscheinlichkeiten", "Gewinnchancen werden offen angezeigt."]], { l: 3, if: iap });
+q("sub", "Abo-Inhalt", "Was bekommen Abonnenten?", [
+  ["🔓", "Alles freigeschaltet", ""], ["📅", "Monatliche neue Inhalte", ""], ["⭐", "Bonus-Vorteile", ""]], { l: 3, if: iff("monet", "Abo") });
+q("brand", "Marken-Einbindung", "Wie wird die Marke eingebunden?", [
+  ["🏷️", "Logo & Farben", ""], ["🎟️", "Gutschein als Belohnung", "z. B. Rabattcode bei Highscore."], ["🍕", "Produkte als Spielobjekte", ""],
+  ["🔗", "Link zur Website", ""], ["📋", "Speisekarte / Angebot", ""], ["📍", "Ort & Öffnungszeiten", ""]], { l: 2, t: "m", if: or(iff("monet", "Marketing-Spiel (gratis)"), iff("purpose", "Marketing für Firma/Verein")) });
+q("revenue", "Umsatzziel", "Wie viel soll das Spiel einbringen?", [
+  ["🪙", "Taschengeld", ""], ["💶", "Nebenverdienst", ""], ["💰", "Lebensunterhalt", ""]], { l: 4, if: or(ads, iap, iff("monet", "Einmalkauf (Premium)", "Abo")) });
+
+/* ======================================================= */
+sec("access", "Barrierefreiheit", "♿", "Damit möglichst viele mitspielen können.");
+q("a11yVis", "Sehen", "Welche Hilfen fürs Sehen?", [
+  ["🎨", "Farbenblind-Modus", "Infos nie nur über Farbe."], ["🔠", "Größere Schrift", ""], ["🌗", "Hoher Kontrast", ""], ["🔊", "Screenreader für Menüs", ""], ["➖", "Keine", "", "x"]],  { t: "m" });
+q("a11yMotor", "Bedienung", "Welche Hilfen für die Bedienung?", [
+  ["✋", "Einhändig spielbar", ""], ["🐌", "Spieltempo regelbar", ""], ["⏺️", "Halten statt Hämmern", "Kein schnelles Wiederholtes Drücken nötig."], ["🎯", "Größere Trefferflächen", ""], ["➖", "Keine", "", "x"]], { l: 3, t: "m" });
+q("a11yCog", "Verständnis", "Welche Hilfen fürs Verständnis?", [
+  ["🌈", "Weniger Effekte", "Keine Blitze, weniger Bewegung (Epilepsie)."], ["🧭", "Ziel jederzeit abrufbar", ""], ["🐢", "Kein Zeitdruck einstellbar", ""], ["📝", "Einfache Sprache", ""], ["➖", "Keine", "", "x"]], { l: 3, t: "m" });
+q("a11yHear", "Hören", "Welche Hilfen fürs Hören?", [
+  ["💬", "Untertitel", ""], ["👁️", "Sounds sichtbar machen", "Wichtige Geräusche als Symbol anzeigen."], ["➖", "Keine", "", "x"]], { l: 4, t: "m" });
+
+/* ======================================================= */
+sec("data", "Speichern & Datenschutz", "💾", "Spielstände, Konten und persönliche Daten.");
+q("save", "Speichern", "Wie wird gespeichert?", [
+  ["🤖", "Automatisch", ""], ["💾", "Speicherpunkte", ""], ["🗂️", "Mehrere Spielstände", ""], ["➖", "Gar nicht", "Jede Runde startet neu."]], { });
+q("saveWhere", "Weiterspielen", "Soll man auf einem anderen Gerät weiterspielen können?", [
+  ["📱", "Nein, reicht auf einem Gerät", ""], ["☁️", "Ja, unbedingt", "z. B. nach Handywechsel."]], { l: 2, if: a => a.save !== "Gar nicht" });
+q("account", "Benutzerkonto", "Braucht man ein Konto?", [
+  ["➖", "Kein Konto", ""], ["👤", "Gast plus optionales Konto", ""], ["📧", "Login Pflicht", "Per E-Mail."], ["🍏", "Mit Apple/Google anmelden", ""]], { l: 2 });
+q("analytics", "Statistik", "Möchtest du sehen, wie viele Leute spielen und wo sie aufhören?", [
+  ["📊", "Ja, anonym", "Nur Zahlen, keine Personen."], ["🚫", "Nein", "Keinerlei Daten sammeln."]], { l: 3 });
+/* ======================================================= */
+sec("tech", "Technik & Umsetzung", "🛠️", "Womit und wie die KI das Spiel baut.");
+q("devSkill", "Programmierkenntnisse", "Wie gut kannst du programmieren?", [
+  ["🐣", "Gar nicht", "Die KI muss jeden Schritt erklären."], ["🌱", "Anfänger", ""], ["🌿", "Fortgeschritten", ""], ["🌳", "Profi", ""]]);
+q("workflow", "Zusammenarbeit", "Wie soll die KI mit dir zusammenarbeiten?", [
+  ["⚡", "Alles auf einmal", "Komplett bauen, dann schaue ich drüber."], ["🪜", "Schritt für Schritt", "Nach jedem Teil fragen, ob es passt."], ["🧪", "Erst eine Probe", "Zuerst eine kleine spielbare Version, dann ausbauen."]], { l: 2 });
+q("timeline", "Zeitrahmen", "Bis wann soll das Spiel fertig sein?", [
+  ["⏰", "Ein Wochenende", ""], ["🗓️", "Ein Monat", ""], ["📆", "Drei Monate", ""], ["📅", "Ein Jahr oder länger", ""]], { l: 3 });
+q("budget", "Budget", "Wie viel Geld kannst du ausgeben?", [
+  ["0️⃣", "0 €", ""], ["💶", "Bis 100 €", ""], ["💶", "Bis 1.000 €", ""], ["💰", "Mehr", ""]], { l: 3 });
+q("team", "Team", "Wer arbeitet mit?", [
+  ["🧍", "Ich allein", ""], ["👥", "2–3 Leute", ""], ["🏢", "Kleines Team", ""]], { l: 3 });
+/* ======================================================= */
+sec("launch", "Veröffentlichung & Marketing", "🚀", "App Store, Play Store, Web und wie Leute davon erfahren.");
+q("launchWhere", "Veröffentlichung", "Wo soll das Spiel erscheinen?", [
+  ["🔒", "Nur privat", "", "x"], ["🌐", "Eigene Website", ""], ["🎮", "itch.io", "Kostenlose Indie-Plattform."], ["🍎", "Apple App Store", ""],
+  ["▶️", "Google Play", ""], ["🚂", "Steam", ""], ["🕹️", "Konsolen-Stores", ""], ["🧩", "Web-Spieleportale", "z. B. CrazyGames, Poki."]], { t: "m" });
+q("devAccounts", "Entwicklerkonten", "Hast du schon Entwicklerkonten?", [
+  ["✅", "Beide", ""], ["🍎", "Nur Apple", ""], ["▶️", "Nur Google", ""], ["➖", "Noch keine", "Die KI soll die Einrichtung erklären."]], { l: 2, if: appStores, h: "Apple Developer Program: 99 $ pro Jahr. Google Play Console: 25 $ einmalig." });
+q("storeCat", "Store-Kategorie", "In welcher Store-Kategorie erscheint das Spiel?", [
+  ["⚔️", "Action", ""], ["🗺️", "Abenteuer", ""], ["🧩", "Puzzle", ""], ["🙂", "Casual", ""], ["🎓", "Lernspiele", ""], ["♟️", "Strategie", ""],
+  ["🏗️", "Simulation", ""], ["🧸", "Kinder", "Strengere Regeln bei Werbung und Datenschutz."], ["👨‍👩‍👧", "Familie", ""], ["🏎️", "Rennen", ""], ["⚽", "Sport", ""], ["🧙", "Rollenspiel", ""]], { l: 2, if: stores });
+q("storeAssets", "Store-Hilfe", "Soll die KI dir auch beim Store-Auftritt helfen?", [
+  ["🖼️", "Icon & Bilder", ""], ["📝", "Texte & Beschreibung", ""], ["🔑", "Suchbegriffe", "Damit man das Spiel findet."], ["📄", "Datenschutz & Impressum", ""], ["🧭", "Anleitung zum Hochladen", "Schritt für Schritt erklärt."]], { l: 2, t: "m", if: publicLaunch });
+q("iconStyle", "Icon-Stil", "Wie soll das App-Icon aussehen?", [
+  ["😀", "Gesicht der Figur", ""], ["🔤", "Logo-Schriftzug", ""], ["🎬", "Spielszene", ""], ["🔣", "Einfaches Symbol", ""]], { l: 3, if: publicLaunch });
+q("storeTone", "Store-Text-Ton", "Wie sollen die Store-Texte klingen?", [
+  ["😄", "Lustig", ""], ["🛡️", "Episch", ""], ["👔", "Sachlich", ""], ["🧸", "Kindgerecht", ""]], { l: 3, if: publicLaunch });
+q("beta", "Testphase", "Wie wird vor dem Start getestet?", [
+  ["➖", "Gar nicht", ""], ["👨‍👩‍👧", "Familie & Freunde", ""], ["🧪", "Store-Testkanäle", "TestFlight bzw. geschlossener Test bei Google Play."], ["🌍", "Offene Beta", ""], ["🇳🇿", "Testmarkt", "Erst in einem kleinen Land veröffentlichen."]], { l: 2, if: publicLaunch });
+q("rateAsk", "Bewertungsbitte", "Soll das Spiel um eine Store-Bewertung bitten?", [
+  ["⭐", "Ja, nach einem Erfolg", "Systemdialog nach einem positiven Moment."], ["➖", "Nein", ""]], { l: 3, if: appStores });
+q("marketing", "Marketing", "Wie sollen Leute vom Spiel erfahren?", [
+  ["📱", "TikTok & Instagram", ""], ["▶️", "YouTube-Entwicklertagebuch", ""], ["💬", "Discord & Reddit", ""], ["📰", "Presse & Influencer", ""],
+  ["🔳", "Vor Ort", "Flyer, QR-Codes, Plakate."], ["💸", "Bezahlte Werbung", ""], ["➖", "Gar nicht", "", "x"]], { l: 2, t: "m", if: publicLaunch });
+q("launchTiming", "Startzeitpunkt", "Wann soll das Spiel erscheinen?", [
+  ["🚀", "Sobald es fertig ist", ""], ["📅", "Fester Termin", ""], ["🎄", "Zu einem Anlass", "Ferien, Feiertag, Jubiläum."]], { l: 3, if: publicLaunch });
+/* ======================================================= */
+sec("liveops", "Updates & Community", "🔄", "Was nach dem Start passiert.");
+q("updates", "Updates", "Wie geht es nach dem Start weiter?", [
+  ["✅", "Fertig ist fertig", ""], ["🐞", "Nur Fehlerbehebungen", ""], ["➕", "Regelmäßig neue Inhalte", ""], ["📅", "Saisons & Events", ""]], { });
+q("events", "Events", "Welche Events soll es geben?", [
+  ["🎃", "Jahreszeiten-Events", "Halloween, Weihnachten, Ostern."], ["📆", "Wochen-Herausforderungen", ""], ["⏳", "Zeitlich begrenzte Items", ""], ["🏆", "Turniere", ""]], { l: 3, t: "m", if: iff("updates", "Regelmäßig neue Inhalte", "Saisons & Events") });
+q("community", "Community", "Wo trifft sich die Community?", [
+  ["💬", "Discord", ""], ["📝", "Feedback im Spiel", ""], ["📱", "Social Media", ""], ["➖", "Nirgends", "", "x"]], { l: 3, t: "m" });
+q("ugc", "Spieler-Inhalte", "Können Spieler eigene Inhalte erstellen?", [
+  ["➖", "Nein", ""], ["🛠️", "Ja, nur für sich", ""], ["🌐", "Ja, und online teilen", "Mit Moderation."]], { l: 3 });
+q("push", "Push-Nachrichten", "Soll das Spiel Benachrichtigungen senden?", [
+  ["➖", "Nie", ""], ["🔔", "Nur wichtige", "z. B. 'Deine Energie ist wieder voll'."], ["📣", "Regelmäßig", ""]], { l: 3, if: mobileApp });
+/* ---------- Reihenfolge: Gameplay zuerst, Idee baut sich auf ---------- */
+["hero", "setting"].forEach(id => { Q.find(q => q.id === id).sec = "idea"; });
+Q.find(q => q.id === "nameStyle").sec = "launch";
+Q.find(q => q.id === "perspective").sec = "graphics";
+S.splice(S.findIndex(s => s.id === "camera"), 1);
+const ORDER = ["audience", "vision", "idea", "core", "mechanics", "difficulty", "progression", "multiplayer", "world", "story", "graphics", "audio",
+  "platform", "controls", "ui", "access", "data", "monetization", "tech", "launch", "liveops"];
+const IDEA_ORDER = ["ideaRef", "ideaVerb", "ideaGoal", "hero", "setting", "ideaChallenge", "ideaTwist", "ideaEscalation", "ideaStart", "ideaWow", "ideaFinale", "ideaRule", "ideaPerfect", "ideaReplay"];
+S.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
+const _pos = new Map(Q.map((q, i) => [q.id, i]));
+const FIRST = ["nameStyle", "dimension", "artStyle", "perspective"];
+const _rank = q => q.sec === "idea" ? IDEA_ORDER.indexOf(q.id) : FIRST.includes(q.id) ? -10 + FIRST.indexOf(q.id) : _pos.get(q.id);
+Q.sort((a, b) => ORDER.indexOf(a.sec) - ORDER.indexOf(b.sec) || _rank(a) - _rank(b));
+
+/* Satzbausteine für die wachsende Spielidee */
+const PH = {
+  verb: { "Springen": "springst", "Laufen & Ausweichen": "weichst|aus", "Schießen & Werfen": "schießt|und wirfst", "Kämpfen": "kämpfst", "Bauen": "baust", "Sammeln": "sammelst",
+    "Fangen": "fängst|Dinge", "Kochen & Zubereiten": "kochst", "Kombinieren & Verbinden": "kombinierst", "Fahren & Steuern": "fährst", "Schleichen & Verstecken": "schleichst",
+    "Sortieren & Ordnen": "sortierst", "Zeichnen": "zeichnest", "Andere anführen": "führst|andere an", "Handeln & Verkaufen": "handelst", "Erkunden": "erkundest",
+    "Karten ausspielen": "spielst|Karten aus", "Im Takt tippen": "tippst|im Takt" },
+  goal: { "Jemanden retten": "um jemanden zu retten", "Entkommen": "um zu entkommen", "Ans Ziel kommen": "um ans Ziel zu kommen", "Größer & erfolgreicher werden": "um größer und erfolgreicher zu werden",
+    "Andere besiegen": "um andere zu besiegen", "Alles einsammeln": "um alles einzusammeln", "Etwas verteidigen": "um etwas zu verteidigen", "Aufträge erfüllen": "um Aufträge zu erfüllen",
+    "Rätsel lösen": "um Rätsel zu lösen", "Überleben": "um zu überleben", "Den Highscore knacken": "um den Highscore zu knacken", "Etwas Eigenes erschaffen": "um etwas Eigenes zu erschaffen" },
+  hero: { "Mensch": "Als Mensch", "Tier": "Als Tier", "Roboter": "Als Roboter", "Fantasiewesen": "Als Fantasiewesen", "Objekt / Form": "Als lebendiges Objekt",
+    "Fahrzeug": "Als Fahrzeug", "Selbst erstellter Avatar": "Mit deinem eigenen Avatar" },
+  ch: { "Zeitdruck": "die Zeit läuft", "Gegner": "Gegner sich in den Weg stellen", "Gefährliche Wege & Fallen": "der Weg voller Fallen ist", "Knappe Ressourcen": "Ressourcen knapp sind",
+    "Knifflige Logik": "jede Aufgabe eine Denkaufgabe ist", "Andere Spieler": "andere Spieler dasselbe wollen", "Immer mehr gleichzeitig": "immer mehr gleichzeitig passiert", "Unberechenbare Physik": "die Physik unberechenbar ist" }
+};
+
+/* Game-Bauplan – App */
+const KEY = "gamebauplan.v1";
+const LEVELS = [
+  { n: 1, name: "Schnell", tag: "Nur das Wichtigste", desc: "Die großen Entscheidungen. Den Rest übernimmt die KI." },
+  { n: 2, name: "Standard", tag: "Gute Balance", desc: "Alle Bereiche mit den wichtigsten Details." },
+  { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Mehr Feingefühl: Gegner, Effekte, Abwechslung und mehr." },
+  { n: 4, name: "Alles", tag: "Jedes kleinste Feature", desc: "Jedes kleinste Detail, ganz ohne Fachwissen." }
+];
+let st = { view: "start", level: 2, off: {}, a: {}, cur: null, tab: "prompt", done: {}, resetArm: false };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.codePointAt(0)) % 360; return h; };
+const secOf = id => S.find(s => s.id === id);
+const qOf = id => Q.find(q => q.id === id);
+
+function visible() {
+  return Q.filter(q => q.l <= st.level && (!q.if || q.if(st.a)));
+}
+const answered = q => st.a[q.id] !== undefined && !(Array.isArray(st.a[q.id]) && !st.a[q.id].length);
+
+/* ---------- Werte ---------- */
+function val(id) {
+  const x = st.a[id];
+  if (x == null || x === AI || x === "") return null;
+  if (Array.isArray(x)) { const y = x.filter(v => v !== AI); return y.length ? y.join(", ") : null; }
+  return x;
+}
+function optsFor(q) {
+  if (q.dyn) {
+    const r = quizRank(), top = r[0].score || 1;
+    return r.slice(0, 6).map((x, i) => ({ i: x.s[1], v: x.s[2], d: `${Math.round(x.score / top * 100)} % Übereinstimmung. ${x.s[3]}`, best: i === 0 }));
+  }
+  if (q.id === "core") {
+    const r = quizRank();
+    if (r[0].score > 0) { const best = r[0].s[2]; const top = r.filter(x => x.score > 0).slice(0, 3).map(x => x.s[2]);
+      return q.opts.map(o => o.v === best ? Object.assign({}, o, { best: 1 }) : o)
+        .sort((x, y) => (x.v === QUIZ_OPT) - (y.v === QUIZ_OPT) || (top.includes(x.v) ? top.indexOf(x.v) : 99) - (top.includes(y.v) ? top.indexOf(y.v) : 99)); }
+  }
+  return q.opts;
+}
+function descOf(q, v) {
+  if (q.id === "coreQuiz") { const s = SYS.find(s => s[2] === v); return s ? s[3] : ""; }
+  const o = q.opts.find(o => o.v === v);
+  return o ? o.d : "";
+}
+function quizRank() {
+  const sc = {}; SYS.forEach(s => sc[s[0]] = 0);
+  Q.filter(q => q.quiz || q.id === "ideaVerb" || q.id === "ideaGoal" || q.id === "ideaRef").forEach(q => {
+    const x = st.a[q.id], vs = Array.isArray(x) ? x : [x];
+    vs.forEach(v => { const o = q.opts.find(o => o.v === v); if (o && o.sc) for (const k in o.sc) sc[k] += o.sc[k] * (q.quiz ? 1 : 2); });
+  });
+  return SYS.map(s => ({ s, score: sc[s[0]] })).sort((a, b) => b.score - a.score);
+}
+function fmt(q) {
+  const x = st.a[q.id];
+  if (x === undefined) return "–";
+  if (x === AI || x === "") return "KI entscheidet";
+  if (Array.isArray(x)) return x.includes(AI) ? "KI entscheidet" : x.join(", ");
+  return x;
+}
+
+/* ---------- Rendering ---------- */
+function render() {
+  save();
+  renderTop();
+  const app = $("#app");
+  if (st.view === "quiz") app.innerHTML = viewQuiz();
+  else if (st.view === "result") app.innerHTML = viewResult();
+  else app.innerHTML = viewStart();
+  if (st.view === "quiz") { const t = $("#txt"); if (t) t.focus(); }
+}
+function renderTop() {
+  const v = visible(), done = v.filter(answered).length, pct = v.length ? Math.round(done / v.length * 100) : 0;
+  $("#prog").hidden = st.view === "start";
+  $("#progFill").style.width = pct + "%";
+  $("#progTxt").textContent = `${done} / ${v.length} Fragen`;
+  $("#btnResult").hidden = st.view !== "quiz" || done === 0;
+  $("#btnStart").hidden = st.view === "start";
+}
+
+function viewStart() {
+  const started = Object.keys(st.a).length > 0;
+  const lv = LEVELS.map(L => {
+    const n = Q.filter(q => q.l <= L.n && !q.quiz && !q.dyn && !q.if).length;
+    return `<button class="lvl${st.level === L.n ? " on" : ""}" data-act="level" data-n="${L.n}" aria-pressed="${st.level === L.n}">
+      <span class="lvl-bars">${[1, 2, 3, 4].map(i => `<i class="${i <= L.n ? "f" : ""}"></i>`).join("")}</span>
+      <b>${L.name}</b><span class="lvl-tag">${L.tag}</span><small>${L.desc}</small><span class="lvl-n">ab ${n} Fragen</span></button>`;
+  }).join("");
+  return `<section class="start">
+    <div class="hero">
+      <p class="eyebrow">Game-Bauplan</p>
+      <h1>Von der Idee zum <span class="hl">exakten Bauplan</span> für die KI.</h1>
+      <p class="lead">Du klickst dich durch Multiple-Choice-Fragen mit Beispielbildern. Am Ende bekommst du einen Prompt, mit dem eine KI genau dein Spiel baut, und eine Zusammenfassung mit Launch-Checkliste für dich.</p>
+    </div>
+    <div class="step"><h2><span class="stepn">1</span> Wie detailliert willst du planen?</h2>
+      <div class="levels">${lv}</div>
+      <p class="fine">Die Zahl wächst je nach Antworten: Wählst du z. B. Multiplayer oder Werbung, kommen passende Folgefragen dazu.</p></div>
+    <div class="step"><h2><span class="stepn">2</span> Diese ${S.length} Bereiche werden immer abgedeckt</h2>
+      <div class="secpick">${S.map(s => `<span class="secchip on"><span>${s.icon}</span>${esc(s.name)}</span>`).join("")}</div>
+      <p class="fine">Die Detailstufe ändert nur, wie tief jeder Bereich abgefragt wird. Alle Fragen sind Multiple Choice.</p></div>
+    <div class="cta">
+      <button class="btn primary big" data-act="go">${started ? "Weitermachen" : "Los geht's"} →</button>
+      ${started ? `<button class="btn" data-act="toresult">Zur Auswertung</button>
+      <button class="btn ghost danger" data-act="reset">${st.resetArm ? "Wirklich alles löschen?" : "Neu beginnen"}</button>` : ""}
+    </div>
+    <p class="fine">Deine Antworten werden nur in diesem Browser gespeichert.</p>
+  </section>`;
+}
+
+function viewQuiz() {
+  const v = visible();
+  let q = v.find(x => x.id === st.cur);
+  if (!q) { q = v.find(x => !answered(x)) || v[0]; st.cur = q && q.id; }
+  if (!q) return `<p>Keine Fragen ausgewählt.</p>`;
+  const idx = v.indexOf(q), sec = secOf(q.sec), secIdx = S.indexOf(sec);
+  const inSec = v.filter(x => x.sec === q.sec), posInSec = inSec.indexOf(q) + 1;
+  const nav = S.map(s => {
+    const qs = v.filter(x => x.sec === s.id); if (!qs.length) return "";
+    const d = qs.filter(answered).length;
+    return `<button class="navi${s.id === q.sec ? " cur" : ""}${d === qs.length ? " done" : ""}" data-act="jump" data-s="${s.id}">
+      <span class="navi-i">${s.icon}</span><span class="navi-n">${esc(s.name)}</span><span class="navi-c">${d}/${qs.length}</span></button>`;
+  }).join("");
+  const cur = st.a[q.id];
+  let body = "";
+  if (q.t === "t") {
+    const tv = cur && cur !== AI ? cur : "";
+    body = q.area ? `<textarea id="txt" class="txt" rows="4" placeholder="${esc(q.ph || "")}" data-act="text">${esc(tv)}</textarea>`
+      : `<input id="txt" class="txt" type="text" maxlength="160" placeholder="${esc(q.ph || "")}" value="${esc(tv)}" data-act="text">`;
+  } else {
+    const os = optsFor(q).slice();
+    if (!q.noAi) os.push({ i: "🤖", v: AI, label: "Weiß nicht – KI entscheidet", d: "Die KI wählt passend zum Rest deines Konzepts.", ai: 1 });
+    const many = os.length > 9;
+    body = `<div class="opts${q.wide ? " wide" : ""}${many ? " many" : ""}" role="${q.t === "m" ? "group" : "radiogroup"}">${os.map((o, i) => {
+      const sel = Array.isArray(cur) ? cur.includes(o.v) : cur === o.v;
+      return `<button class="opt${sel ? " on" : ""}${o.ai ? " ai" : ""}${o.best ? " best" : ""}" data-act="pick" data-i="${i}" aria-pressed="${sel}">
+        <span class="pic" style="--h:${hue(q.id + o.v)}">${pic(o.i)}</span>
+        <span class="otx"><b>${esc(o.label || o.v)}</b>${o.d ? `<small>${esc(o.d)}</small>` : ""}</span>
+        ${i < 9 ? `<kbd>${i + 1}</kbd>` : ""}${q.t === "m" ? `<span class="tick" aria-hidden="true"></span>` : ""}${o.best ? `<span class="badge">${q.id === "core" ? "Passt zu deiner Idee" : "Beste Wahl"}</span>` : ""}</button>`;
+    }).join("")}</div>`;
+  }
+  const canNext = q.t === "t" || answered(q);
+  const hint = q.h || (q.t === "m" ? (q.max ? `Bis zu ${q.max} auswählen.` : "Mehrfachauswahl möglich.") : "");
+  return `<div class="layout">
+    <nav class="secnav" aria-label="Bereiche">${nav}</nav>
+    <div class="qcol">${ideaPanel()}<section class="qcard" data-sec="${q.sec}">
+      <div class="qmeta"><span class="seclabel">${sec.icon} Bereich ${secIdx + 1}: ${esc(sec.name)}</span>
+        ${q.quiz ? `<span class="pill">Quiz</span>` : ""}${q.t === "m" ? `<span class="pill soft">Mehrfachauswahl</span>` : ""}
+        <span class="qcount">${posInSec} / ${inSec.length}</span></div>
+      <h2 class="qtitle">${esc(q.title)}</h2>
+      ${hint ? `<p class="hint">${esc(hint)}</p>` : ""}
+      ${body}
+      <div class="qnav">
+        <button class="btn ghost" data-act="back">← Zurück</button>
+        <span class="sp"></span>
+        ${q.noAi || q.t === "t" ? "" : `<button class="btn ghost" data-act="skip">Überspringen</button>`}
+        <button class="btn primary" data-act="next" ${canNext ? "" : "disabled"}>${idx === v.length - 1 ? "Zur Auswertung" : "Weiter"} →</button>
+      </div>
+      <p class="fine kb">Tastatur: Ziffern wählen, Enter geht weiter, ← zurück.</p>
+    </section></div></div>`;
+}
+
+function pic(i) {
+  if (!i) return "";
+  if (i.startsWith("<svg")) return i;
+  if (i.startsWith("pal:")) return `<span class="pal">${i.slice(4).split(",").map(c => `<i style="background:${c}"></i>`).join("")}</span>`;
+  return `<span class="emo">${i}</span>`;
+}
+
+/* ---------- Aktionen ---------- */
+function go(dir) {
+  clearTimeout(pick.t);
+  const v = visible(), i = v.findIndex(x => x.id === st.cur);
+  if (dir > 0) {
+    const n = v[i + 1];
+    if (!n) { st.view = "result"; st.tab = "sum"; window.scrollTo(0, 0); return render(); }
+    st.cur = n.id;
+  } else {
+    if (i <= 0) { st.view = "start"; return render(); }
+    st.cur = v[i - 1].id;
+  }
+  render();
+  const c = $(".qcard"); if (c && c.getBoundingClientRect().top < 0) c.scrollIntoView({ block: "start" });
+}
+function pick(i) {
+  const q = qOf(st.cur);
+  const os = optsFor(q).slice(); if (!q.noAi) os.push({ v: AI, ai: 1 });
+  const o = os[i]; if (!o) return;
+  if (q.t === "m") {
+    let cur = Array.isArray(st.a[q.id]) ? st.a[q.id].slice() : [];
+    if (cur.includes(o.v)) cur = cur.filter(x => x !== o.v);
+    else if (o.ai || o.x) cur = [o.v];
+    else {
+      cur = cur.filter(x => x !== AI && !(q.opts.find(p => p.v === x) || {}).x);
+      cur.push(o.v);
+      if (q.max && cur.length > q.max) cur.shift();
+    }
+    st.a[q.id] = cur;
+    render();
+  } else {
+    st.a[q.id] = o.v;
+    render();
+    clearTimeout(pick.t);
+    const id = q.id;
+    pick.t = setTimeout(() => { if (st.view === "quiz" && st.cur === id) go(1); }, 260);
+  }
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act;
+  if (act !== "reset") st.resetArm = false;
+  switch (act) {
+    case "level": st.level = +b.dataset.n; render(); break;
+    case "togsec": st.off[b.dataset.s] = !st.off[b.dataset.s]; render(); break;
+    case "allsec": st.off = {}; render(); break;
+    case "go": {
+      st.view = "quiz";
+      const v = visible(); const f = v.find(x => !answered(x));
+      st.cur = f ? f.id : (v[0] && v[0].id);
+      if (!f && v.length) st.view = "result";
+      render(); break;
+    }
+    case "toresult": st.view = "result"; render(); window.scrollTo(0, 0); break;
+    case "reset":
+      if (!st.resetArm) { st.resetArm = true; render(); break; }
+      st = { view: "start", level: st.level, off: {}, a: {}, cur: null, tab: "prompt", done: {}, resetArm: false }; render(); break;
+    case "tostart": st.view = "start"; render(); break;
+    case "pick": pick(+b.dataset.i); break;
+    case "next": {
+      const q = qOf(st.cur);
+      if (q.t === "t") { const t = $("#txt"); st.a[q.id] = t && t.value.trim() ? t.value.trim() : AI; }
+      go(1); break;
+    }
+    case "skip": st.a[st.cur] = AI; go(1); break;
+    case "back": go(-1); break;
+    case "jump": {
+      const v = visible().filter(x => x.sec === b.dataset.s);
+      st.cur = (v.find(x => !answered(x)) || v[0]).id; render(); break;
+    }
+    case "edit": st.view = "quiz"; st.cur = b.dataset.q; render(); window.scrollTo(0, 0); break;
+    case "tab": st.tab = b.dataset.t; render(); break;
+    case "deeper": {
+      st.level = Math.min(4, st.level + 1); st.view = "quiz";
+      const f = visible().find(x => !answered(x)); st.cur = f && f.id;
+      if (!f) st.view = "result";
+      render(); window.scrollTo(0, 0); break;
+    }
+    case "copy": copy(b, b.dataset.w === "sum" ? buildSummaryText() : buildPrompt()); break;
+    case "pdf": savePDF(b); break;
+    case "ppdf": savePromptPDF(b); break;
+    case "elaborate": elaborate(b); break;
+    case "check": st.done[b.dataset.k] = !st.done[b.dataset.k]; render(); break;
+  }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "txt") { const q = qOf(st.cur); st.a[q.id] = e.target.value.trim() || AI; save(); renderTop(); }
+});
+document.addEventListener("keydown", e => {
+  if (st.view !== "quiz") return;
+  const inText = e.target.matches("input, textarea");
+  if (e.key === "Enter" && !(inText && e.target.tagName === "TEXTAREA" && !e.metaKey && !e.ctrlKey)) {
+    const n = document.querySelector('[data-act="next"]'); if (n && !n.disabled) { e.preventDefault(); n.click(); } return;
+  }
+  if (inText) return;
+  if (/^[1-9]$/.test(e.key)) { const o = document.querySelector(`.opt[data-i="${+e.key - 1}"]`); if (o) { e.preventDefault(); o.click(); } }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+});
+function copy(btn, text) {
+  const done = ok => { const o = btn.textContent; btn.textContent = ok ? "Kopiert ✓" : "Text markiert – mit Strg/Cmd+C kopieren"; setTimeout(() => btn.textContent = o, 2200); };
+  const fallback = () => { const pre = btn.closest(".panel").querySelector("pre, .sumtext"); if (pre) { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } done(false); };
+  try { navigator.clipboard.writeText(text).then(() => done(true), fallback); } catch (e) { fallback(); }
+}
+
+/* ---------- Analyse ---------- */
+function conflicts() {
+  const a = st.a, out = [];
+  const W = t => out.push({ k: "warn", t }), I = t => out.push({ k: "info", t });
+  if (kids(a) && has(a, "comms", "Text-Chat mit Filter", "Sprach-Chat")) W("Kinder-Zielgruppe mit freiem Chat: In der Kinder-Kategorie der Stores ist das kaum zulässig. Besser nur Emotes oder Schnellnachrichten.");
+  if (kids(a) && has(a, "lootbox", "Ja, mit Wahrscheinlichkeiten")) W("Zufallskäufe in einem Kinderspiel: rechtlich heikel (z. B. in Belgien verboten) und in der Kinder-Kategorie problematisch.");
+  if (kids(a) && has(a, "adTypes", "Zwischen Leveln (Interstitial)", "Banner")) W("Werbung im Kinderspiel: Nur kindgerechte, nicht personalisierte Werbung ist erlaubt. Prüfe die Familien-Richtlinien von Apple und Google.");
+  if (kids(a) && has(a, "account", "Login Pflicht")) W("Login-Pflicht für Kinder unter 16 braucht in der EU die Einwilligung der Eltern (DSGVO).");
+  if (has(a, "internet", "Komplett offline") && online(a)) W("„Komplett offline“ passt nicht zu Online-Multiplayer.");
+  if (has(a, "internet", "Komplett offline") && has(a, "leaderboard", "Weltweit", "Freunde", "Wöchentlich zurückgesetzt")) W("Online-Ranglisten brauchen eine Internetverbindung, das Spiel soll aber komplett offline sein.");
+  if (appStores(a) && !mobileApp(a)) W("Du willst in den App Store oder Google Play, hast aber iOS/Android nicht als Plattform gewählt.");
+  if (has(a, "launchWhere", "Steam") && !has(a, "platforms", "PC/Mac")) W("Steam ist eine PC-Plattform, PC/Mac fehlt bei deinen Plattformen.");
+  if (has(a, "monet", "Einmalkauf (Premium)") && has(a, "adTypes", "Banner")) I("Kaufspiele mit Werbung werden oft schlecht bewertet.");
+  if (has(a, "reading", "Nein, nur Symbole") && has(a, "storyAmount", "Story im Mittelpunkt") && !has(a, "voice", "Volle Sprachausgabe", "Nur Erzähler")) W("Viel Story, aber die Spieler können nicht lesen: Die Geschichte muss über Bilder oder Sprachausgabe erzählt werden.");
+  if (has(a, "taboo", "Gewalt gegen Menschen", "Blut") && coreIs("shoot", "act")(a)) I("Kampf oder Shooter ohne Gewalt bzw. Blut: Die KI sollte gewaltfreie Varianten nutzen (z. B. Wasserpistolen, Gegner verpuffen).");
+  if (has(a, "taboo", "Werbung") && ads(a)) W("Werbung ist als Tabu markiert, das Geschäftsmodell enthält aber Werbung.");
+  if (has(a, "taboo", "Echtgeld-Käufe") && iap(a)) W("Echtgeld-Käufe sind als Tabu markiert, das Geschäftsmodell enthält aber In-App-Käufe.");
+  if (has(a, "taboo", "Kontakt mit Fremden") && has(a, "matchmaking", "Mit Fremden", "Beides")) W("Kein Kontakt mit Fremden, aber zufällige Mitspieler oder offene Lobbys sind gewählt.");
+  if (has(a, "scope", "Großes Spiel") && has(a, "timeline", "Ein Wochenende", "Ein Monat")) W("Ein großes Spiel ist in diesem Zeitrahmen unrealistisch. Plane erst einen Prototyp.");
+  if (has(a, "session", "1–3 Minuten") && has(a, "storyAmount", "Story im Mittelpunkt")) I("Sehr kurze Runden und eine zentrale Story: Die Geschichte muss in kleinen Häppchen erzählt werden.");
+  if (has(a, "save", "Gar nicht") && has(a, "progress", "Neue Level freischalten", "Erfahrung & Level-Ups", "Basis oder Laden wächst")) W("Fortschritt ohne Speichern geht beim Schließen verloren.");
+  if (has(a, "orientation", "Hochformat") && has(a, "inputTouch", "Virtueller Joystick + Buttons") && has(a, "actions", "Viele")) I("Viele Aktionen mit Joystick im Hochformat werden schnell eng auf dem Bildschirm.");
+  return out;
+}
+
+function prof() {
+  const g = id => val(id);
+  const core = g(st.a.core === QUIZ_OPT ? "coreQuiz" : "core");
+  const mix = g("coreMix") && g("coreMix") !== "Nein, nur eins" && g("coreMix") !== core ? g("coreMix") : null;
+  return [
+    ["Kernsystem", [core, mix].filter(Boolean).join(" + ")],
+    ["Zielgruppe", [g("age"), g("skill")].filter(Boolean).join(", ")],
+    ["Plattformen", [g("platforms"), g("orientation")].filter(Boolean).join(" · ")],
+    ["Look", [g("dimension"), g("artStyle"), g("palette")].filter(Boolean).join(", ")],
+    ["Perspektive", g("perspective")],
+    ["Setting", g("setting")],
+    ["Gefühl", [g("feeling"), g("tone")].filter(Boolean).join(", ")],
+    ["Rundendauer", g("session")],
+    ["Multiplayer", g("mp")],
+    ["Geschäftsmodell", g("monet")]
+  ].filter(x => x[1] && x[1] !== "null");
+}
+
+/* ---------- KI-Prompt ---------- */
+function answerLines(q) {
+  const x = st.a[q.id];
+  if (x === undefined) return null;
+  if (x === AI || x === "" || (Array.isArray(x) && x.includes(AI))) return [`- **${q.label}:** KI entscheidet. Wähle passend zum Gesamtkonzept und trage es in „Meine Entscheidungen“ ein.`];
+  if (q.t === "t") return [`- **${q.label}:** „${x}“`];
+  if (Array.isArray(x)) {
+    if (!x.length) return null;
+    const ds = x.map(v => ({ v, d: descOf(q, v) }));
+    if (ds.some(d => d.d)) return [`- **${q.label}:**`].concat(ds.map(d => `  - ${d.v}${d.d ? ` – ${d.d}` : ""}`));
+    return [`- **${q.label}:** ${x.join(", ")}`];
+  }
+  const d = descOf(q, x);
+  return [`- **${q.label}:** ${x}${d ? ` – ${d}` : ""}`];
+}
+function acceptance() {
+  const a = st.a, out = [], g = val;
+  if (g("platforms")) out.push(`Läuft fehlerfrei auf: ${g("platforms")}.`);
+  if (g("orientation")) out.push(`Bildschirmausrichtung: ${g("orientation")}; kein Inhalt wird abgeschnitten, auch nicht auf Geräten mit Notch.`);
+  if (g("inputTouch")) out.push(`Komplett per Touch spielbar (${g("inputTouch")}).`);
+  if (g("inputDesk")) out.push(`Am Computer komplett spielbar per ${g("inputDesk")}.`);
+  if (g("internet")) out.push(`Internet: ${g("internet")}.`);
+  if (g("session")) out.push(`Eine typische Sitzung dauert ${g("session")}; der Einstieg vom Start bis zum Spielen dauert höchstens 10 Sekunden.`);
+  out.push("Läuft flüssig ohne spürbare Ruckler auf den Zielgeräten.");
+  if (g("size")) out.push(`Download-Größe: ${g("size")}.`);
+  const tb = Array.isArray(a.taboo) ? a.taboo.filter(x => x !== AI && x !== "Keine Einschränkungen") : [];
+  if (tb.length) out.push(`Enthält nachweislich nichts aus: ${tb.join(", ")}.`);
+  const ax = ["a11yVis", "a11yMotor", "a11yCog", "a11yHear"].flatMap(k => Array.isArray(a[k]) ? a[k].filter(y => y !== AI && y !== "Keine") : []);
+  if (ax.length) out.push(`Barrierefreiheit umgesetzt: ${ax.join(", ")}.`);
+  if (g("languages")) out.push(`Alle Texte verfügbar in: ${g("languages")}.`);
+  if (g("save") && g("save") !== "Gar nicht") out.push("Fortschritt bleibt nach dem Schließen und Neustarten erhalten.");
+  if (mpAny(a)) out.push(`Multiplayer funktioniert: ${g("mp")}${g("mpCount") ? `, ${g("mpCount")} Spieler` : ""}.`);
+  if (g("monet")) out.push(`Geschäftsmodell umgesetzt: ${g("monet")}${g("iapTypes") ? ` (${g("iapTypes")})` : ""}${g("adTypes") ? ` (${g("adTypes")})` : ""}.`);
+  if (has(a, "parents", "Elternbereich mit Sperre")) out.push("Elternschranke vor jedem Kauf und jedem externen Link.");
+  out.push("Keine Fehler oder Warnungen in der Konsole bzw. im Log.");
+  out.push("Kein Zustand, in dem das Spiel hängen bleibt (Softlock); jeder Bildschirm hat einen Weg zurück.");
+  out.push("Pausieren, Neustarten und Zurück zum Menü funktionieren jederzeit.");
+  out.push("Jede Vorgabe aus den Abschnitten oben ist sichtbar umgesetzt.");
+  return out;
+}
+function milestones() {
+  const a = st.a, m = [];
+  const core = val(st.a.core === QUIZ_OPT ? "coreQuiz" : "core") || "das Kernsystem";
+  m.push(["Grundgerüst & Kernmechanik", `Projekt aufsetzen, Spielschleife, Steuerung und ${core} mit einfachen Platzhalterformen spielbar machen.`]);
+  m.push(["Spielinhalte", "Level bzw. Inhalte, Gegner und Hindernisse, Sammelobjekte, Sieg- und Niederlagebedingungen, Fortschritt."]);
+  m.push(["Grafik & Sound", "Kunststil, Animationen, Effekte, Musik und Soundeffekte wie spezifiziert."]);
+  m.push(["Menüs & Komfort", "Hauptmenü, Einstellungen, Pause, Tutorial, Speichern, Barrierefreiheit, Sprachen."]);
+  if (mpAny(a)) m.push(["Multiplayer", "Verbindung, Mitspieler finden, Synchronisierung, Abbrüche behandeln."]);
+  if (ads(a) || iap(a) || has(a, "monet", "Einmalkauf (Premium)", "Abo", "Marketing-Spiel (gratis)")) m.push(["Monetarisierung & Marke", "Geschäftsmodell technisch einbauen, mit Testmodus für Käufe und Werbung."]);
+  m.push(["Feinschliff & Balancing", "Schwierigkeit, Belohnungsrhythmus, Feedback-Effekte, Performance, Fehlerbehebung."]);
+  if (publicLaunch(a)) m.push(["Veröffentlichung", `Builds und Store-Material für: ${val("launchWhere")}.`]);
+  return m;
+}
+
+/* ---------- Zusammenfassung & Checkliste ---------- */
+function launchItems() {
+  const a = st.a, L = [];
+  const add = (k, t, d) => L.push({ k, t, d });
+  if (!publicLaunch(a)) {
+    add("p1", "Auf echten Geräten testen", "Lass 2–3 Leute aus der Zielgruppe spielen und schau zu, ohne zu helfen.");
+    add("p2", "Teilen", "Für private Spiele reicht ein Link (z. B. GitHub Pages oder Netlify, beides kostenlos).");
+    return L;
+  }
+  add("g1", "Name prüfen", "In den Stores suchen und bei DPMA/EUIPO prüfen, ob der Name geschützt ist.");
+  add("g2", "Datenschutzerklärung online stellen", "Jeder Store verlangt eine öffentlich erreichbare URL.");
+  add("g3", "Impressum", "In Deutschland Pflicht bei geschäftsmäßigen Angeboten, auch bei Gratis-Spielen mit Werbezweck.");
+  add("g4", "Lizenzen dokumentieren", "Liste aller fremden Grafiken, Sounds, Schriften und Bibliotheken mit Lizenz.");
+  add("g5", "Mit echten Spielern testen", "Mindestens 5 Leute aus der Zielgruppe, auf verschiedenen Geräten.");
+  if (has(a, "launchWhere", "Apple App Store")) {
+    add("a1", "Apple Developer Program", "99 $ pro Jahr. Die Identitätsprüfung kann einige Tage dauern.");
+    add("a2", "iOS-Build erstellen", "Braucht einen Mac mit Xcode oder einen Cloud-Build-Dienst (z. B. EAS Build bei Expo).");
+    add("a3", "App Store Connect einrichten", "App anlegen, Bundle-ID, Preise, Verfügbarkeit, Screenshots in den geforderten iPhone- und ggf. iPad-Größen.");
+    add("a4", "App-Datenschutz-Angaben", "Im Formular angeben, welche Daten erhoben werden (auch durch Werbe- und Analyse-SDKs).");
+    add("a5", "Altersfreigabe-Fragebogen", "In App Store Connect ausfüllen.");
+    add("a6", "Händlerstatus (EU)", "Pflichtangabe nach dem Digital Services Act. Als Händler werden Adresse und Kontakt öffentlich angezeigt.");
+    add("a7", "TestFlight", "Vor dem Release mit Testern ausprobieren.");
+    add("a8", "App-Review", "Dauert meist 1–2 Tage. Häufige Ablehnungsgründe: Abstürze, Platzhalterinhalte, fehlende Datenschutz-URL, unvollständige Angaben.");
+  }
+  if (has(a, "launchWhere", "Google Play")) {
+    add("b1", "Google Play Console", "25 $ einmalig, mit Identitätsprüfung.");
+    add("b2", "Geschlossener Test", "Neue private Konten müssen vor der Veröffentlichung einen geschlossenen Test mit mindestens 12 Testern über 14 Tage durchführen.");
+    add("b3", "Datensicherheit-Formular", "Angeben, welche Daten erhoben und geteilt werden.");
+    add("b4", "Inhaltsbewertung (IARC)", "Fragebogen in der Play Console.");
+    add("b5", "Zielgruppe & Inhalte", "Bei Kindern gelten die Familien-Richtlinien (Werbung, Datenschutz).");
+    add("b6", "App-Bundle hochladen", "Format AAB, aktuelles Ziel-API-Level, Icon 512×512, Feature-Grafik 1024×500.");
+  }
+  if (has(a, "launchWhere", "Steam")) {
+    add("s1", "Steamworks-Konto", "100 $ Gebühr pro Spiel, wird nach Umsatz zurückerstattet.");
+    add("s2", "Store-Seite früh online", "Mindestens 2 Wochen vor Release als „Demnächst“ sichtbar; Wunschlisten sammeln.");
+    add("s3", "Build- und Store-Prüfung", "Valve prüft Store-Seite und Build vor dem Start.");
+  }
+  if (has(a, "launchWhere", "itch.io")) add("i1", "itch.io-Seite", "Kostenlos. Web-Spiele als ZIP mit index.html hochladen, Preis frei wählbar.");
+  if (has(a, "launchWhere", "Web-Spieleportale")) add("w1", "Portal-Anforderungen", "Jedes Portal hat eigene Regeln (SDK, Ladezeit, Größe, Werbung). Vor dem Bau lesen.");
+  if (has(a, "launchWhere", "Eigene Website")) add("e1", "Hosting", "z. B. GitHub Pages oder Netlify mit HTTPS; Impressum und Datenschutz verlinken.");
+  if (has(a, "launchWhere", "Konsolen-Stores")) add("k1", "Konsolen-Entwicklerprogramm", "Bei Nintendo, Sony oder Microsoft bewerben; Devkits und Zertifizierung nötig.");
+  if (kids(a)) add("c1", "Kinder-Regeln", "Keine personalisierte Werbung, Elternschranke vor Käufen und Links, sparsam mit Daten.");
+  if (ads(a)) add("m1", "Werbenetzwerk", "Konto anlegen (z. B. AdMob), Einwilligungsdialog nach DSGVO; auf iOS App-Tracking-Abfrage, falls getrackt wird.");
+  if (iap(a) || has(a, "monet", "Einmalkauf (Premium)", "Abo")) add("m2", "Steuer & Bankdaten", "In den Store-Konsolen hinterlegen, sonst gibt es keine Auszahlungen. Kaufartikel im Store anlegen.");
+  if (Array.isArray(a.marketing) && a.marketing.some(x => x !== "Gar nicht" && x !== AI)) add("mk", "Marketing starten", `Kanäle: ${val("marketing")}. Am besten schon während der Entwicklung posten.`);
+  return L;
+}
+function ideaText() {
+  const a = st.a, arr = id => Array.isArray(a[id]) ? a[id].filter(x => x !== AI) : [];
+  const verbs = arr("ideaVerb").map(v => PH.verb[v]).filter(Boolean).map(p => p.split("|"));
+  const whole = p => p.join(" ");
+  const out = [];
+  if (verbs.length || val("ideaGoal")) {
+    const hp = PH.hero[val("hero")];
+    let s = verbs.length ? (hp ? `${hp} ${verbs[0][0]} du${verbs[0][1] ? " " + verbs[0][1] : ""}` : `Du ${whole(verbs[0])}`) : (hp ? `${hp} spielst du` : "Du spielst");
+    if (verbs[1]) s += ` und ${whole(verbs[1])}`;
+    if (PH.goal[val("ideaGoal")]) s += `, ${PH.goal[val("ideaGoal")]}`;
+    out.push(s + ".");
+  }
+  if (val("setting")) out.push(`Schauplatz: ${val("setting")}.`);
+  const ch = arr("ideaChallenge").map(c => PH.ch[c]).filter(Boolean);
+  if (ch.length) out.push(`Schwierig wird es, weil ${ch.join(" und ")}.`);
+  else if (has(a, "ideaChallenge", "Gar nichts, es ist entspannt")) out.push("Es bleibt entspannt, ohne Druck.");
+  if (val("ideaTwist") && val("ideaTwist") !== "Kein Kniff, klassisch gut") out.push(`Der Clou: ${val("ideaTwist")}. ${descOf(qOf("ideaTwist"), val("ideaTwist"))}`);
+  if (val("ideaEscalation")) out.push(`Mit der Zeit wird es spannender durch: ${val("ideaEscalation")}.`);
+  if (val("ideaFinale")) out.push(`Finale: ${val("ideaFinale")}.`);
+  const core = val(a.core === QUIZ_OPT ? "coreQuiz" : "core");
+  if (core) out.push(`Spielsystem: ${core}.`);
+  return out.join(" ");
+}
+function ideaPanel() {
+  const t = ideaText();
+  const steps = ["ideaVerb", "ideaGoal", "hero", "setting", "ideaChallenge", "ideaTwist", "ideaEscalation"];
+  const n = steps.filter(id => st.a[id] !== undefined).length;
+  return `<aside class="idea"><div class="idea-h"><b>Deine Spielidee</b><span class="idea-bricks">${steps.map((id, i) => `<i class="${st.a[id] !== undefined ? "f" : ""}" title="${esc(qOf(id).label)}"></i>`).join("")}</span><small>${n}/${steps.length} Bausteine</small></div>
+    <p>${t ? esc(t) : "Beantworte die Fragen im Bereich „Spielidee“, dann entsteht hier Satz für Satz dein Spiel."}</p></aside>`;
+}
+function summarySentence() {
+  const g = val, a = st.a;
+  const core = val(a.core === QUIZ_OPT ? "coreQuiz" : "core");
+  const parts = [];
+  parts.push(`${g("name") || "Dein Spiel"} ist ${core ? `ein ${core}` : "ein Spiel"}${g("setting") ? ` im Setting „${g("setting")}“` : ""}`);
+  if (g("age")) parts[0] += ` für ${g("age") === "Alle Altersgruppen" ? "alle Altersgruppen" : g("age").includes("Jahre") ? "Kinder von " + g("age") : g("age")}`;
+  parts[0] += ".";
+  if (g("artStyle") || g("perspective")) parts.push(`Es sieht ${g("artStyle") ? `aus wie ${g("artStyle")}` : "eigenständig aus"}${g("perspective") ? `, gespielt in der Perspektive „${g("perspective")}“` : ""}.`);
+  if (g("platforms")) parts.push(`Es läuft auf ${g("platforms")}${g("session") ? `, eine Runde dauert ${g("session")}` : ""}.`);
+  if (g("feeling")) parts.push(`Im Kern soll es dieses Gefühl auslösen: ${g("feeling")}.`);
+  return parts.join(" ");
+}
+function buildSummaryText() {
+  const v = visible().filter(q => !q.quiz), L = [];
+  L.push(`ZUSAMMENFASSUNG: Mein Spiel`, "", ideaText() || summarySentence(), "");
+  S.forEach(s => {
+    const qs = v.filter(q => q.sec === s.id && answered(q)); if (!qs.length) return;
+    L.push(`— ${s.name} —`); qs.forEach(q => L.push(`• ${q.label}: ${fmt(q)}`)); L.push("");
+  });
+  const c = conflicts(); if (c.length) { L.push("— Hinweise —"); c.forEach(x => L.push(`• ${x.t}`)); L.push(""); }
+  L.push("— Launch-Checkliste —"); launchItems().forEach(i => L.push(`☐ ${i.t}: ${i.d}`));
+  return L.join("\n");
+}
+
+function viewResult() {
+  const v = visible().filter(q => !q.quiz);
+  const ans = v.filter(answered), aiN = ans.filter(q => fmt(q) === "KI entscheidet").length, open = v.length - ans.length;
+  const c = conflicts();
+  const tabs = [["sum", "Spielkonzept"], ["prompt", "KI-Prompt"], ["launch", "Launch-Checkliste"]];
+  let panel = "";
+  if (st.tab === "prompt") {
+    const p = buildPrompt();
+    panel = `<div class="panel">
+      <div class="panelbar"><p>Der komplette Bauauftrag für die KI. Kopiere ihn vollständig in Claude oder eine andere KI. ${p.length.toLocaleString("de-DE")} Zeichen.</p>
+      <div class="rbtns"><button class="btn primary" data-act="copy" data-w="prompt">Prompt kopieren</button>${canPDF() ? `<button class="btn" data-act="ppdf">Als PDF speichern</button>` : ""}</div></div>
+      <pre class="code">${esc(p)}</pre></div>`;
+  } else if (st.tab === "sum") {
+    const cards = S.map(s => {
+      const qs = v.filter(q => q.sec === s.id && answered(q)); if (!qs.length) return "";
+      return `<article class="scard"><h3>${s.icon} ${esc(s.name)}</h3><dl>${qs.map(q => {
+        const f = fmt(q);
+        return `<button class="row" data-act="edit" data-q="${q.id}" title="Antwort ändern"><dt>${esc(q.label)}</dt><dd class="${f === "KI entscheidet" ? "aiv" : ""}">${esc(f)}</dd></button>`;
+      }).join("")}</dl></article>`;
+    }).join("");
+    const doc = concept(), stale = st.ai && st.aiSig !== JSON.stringify(st.a);
+    panel = `<div class="panel">
+      <div class="panelbar"><p>Dein erstes Spiel, fertig ausgedacht aus deinen Antworten.</p>
+        <div class="rbtns">
+          ${CAPS.sample ? `<button class="btn" data-act="elaborate" ${elaborate.busy ? "disabled" : ""}>${elaborate.busy ? "Claude arbeitet …" : st.ai ? "Neu ausarbeiten lassen" : "✨ Von Claude ausführlich ausarbeiten"}</button>` : ""}
+          ${canPDF() ? `<button class="btn primary" data-act="pdf">Als PDF speichern</button>` : ""}
+        </div></div>
+      ${elaborate.busy ? `<p class="aistatus" id="aiStatus">Claude denkt sich dein Spiel aus … das dauert etwa eine Minute.</p>` : ""}
+      ${st.aiErr ? `<p class="alert warn">${esc(st.aiErr)}</p>` : ""}
+      ${stale ? `<p class="alert info">Du hast Antworten geändert, seit Claude das Konzept ausgearbeitet hat. Lass es neu ausarbeiten, damit alles zusammenpasst.</p>` : ""}
+      ${inClaude && !CAPS.downloads ? `<p class="fine">Der PDF-Download erscheint, sobald die Seite in claude.ai geöffnet ist.</p>` : ""}
+      <article class="doc">
+        <p class="eyebrow">Spielkonzept${st.ai ? " · ausgearbeitet mit Claude" : ""}</p>
+        <h1>${esc(doc.title)}</h1>
+        ${docHTML(doc)}
+      </article>
+      <h2 class="h2s">Alle Antworten <small>Tippe auf eine Zeile, um sie zu ändern.</small></h2>
+      <div class="scards">${cards}</div></div>`;
+  } else {
+    const items = launchItems(), d = items.filter(i => st.done[i.k]).length;
+    panel = `<div class="panel">
+      <div class="panelbar"><p>${d} von ${items.length} erledigt. Abhaken wird in diesem Browser gespeichert.</p></div>
+      <ul class="checks">${items.map(i => `<li><button class="chk${st.done[i.k] ? " on" : ""}" data-act="check" data-k="${i.k}" aria-pressed="${!!st.done[i.k]}"><span class="box" aria-hidden="true"></span><span><b>${esc(i.t)}</b><small>${esc(i.d)}</small></span></button></li>`).join("")}</ul>
+      <p class="fine">Stand Oktober 2026. Gebühren und Regeln ändern sich, prüfe sie vor dem Einreichen auf den offiziellen Seiten. Keine Rechtsberatung.</p></div>`;
+  }
+  return `<section class="result">
+    <div class="rhead">
+      <div><p class="eyebrow">Dein Bauplan</p><h1>${esc(val("name") || "Dein Spiel")}</h1>
+      <p class="stats"><span><b>${ans.length}</b> beantwortet</span><span><b>${aiN}</b> entscheidet die KI</span>${open ? `<span><b>${open}</b> offen</span>` : ""}<span>Stufe „${LEVELS[st.level - 1].name}“</span></p></div>
+      <div class="rbtns">${open ? `<button class="btn" data-act="go">Offene Fragen beantworten</button>` : ""}${st.level < 4 ? `<button class="btn primary" data-act="deeper">Noch detaillierter →</button>` : ""}</div>
+    </div>
+    ${typeof cloudBox === "function" ? cloudBox() : ""}
+    ${c.length ? `<div class="alerts">${c.map(x => `<p class="alert ${x.k}"><b>${x.k === "warn" ? "Achtung" : "Hinweis"}</b> ${esc(x.t)}</p>`).join("")}</div>` : ""}
+    <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" class="tab${st.tab === k ? " on" : ""}" aria-selected="${st.tab === k}" data-act="tab" data-t="${k}">${l}</button>`).join("")}</div>
+    ${panel}
+  </section>`;
+}
+
+/* ---------- Start ---------- */
+function boot(d) { if (d && d.st) st = d.st; render(); }
+
+
+/* Game-Bauplan – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
+const CAPS = { downloads: null, sample: null };
+const inClaude = !!(window.claude && window.claude.use);
+const canPDF = () => !!(window.jspdf && (CAPS.downloads || !inClaude));
+async function deliverPDF(pdf, file) {
+  if (CAPS.downloads) { await deliverPDF(pdf, file); return; }
+  pdf.save(file);
+}
+const arrOf = id => Array.isArray(st.a[id]) ? st.a[id].filter(x => x !== AI) : (val(id) ? [val(id)] : []);
+const pickN = (list, n, seed) => { const out = [], l = list.slice(); let s = seed; while (out.length < n && l.length) { s = (s * 9301 + 49297) % 233280; out.push(l.splice(s % l.length, 1)[0]); } return out; };
+const seedOf = () => hue(JSON.stringify(st.a));
+
+const WORLD = {
+  "Fantasy": { n: ["Zauber", "Drachen", "Kristall"], places: ["Funkelwald", "Kristallhöhlen", "Drachengipfel", "Wolkenschloss"], foes: [["Wackelpilz", "hüpft im Kreis und lässt Sporen fallen"], ["Kobold-Dieb", "schnappt sich Sammelobjekte und rennt weg"], ["Steingolem", "langsam, aber blockiert Wege"], ["Irrlicht", "lockt in Sackgassen"]], boss: "der Kristalldrache", item: "Mondkristalle" },
+  "Sci-Fi / Weltraum": { n: ["Orbit", "Nova", "Astro"], places: ["Raumstation Alpha", "Asteroidengürtel", "Eisplanet", "Mutterschiff"], foes: [["Drohne", "patrouilliert und piept, wenn sie dich sieht"], ["Meteorit", "fliegt quer durchs Bild"], ["Glibber-Alien", "teilt sich bei Treffern"], ["Laserturm", "feuert im festen Takt"]], boss: "das Mutterschiff", item: "Energiezellen" },
+  "Moderne Stadt": { n: ["City", "Dach", "Block"], places: ["Hinterhof", "Hauptstraße", "Baustelle", "Dächer der Stadt"], foes: [["Kampftaube", "stürzt im Bogen herab"], ["Mülltonne", "rollt los, wenn man vorbeigeht"], ["Ordnungshüter", "verfolgt dich ein Stück"], ["Baukran-Last", "schwingt hin und her"]], boss: "der Baustellen-Roboter", item: "Münzen" },
+  "Natur & Wald": { n: ["Moos", "Wald", "Wurzel"], places: ["Lichtung", "Pilzhain", "Wasserfall", "Uralter Baum"], foes: [["Igel", "rollt sich ein und rollt los"], ["Wespenschwarm", "folgt dir ein paar Sekunden"], ["Dornenranke", "wächst plötzlich aus dem Boden"], ["Waldschrat", "wirft Tannenzapfen"]], boss: "der Wurzelriese", item: "Eicheln" },
+  "Unterwasser": { n: ["Tiefsee", "Koralle", "Blubb"], places: ["Korallenriff", "Seegraswald", "Wrack", "Tiefseegraben"], foes: [["Kugelfisch", "bläst sich auf, wenn man nah kommt"], ["Qualle", "schwebt langsam auf und ab"], ["Krabbe", "läuft seitwärts hin und her"], ["Muräne", "schnellt aus Höhlen"]], boss: "der Riesenkrake", item: "Perlen" },
+  "Mittelalter": { n: ["Burg", "Ritter", "Krone"], places: ["Marktplatz", "Burggraben", "Rittersaal", "Turmspitze"], foes: [["Wachritter", "läuft Patrouille"], ["Bogenschütze", "schießt von Mauern"], ["Rammbock", "kracht durch Türen"], ["Rabe", "klaut glänzende Dinge"]], boss: "der Schwarze Ritter", item: "Goldtaler" },
+  "Endzeit": { n: ["Schrott", "Ödland", "Asche"], places: ["Schrottplatz", "Verlassene Tankstelle", "Staubwüste", "Bunker"], foes: [["Schrottkäfer", "krabbelt in Gruppen"], ["Plünderer", "will deine Vorräte"], ["Sandsturm", "schiebt dich zurück"], ["Mutantenratte", "springt dich an"]], boss: "der Schrottkönig", item: "Schrauben" },
+  "Süßigkeiten & Cartoon": { n: ["Zucker", "Bonbon", "Keks"], places: ["Lutscherwiese", "Schokofluss", "Gummibärenberg", "Tortenturm"], foes: [["Gummibär", "hüpft auf dich zu"], ["Kaugummiblase", "platzt und klebt fest"], ["Brauselawine", "sprudelt plötzlich hoch"], ["Lakritzschlange", "schlängelt durch Lücken"]], boss: "die Riesentorte", item: "Zuckerperlen" },
+  "Steampunk": { n: ["Zahnrad", "Dampf", "Kessel"], places: ["Werkstatt", "Dampflok", "Uhrturm", "Luftschiff"], foes: [["Aufziehkäfer", "läuft geradeaus, bis er abläuft"], ["Dampfventil", "zischt im Takt"], ["Zahnradwächter", "rotiert und blockiert"], ["Messingvogel", "kreist über dir"]], boss: "die große Maschine", item: "Zahnräder" },
+  "Wilder Westen": { n: ["Prärie", "Saloon", "Sporen"], places: ["Geisterstadt", "Canyon", "Goldmine", "Zug"], foes: [["Steppenläufer", "rollt mit dem Wind"], ["Klapperschlange", "lauert hinter Steinen"], ["Bandit", "wirft Lassos"], ["Geier", "kreist und stößt herab"]], boss: "der Banditenboss", item: "Goldnuggets" },
+  "Antike": { n: ["Tempel", "Olymp", "Sphinx"], places: ["Basar", "Pyramide", "Säulenhalle", "Götterberg"], foes: [["Mumie", "schlurft langsam, gibt nicht auf"], ["Skarabäus", "krabbelt in Schwärmen"], ["Statue", "bewegt sich nur, wenn du nicht hinsiehst"], ["Speerfalle", "schießt aus Wänden"]], boss: "die Sphinx", item: "Amulette" },
+  "Küche & Restaurant": { n: ["Pizza", "Pfanne", "Küchen"], places: ["Vorratskammer", "Küche", "Gastraum", "Terrasse"], foes: [["Wütende Tomate", "rollt hin und her"], ["Fettspritzer", "springen aus heißen Pfannen"], ["Küchenratte", "klaut Zutaten"], ["Hungriger Gast", "wird ungeduldig und schimpft"]], boss: "der Oberkoch beim Stoßgeschäft", item: "Zutaten" },
+  "Abstrakt": { n: ["Pixel", "Form", "Linie"], places: ["Weiße Leere", "Farbraum", "Geometrie-Labyrinth", "Der Kern"], foes: [["Dreieck", "dreht sich und sticht"], ["Rotes Quadrat", "springt im Raster"], ["Linie", "zieht sich quer über den Bildschirm"], ["Fraktal", "teilt sich immer weiter"]], boss: "die große Form", item: "Lichtpunkte" }
+};
+const DEF_WORLD = WORLD["Fantasy"];
+const CTRL = {
+  "Springen": ["Tippen", "Leertaste"], "Laufen & Ausweichen": ["Wischen nach links/rechts", "Pfeiltasten"], "Schießen & Werfen": ["Auf das Ziel tippen", "Mit der Maus zielen und klicken"],
+  "Kämpfen": ["Angriffs-Knopf rechts unten", "Taste J"], "Bauen": ["Bauteil auf das Feld ziehen", "Bauteil anklicken und platzieren"], "Sammeln": ["passiert automatisch beim Berühren", "passiert automatisch beim Berühren"],
+  "Fangen": ["Figur mit dem Finger nach links/rechts ziehen", "Maus nach links/rechts bewegen"], "Kochen & Zubereiten": ["Zutat antippen und auf den Teller ziehen", "Zutat anklicken und auf den Teller ziehen"],
+  "Kombinieren & Verbinden": ["Teile wischen oder verbinden", "Teile anklicken und verbinden"], "Fahren & Steuern": ["Linke/rechte Bildschirmhälfte gedrückt halten", "Pfeiltasten"],
+  "Schleichen & Verstecken": ["Joystick, gedrückt halten zum Ducken", "WASD, Shift zum Schleichen"], "Sortieren & Ordnen": ["Ziehen und Ablegen", "Ziehen und Ablegen mit der Maus"],
+  "Zeichnen": ["Mit dem Finger zeichnen", "Mit der Maus zeichnen"], "Andere anführen": ["Einheit antippen, dann Ziel antippen", "Einheit anklicken, dann Ziel anklicken"],
+  "Handeln & Verkaufen": ["Knöpfe im Handelsfenster", "Knöpfe im Handelsfenster"], "Erkunden": ["Virtueller Joystick", "WASD"], "Karten ausspielen": ["Karte aufs Feld ziehen", "Karte aufs Feld ziehen"],
+  "Im Takt tippen": ["Im Takt auf die Spuren tippen", "Tasten D, F, J, K im Takt"]
+};
+
+function nameIdeas(w) {
+  const style = val("nameStyle"), hero = val("hero"), s = seedOf();
+  const heroN = { "Tier": "Fuchs", "Roboter": "Robo", "Mensch": "Max", "Fantasiewesen": "Flumm", "Objekt / Form": "Klötzchen", "Fahrzeug": "Turbo" }[hero] || "Held";
+  const verbN = { "Springen": "Hüpf", "Laufen & Ausweichen": "Flitz", "Fangen": "Fang", "Kochen & Zubereiten": "Koch", "Bauen": "Bau", "Sammeln": "Sammel", "Fahren & Steuern": "Turbo", "Kämpfen": "Krawall", "Schießen & Werfen": "Wurf" }[arrOf("ideaVerb")[0]] || "Abenteuer";
+  const [a, b, c] = w.n;
+  const sets = {
+    "Kurz & knackig": [`${a}${verbN.toLowerCase()}`, `${b}rush`, `${heroN}!`],
+    "Lustiges Wortspiel": [`Alles ${a}, oder was?`, `${b}-Alarm`, `Keine Panik, ${heroN}!`],
+    "Name der Hauptfigur": [`${heroN}`, `${heroN} und die ${w.item}`, `${heroN}s großes ${verbN}`],
+    "Beschreibend": [`${a}-${verbN}`, `Die ${w.item}-Jagd`, `${w.places[0]}-Rettung`],
+    "Episch & geheimnisvoll": [`Das Geheimnis von ${w.places[3]}`, `${c}feuer`, `Die letzte ${a}-Legende`],
+    "Mit Ort oder Marke": [`${a} Club`, `[Dein Laden]: ${verbN}-Chaos`, `Abenteuer im ${w.places[1]}`]
+  };
+  return sets[style] || pickN([].concat(...Object.values(sets)), 3, s);
+}
+
+function sizePlan() {
+  return {
+    "Mini-Prototyp": { worlds: 1, levels: 1, effort: "1–3 Tage" }, "Kleines Spiel": { worlds: 2, levels: 4, effort: "1–3 Wochen" },
+    "Mittleres Spiel": { worlds: 4, levels: 8, effort: "2–4 Monate" }, "Großes Spiel": { worlds: 6, levels: 15, effort: "6–12 Monate" },
+    "Endlos / prozedural": { worlds: 3, levels: 0, effort: "2–6 Wochen" }
+  }[val("scope")] || { worlds: 3, levels: 5, effort: "2–6 Wochen" };
+}
+
+function concept() {
+  const a = st.a, w = WORLD[val("setting")] || DEF_WORLD, s = seedOf();
+  const verbs = arrOf("ideaVerb"), chall = arrOf("ideaChallenge"), esc2 = arrOf("ideaEscalation");
+  const core = val(st.a.core === QUIZ_OPT ? "coreQuiz" : "core");
+  const touchP = touch(a), deskP = desk(a);
+  const vph = v => (PH.verb[v] || v.toLowerCase()).replace("|", " ");
+  const B = [];
+  const H = x => B.push({ t: "h2", x }), P = x => x && B.push({ t: "p", x }), UL = x => x.length && B.push({ t: "ul", x }), OL = x => x.length && B.push({ t: "ol", x }), KV = x => B.push({ t: "kv", x: x.filter(r => r[1]) });
+  const ai = st.ai;
+
+  /* 1 Überblick */
+  const names = ai && ai.titel && ai.titel.length ? ai.titel : nameIdeas(w);
+  H("Das Spiel in Kürze");
+  P(ai && ai.pitch ? ai.pitch : ideaText() || summarySentence());
+  KV([["Namensideen", names.join(" · ")], ["Spielsystem", core], ["Für wen", [val("age"), val("skill")].filter(Boolean).join(", ")],
+    ["Plattform", [val("platforms"), val("orientation")].filter(Boolean).join(", ")], ["Look", [val("dimension"), val("artStyle"), val("perspective")].filter(Boolean).join(", ")],
+    ["Rundendauer", val("session")], ["Umfang", val("scope")], ["Geschäftsmodell", val("monet")]]);
+
+  /* 2 Spielablauf */
+  H("So spielt sich eine Runde");
+  if (ai && ai.spielablauf) OL(ai.spielablauf);
+  else {
+    const st1 = { "Sofort Action": "Das Spiel startet ohne Menü direkt in die Action.", "Kurze Story-Szene": "Drei kurze Bilder erklären, worum es geht, dann geht es los.", "Spielplatz zum Ausprobieren": "Man landet in einem gefahrlosen Bereich und probiert die Steuerung aus.", "Bei null anfangen": "Man startet auf einem leeren Feld und legt los." }[val("ideaStart")] || "Nach einem Tipp auf „Spielen“ geht es direkt los.";
+    const heroP = PH.hero[val("hero")] ? PH.hero[val("hero")].replace("Als ", "die Spielfigur, ein ").replace("Mit deinem eigenen Avatar", "deinen eigenen Avatar") : "deine Spielfigur";
+    const steps = [st1];
+    steps.push(`Du steuerst ${heroP}${val("perspective") ? ` in der Ansicht „${val("perspective")}“` : ""}. Erster Schauplatz: ${w.places[0]}.`);
+    verbs.forEach(v => { const c = CTRL[v]; steps.push(`Du ${vph(v)}: ${c ? (touchP ? c[0] : c[1]) + (touchP && deskP && c[0] !== c[1] ? ` (am PC: ${c[1]})` : "") : "mit einfachen Eingaben"}.`); });
+    if (val("ideaGoal")) steps.push(`Dein Ziel: ${val("ideaGoal")}.`);
+    const chp = chall.map(c => PH.ch[c]).filter(Boolean);
+    if (chp.length) steps.push(`Druck entsteht, weil ${chp.join(" und ")}.`);
+    if (has(a, "ideaChallenge", "Gegner") || (val("enemies") && val("enemies") !== "Keine Gegner")) steps.push(`Unterwegs tauchen zum Beispiel ${w.foes[0][0]} und ${w.foes[1][0]} auf.`);
+    steps.push(`Dabei sammelst du ${val("collect") && val("collect") !== "Nichts" ? val("collect") : w.item}.`);
+    if (val("ideaTwist") && val("ideaTwist") !== "Kein Kniff, klassisch gut") steps.push(`Der Clou: ${descOf(qOf("ideaTwist"), val("ideaTwist"))}`);
+    if (val("health")) steps.push(`Wirst du getroffen: ${descOf(qOf("health"), val("health"))}`);
+    if (val("failPenalty")) steps.push(`Scheitern heißt: ${descOf(qOf("failPenalty"), val("failPenalty"))}`);
+    steps.push(`Am Ende ${val("ideaFinale") ? `wartet: ${val("ideaFinale")}` : "kommt die Auswertung"}.${val("levelRating") && val("levelRating") !== "Gar nicht" ? ` Bewertung: ${val("levelRating")}.` : ""}`);
+    OL(steps);
+  }
+
+  /* 3 Steuerung */
+  H("Steuerung");
+  if (ai && ai.steuerung) KV(ai.steuerung.map(x => [x.eingabe, x.aktion]));
+  else {
+    const rows = verbs.map(v => { const c = CTRL[v] || ["Tippen", "Taste"]; return [touchP ? c[0] : c[1], v]; });
+    if (!rows.length) rows.push([touchP ? "Tippen" : "Leertaste", "Hauptaktion"]);
+    rows.push([touchP ? "Pause-Knopf oben rechts" : "Esc", "Pause"]);
+    if (has(a, "actions", "Ein Finger reicht")) P("Alles ist mit einem Finger bzw. einer Taste spielbar.");
+    KV(rows);
+  }
+
+  /* 4 Regeln */
+  H("Spielregeln");
+  UL(ai && ai.regeln ? ai.regeln : [
+    val("ideaGoal") && `Ziel: ${val("ideaGoal")}.`,
+    `Treffer: ${val("health") ? descOf(qOf("health"), val("health")) : "Die Figur hat 3 Herzen; Herzen tauchen gelegentlich als Sammelobjekt auf."}`,
+    `Punkte: Jedes Sammelobjekt (${w.item}) gibt 10 Punkte; mehrere direkt hintereinander verdoppeln die Punkte.`,
+    `Nach dem Scheitern: ${val("failPenalty") ? descOf(qOf("failPenalty"), val("failPenalty")) : "Neustart am letzten Kontrollpunkt, ohne Wartezeit."}`,
+    val("ideaRule") && val("ideaRule") !== "Keine Sonderregel" && `Sonderregel: ${val("ideaRule")}.`,
+    `Grundschwierigkeit: ${val("diff") || "Leicht bis mittel"}${val("diffModes") ? ` (${val("diffModes")})` : ""}.`,
+    val("session") && `Eine Runde bzw. ein Level dauert ${val("session")}.`,
+    val("failHelp") && `Hilfe bei Frust: ${val("failHelp")}.`
+  ].filter(Boolean));
+
+  /* 5 Level 1 */
+  H("Level 1 – komplett ausgearbeitet");
+  if (ai && ai.level1) OL(ai.level1.map(x => `${x.abschnitt}: ${x.beschreibung}`));
+  else {
+    const v1 = verbs[0], v2 = verbs[1];
+    const L1 = [
+      `Ankommen (0:00–0:15): ${w.places[0]}. Ruhige Musik, keine Gefahr. Ein leuchtender Pfeil oder eine Geste zeigt, was zu tun ist.`,
+      v1 ? `Erste Aktion (0:15–0:45): Der Spieler ${vph(v1).replace(/st\b/, "t").replace("du ", "")} zum ersten Mal, an einer Stelle, an der nichts schiefgehen kann.` : "Erste Aktion (0:15–0:45): Die Hauptaktion wird gefahrlos geübt.",
+      `Erstes Sammeln (0:45–1:00): Eine Reihe ${w.item} führt den Weg entlang und belohnt jede richtige Aktion mit Ton und Funkeln.`,
+      v2 ? `Zweite Aktion (1:00–1:30): Jetzt kommt „${v2}“ dazu, zuerst allein, dann zusammen mit „${v1}“.` : `Erste echte Herausforderung (1:00–1:30): ${chall[0] ? `Sanfte Version von „${chall[0]}“.` : "Ein einfaches Hindernis."}`,
+      (has(a, "ideaChallenge", "Gegner") || (val("enemies") && val("enemies") !== "Keine Gegner")) ? `Erster Gegner (1:30–2:00): ${w.foes[0][0]} – ${w.foes[0][1]}. Leicht zu durchschauen.` : `Steigerung (1:30–2:00): Dieselbe Aufgabe, etwas schneller und mit weniger Platz.`,
+      `Mini-Finale (2:00–2:30): ${val("ideaFinale") ? `Eine kleine Version von „${val("ideaFinale")}“` : "Ein letzter, etwas schwierigerer Abschnitt"} kombiniert alles Gelernte.`,
+      `Belohnung: ${val("levelRating") && val("levelRating") !== "Gar nicht" ? val("levelRating") : "Jubel-Animation"}, ${w.item} werden gezählt, Level 2 wird freigeschaltet.`
+    ];
+    OL(L1);
+  }
+
+  /* 6 Welten */
+  const sp = sizePlan();
+  H(val("scope") === "Endlos / prozedural" ? "Ablauf eines endlosen Laufs" : "Welten & Levelplan");
+  if (ai && ai.welten) UL(ai.welten.map(x => `${x.name}: Neu: ${x.neu}. Gegner/Hindernisse: ${x.gegner}. Finale: ${x.finale}.`));
+  else {
+    const biomes = arrOf("biomes"), places = biomes.length ? biomes.concat(w.places) : w.places;
+    const news = esc2.length ? esc2 : ["Neue Hindernisse", "Mehr Tempo", "Neue Fähigkeiten"];
+    const rows = [];
+    for (let i = 0; i < Math.max(1, Math.min(sp.worlds, 6)); i++) {
+      const place = places[i % places.length];
+      const neu = i === 0 ? "Grundlagen" : i === 1 && val("ideaTwist") && val("ideaTwist") !== "Kein Kniff, klassisch gut" ? `der Clou „${val("ideaTwist")}“` : news[(i - 1) % news.length];
+      const foe = w.foes[i % w.foes.length];
+      const last = i === Math.min(sp.worlds, 6) - 1;
+      rows.push(`${val("scope") === "Endlos / prozedural" ? `Abschnitt ${i + 1}` : `Welt ${i + 1}`}: ${place}${sp.levels ? ` (${sp.levels} Level)` : ""}. Neu: ${neu}. Typisch: ${foe[0]} (${foe[1]}).${last ? ` Großes Finale (${val("ideaFinale") || "Bosskampf"}) mit ${w.boss}.` : ""}`);
+    }
+    UL(rows);
+  }
+
+  /* 7 Gegner & Objekte */
+  H("Figuren, Gegner & Objekte");
+  if (ai && ai.gegner) KV(ai.gegner.map(x => [x.name, x.verhalten]));
+  else if (val("enemies") === "Keine Gegner" || has(a, "ideaChallenge", "Gar nichts, es ist entspannt")) P(`Keine Gegner. Die Herausforderung kommt aus der Umgebung: ${w.places.slice(0, 3).join(", ")}.`);
+  else KV(pickN(w.foes, 4, s).map(f => [f[0], f[1]]).concat(val("enemies") === "Viele Typen plus Bosse" || val("ideaFinale") === "Bosskampf" ? [[w.boss.replace(/^der |^die |^das /, "").replace(/^\w/, c => c.toUpperCase()), "Endgegner mit mehreren Phasen"]] : []));
+  if (ai && ai.gegenstaende) KV(ai.gegenstaende.map(x => [x.name, x.wirkung]));
+  else {
+    const pu = arrOf("powerups").filter(x => x !== "Keine");
+    UL([`${w.item}: Haupt-Sammelobjekt${val("currency") ? "" : ", dient als Währung"}.`].concat(pu.map(p => `${p}: ${descOf(qOf("powerups"), p) || "kurzzeitiger Vorteil"}`)));
+  }
+
+  /* 8 Fortschritt */
+  H("Fortschritt & Motivation");
+  UL(ai && ai.fortschritt ? ai.fortschritt : [
+    val("progress") && `Fortschritt durch: ${val("progress")}.`, val("upgrades") && `Verbessern: ${val("upgrades")}.`, val("unlocks") && `Freischaltbar: ${val("unlocks")}.`,
+    val("daily") && `Täglich: ${val("daily")}.`, val("leaderboard") && val("leaderboard") !== "Keine" && `Ranglisten: ${val("leaderboard")}.`, val("ideaWow") && `Wow-Moment, auf den alles hinarbeitet: ${val("ideaWow")}.`
+  ].filter(Boolean).concat(val("progress") ? [] : [`Level schalten nacheinander frei; pro Level gibt es bis zu 3 Sterne.`, `Mit gesammelten ${w.item} kauft man neue Outfits für die Spielfigur.`, `Alle paar Level gibt es eine Überraschung: neue Fähigkeit, neuer Ort oder neuer Gegner.`]));
+
+  /* 9 Look & Sound */
+  H("Look & Sound");
+  UL(ai && ai.look_und_sound ? ai.look_und_sound : [
+    [val("dimension"), val("artStyle")].filter(Boolean).length && `Grafik: ${[val("dimension"), val("artStyle")].filter(Boolean).join(", ")}${val("palette") ? `, Farben ${val("palette")}` : ""}.`,
+    val("perspective") && `Ansicht: ${val("perspective")}.`, val("effects") && `Effekte: ${val("effects")}.`,
+    val("music") && `Musik: ${val("music")}.`, val("sfx") && `Soundeffekte: ${val("sfx")}.`, val("uiStyle") && `Menüs: ${val("uiStyle")}.`,
+    `Jede wichtige Aktion bekommt sichtbares und hörbares Feedback (kleiner Wackler, Funkeln, kurzer Ton).`,
+    `Die Spielfigur ist auf jedem Hintergrund klar erkennbar (Umriss oder Kontrastfarbe).`
+  ].filter(Boolean));
+
+  /* 10 Multiplayer, Plattform, Geld */
+  if (mpAny(a)) { H("Gemeinsam spielen"); UL([`Modus: ${val("mp")}${val("mpKind") ? `, ${val("mpKind")}` : ""}${val("mpCount") ? `, ${val("mpCount")} Spieler` : ""}.`, val("matchmaking") && `Mitspieler: ${val("matchmaking")}.`, val("comms") && `Kommunikation: ${val("comms")}.`].filter(Boolean)); }
+  H("Technik, Plattform & Geld");
+  UL([val("platforms") && `Läuft auf: ${val("platforms")}.`, val("internet") && `Internet: ${val("internet")}.`, val("save") && `Speichern: ${val("save")}.`, val("account") && `Konto: ${val("account")}.`,
+    val("monet") && `Geschäftsmodell: ${val("monet")}${val("iapTypes") ? ` (${val("iapTypes")})` : ""}${val("adTypes") ? ` (${val("adTypes")})` : ""}.`,
+    `Empfohlene Technik: ${has(a, "platforms", "Konsole", "VR/AR") ? "Godot oder Unity" : (mobileApp(a) && !web(a)) ? "HTML5/JavaScript mit Capacitor oder Godot, je nach Erfahrung" : "HTML5/JavaScript (läuft sofort im Browser, später als App verpackbar)"}.`].filter(Boolean));
+
+  /* 11 Plan */
+  H("Umsetzungsplan");
+  P(`Geschätzter Aufwand mit KI-Unterstützung: ${sp.effort}${has(a, "devSkill", "Gar nicht", "Anfänger") ? " (eher am oberen Ende, weil du noch lernst)" : ""}.`);
+  OL(ai && ai.erste_schritte ? ai.erste_schritte : milestones().map(m => `${m[0]}: ${m[1]}`));
+  const c = conflicts();
+  if (c.length) { H("Darauf solltest du achten"); UL(c.map(x => x.t)); }
+  return { title: names[0], blocks: B };
+}
+
+/* ---------- Darstellung im Browser ---------- */
+function docHTML(doc) {
+  return doc.blocks.map(b => {
+    if (b.t === "h2") return `<h2>${esc(b.x)}</h2>`;
+    if (b.t === "p") return `<p>${esc(b.x)}</p>`;
+    if (b.t === "ul") return `<ul>${b.x.map(i => `<li>${esc(i)}</li>`).join("")}</ul>`;
+    if (b.t === "ol") return `<ol>${b.x.map(i => `<li>${esc(i)}</li>`).join("")}</ol>`;
+    if (b.t === "kv") return `<dl class="kv">${b.x.map(r => `<div><dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd></div>`).join("")}</dl>`;
+    return "";
+  }).join("");
+}
+
+/* ---------- KI-Ausarbeitung ---------- */
+async function elaborate(btn) {
+  if (!CAPS.sample || elaborate.busy) return;
+  elaborate.busy = true; st.aiErr = ""; render();
+  const status = () => document.getElementById("aiStatus");
+  const schema = `{"titel":["3 Namensvorschläge"],"pitch":"3-4 Sätze, die Lust aufs Spiel machen","spielablauf":["8-12 konkrete Schritte einer typischen Runde, Moment für Moment"],"steuerung":[{"eingabe":"z. B. Tippen","aktion":"was passiert"}],"regeln":["6-10 klare Regeln mit konkreten Zahlen"],"level1":[{"abschnitt":"Name + Zeitangabe","beschreibung":"was genau passiert, was der Spieler lernt"}],"welten":[{"name":"","neu":"neue Mechanik","gegner":"","finale":""}],"gegner":[{"name":"","verhalten":"konkretes Verhalten mit Werten"}],"gegenstaende":[{"name":"","wirkung":""}],"fortschritt":["5-8 Punkte"],"look_und_sound":["5-8 konkrete Punkte"],"erste_schritte":["6-8 Umsetzungsschritte"]}`;
+  const input = `Du bist ein erfahrener Game Designer. Entwirf aus der folgenden Spezifikation ein konkretes, eigenständiges erstes Spiel. Erfinde konkrete Namen, Zahlen, Gegner, Level-Abläufe und Regeln, die genau zu den Antworten passen. Alles auf Deutsch, verständlich für Laien. Kopiere keine bestehenden Spiele.
+
+Antworte NUR mit JSON exakt in dieser Form (6-8 Einträge bei Listen, Level 1 mit 6-8 Abschnitten, 3-6 Welten passend zum Umfang):
+${schema}
+
+SPEZIFIKATION:
+${buildPrompt()}`;
+  try {
+    const out = await CAPS.sample.json(input, { modelTier: "complex", cache: false, onText: ({ text }) => { const s = status(); if (s) s.textContent = `Claude schreibt … ${text.length.toLocaleString("de-DE")} Zeichen`; } });
+    if (out && typeof out === "object") { st.ai = out; st.aiSig = JSON.stringify(st.a); }
+  } catch (e) {
+    st.aiErr = e && e.code === "rate_limited" ? "Gerade zu viele Anfragen. Versuch es in einer Minute noch einmal." : e && e.code === "not_granted" ? "Claude-Ausarbeitung wurde nicht erlaubt." : "Die Ausarbeitung hat nicht geklappt. Du kannst es noch einmal versuchen.";
+  }
+  elaborate.busy = false; render();
+}
+
+/* ---------- PDF ---------- */
+const pdfTxt = s => String(s).replace(/[„“”]/g, '"').replace(/[‘’]/g, "'").replace(/[–—]/g, "-").replace(/…/g, "...").replace(/→/g, "->").replace(/⇄/g, "<->").replace(/·/g, "-")
+  .replace(/[^\x00-\xFF]/g, "").replace(/\s+/g, " ").trim();
+async function savePDF(btn) {
+  const J = window.jspdf && window.jspdf.jsPDF;
+  const old = btn.textContent;
+  if (!J || !canPDF()) { btn.textContent = "PDF hier nicht verfügbar"; setTimeout(() => btn.textContent = old, 2500); return; }
+  const doc = concept(), pdf = new J({ unit: "mm", format: "a4" });
+  const W = 210, M = 18, CW = W - 2 * M, BOT = 280;
+  let y = M;
+  const ink = [23, 26, 51], acc = [45, 60, 203], mut = [90, 96, 132];
+  const need = h => { if (y + h > BOT) { pdf.addPage(); y = M; } };
+  const text = (s, size, style, color, x = M, width = CW, lh = 1.45) => {
+    pdf.setFont("helvetica", style); pdf.setFontSize(size); pdf.setTextColor(...color);
+    const lines = pdf.splitTextToSize(pdfTxt(s), width); const h = size * 0.3528 * lh;
+    lines.forEach(l => { need(h); pdf.text(l, x, y + h * 0.8); y += h; });
+  };
+  // Titelseite
+  pdf.setFillColor(...acc); pdf.rect(0, 0, W, 95, "F");
+  pdf.setFillColor(255, 197, 61); pdf.rect(0, 95, W, 4, "F");
+  pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.text("SPIELKONZEPT", M, 30);
+  pdf.setFontSize(30); pdf.splitTextToSize(pdfTxt(doc.title), CW).forEach((l, i) => pdf.text(l, M, 48 + i * 12));
+  pdf.setFont("helvetica", "normal"); pdf.setFontSize(11);
+  pdf.text(pdfTxt(`Erstellt mit dem Game-Bauplan am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
+  y = 104;
+  doc.blocks.forEach(b => {
+    if (b.t === "h2") { need(18); y += 6; pdf.setDrawColor(...acc); pdf.setLineWidth(0.6); pdf.line(M, y, M + 14, y); y += 3; text(b.x, 15, "bold", acc); y += 1.5; }
+    else if (b.t === "p") { text(b.x, 10.5, "normal", ink); y += 2; }
+    else if (b.t === "ul" || b.t === "ol") b.x.forEach((it, i) => {
+      const mark = b.t === "ol" ? `${i + 1}.` : "-"; need(6);
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(10.5); pdf.setTextColor(...acc); pdf.text(mark, M, y + 3.6);
+      text(it, 10.5, "normal", ink, M + 7, CW - 7); y += 1.2;
+    });
+    else if (b.t === "kv") b.x.forEach(r => {
+      const yy = y; pdf.setFont("helvetica", "bold"); pdf.setFontSize(9.5);
+      const kl = pdf.splitTextToSize(pdfTxt(r[0]), 48); need(kl.length * 5 + 2);
+      const y0 = y; text(r[0], 9.5, "bold", mut, M, 48); const y1 = y; y = y0;
+      text(r[1], 10.5, "normal", ink, M + 52, CW - 52); y = Math.max(y, y1) + 1.5;
+      pdf.setDrawColor(211, 216, 234); pdf.setLineWidth(0.2); pdf.line(M, y - 0.8, W - M, y - 0.8);
+    });
+  });
+  // Checkliste + alle Antworten
+  pdf.addPage(); y = M;
+  text("Launch-Checkliste", 15, "bold", acc); y += 2;
+  launchItems().forEach(i => { need(10); pdf.setDrawColor(...ink); pdf.setLineWidth(0.3); pdf.rect(M, y + 1, 3.5, 3.5); text(`${i.t}: ${i.d}`, 10, "normal", ink, M + 7, CW - 7); y += 1.5; });
+  y += 6; text("Alle Antworten", 15, "bold", acc); y += 2;
+  const v = visible().filter(q => !q.quiz);
+  S.forEach(sec => {
+    const qs = v.filter(q => q.sec === sec.id && answered(q)); if (!qs.length) return;
+    need(14); y += 2; text(sec.name, 11.5, "bold", ink);
+    qs.forEach(q => { const y0 = y; text(q.label, 9, "normal", mut, M, 55); const y1 = y; y = y0; text(fmt(q), 9.5, "normal", ink, M + 58, CW - 58); y = Math.max(y, y1) + 0.8; });
+  });
+  const n = pdf.getNumberOfPages();
+  for (let i = 2; i <= n; i++) { pdf.setPage(i); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(...mut); pdf.text(pdfTxt(`${doc.title} - Spielkonzept`), M, 290); pdf.text(`${i} / ${n}`, W - M, 290, { align: "right" }); }
+  const file = (pdfTxt(doc.title).replace(/[^A-Za-z0-9ÄÖÜäöüß -]/g, "").trim() || "Spielkonzept") + " - Spielkonzept.pdf";
+  try {
+    btn.textContent = "Speichern bestätigen …";
+    await deliverPDF(pdf, file);
+    btn.textContent = "PDF gespeichert ✓";
+  } catch (e) {
+    btn.textContent = e && e.code === "declined" ? "Abgebrochen" : "PDF ging nicht";
+  }
+  setTimeout(() => btn.textContent = old, 2500);
+}
+
+/* ---------- Fähigkeiten der Seite ---------- */
+(async () => {
+  if (!window.claude || !window.claude.use) return;
+  const [d, s] = await Promise.all([window.claude.use("downloads").catch(() => null), window.claude.use("sample").catch(() => null)]);
+  CAPS.downloads = d; CAPS.sample = s;
+  if (st.view === "result") render();
+})();
+
+/* Game-Bauplan – ausführlicher KI-Bauauftrag + PDF */
+function conceptMD(doc, skip) {
+  const L = [];
+  let skipping = false;
+  doc.blocks.forEach(b => {
+    if (b.t === "h2") { skipping = skip.includes(b.x); if (!skipping) L.push("", `### ${b.x}`, ""); return; }
+    if (skipping) return;
+    if (b.t === "p") L.push(b.x);
+    else if (b.t === "ul") b.x.forEach(i => L.push(`- ${i}`));
+    else if (b.t === "ol") b.x.forEach((i, n) => L.push(`${n + 1}. ${i}`));
+    else if (b.t === "kv") b.x.forEach(r => L.push(`- **${r[0]}:** ${r[1]}`));
+  });
+  return L;
+}
+function balancing() {
+  const a = st.a, sp = sizePlan();
+  const sec = { "1–3 Minuten": 120, "5–10 Minuten": 420, "15–30 Minuten": 1200, "30–60 Minuten": 2400, "Stundenlang": 3600 }[val("session")] || 300;
+  const lives = { "Sie hält einiges aus": 5, "Ein Treffer reicht": 1, "Ein paar Versuche": 3, "Nichts Schlimmes": 0 }[val("health")] ?? 3;
+  const speed = { "Gemütlich": 0.7, "Mittel": 1, "Schnell": 1.3, "Hektisch": 1.6, "Wechselnd": 1 }[val("pace")] || 1;
+  const diff = { "Sehr leicht": 0.6, "Leicht": 0.8, "Mittel": 1, "Schwer": 1.3, "Bockschwer": 1.7 }[val("diff")] || 0.9;
+  const w = WORLD[val("setting")] || DEF_WORLD;
+  return [
+    "const CONFIG = {",
+    `  zielRundenDauerSekunden: ${sec},        // aus „Rundendauer“: ${val("session") || "KI entscheidet"}`,
+    `  leben: ${lives},                         // 0 = keine Leben, nur Zurücksetzen`,
+    `  grundTempo: ${speed},                    // 1 = normal; aus „Tempo“: ${val("pace") || "KI entscheidet"}`,
+    `  tempoSteigerungProMinute: ${has(a, "ideaEscalation", "Mehr Tempo") ? 0.12 : 0.04},`,
+    `  schwierigkeitsFaktor: ${diff},           // aus „Grundschwierigkeit“: ${val("diff") || "KI entscheidet"}`,
+    `  punkteProSammelobjekt: 10,               // Sammelobjekt: ${w.item}`,
+    `  komboMultiplikatorMax: 4,`,
+    `  welten: ${sp.worlds},`,
+    `  levelProWelt: ${sp.levels || "\"endlos\""},`,
+    `  ersterGegnerNachSekunden: ${has(a, "ideaChallenge", "Gegner") ? 60 : 90},`,
+    `  hilfeNachFehlversuchen: ${val("failHelp") && val("failHelp") !== "Nichts" ? 3 : 0},`,
+    `  sterneSchwellen: [0.5, 0.75, 0.95],      // Anteil der maximalen Punkte für 1/2/3 Sterne`,
+    "};"
+  ];
+}
+function screens() {
+  const a = st.a, s = ["Ladebildschirm (höchstens 3 Sekunden)", "Titelbildschirm mit großem „Spielen“-Knopf"];
+  if (!has(a, "structure", "Endloser Lauf", "Eine Arena / ein Spielfeld")) s.push("Levelauswahl bzw. Weltkarte");
+  s.push("Spielbildschirm (mit Pause-Knopf)", "Pause-Menü: Weiter, Neustart, Einstellungen, Zurück zum Titel", "Gewonnen-Bildschirm mit Punkten, Sternen und „Weiter“", "Verloren-Bildschirm mit „Nochmal“ (ein Tipp) und „Zurück“", "Einstellungen: Ton/Musik, Sprache, Barrierefreiheit, Daten zurücksetzen");
+  if (iap(a) || val("upgrades") || has(a, "progress", "Kosmetik")) s.push("Shop bzw. Upgrade-Bildschirm");
+  if (mpAny(a)) s.push("Multiplayer-Lobby: Mitspieler finden oder einladen");
+  if (has(a, "parents", "Elternbereich mit Sperre")) s.push("Elternbereich hinter Elternschranke");
+  return s;
+}
+const DOD = {
+  "Grundgerüst & Kernmechanik": "Man kann das Spiel starten, die Hauptaktion ausführen, gewinnen und verlieren. Grafik darf aus einfachen Formen bestehen.",
+  "Spielinhalte": "Level 1 ist genau wie in Teil B beschrieben spielbar, alle Welten existieren mit mindestens einem Level.",
+  "Grafik & Sound": "Kein Platzhalter mehr sichtbar oder hörbar; Stil entspricht Teil C „Grafik & Kunststil“ und „Sound & Musik“.",
+  "Menüs & Komfort": "Alle Bildschirme aus „Bildschirme & Ablauf“ funktionieren; Fortschritt bleibt nach Neustart erhalten.",
+  "Multiplayer": "Zwei Geräte können gemeinsam eine komplette Runde spielen; Verbindungsabbrüche führen nicht zum Absturz.",
+  "Monetarisierung & Marke": "Das Geschäftsmodell funktioniert im Testmodus, ohne den Spielfluss zu stören.",
+  "Feinschliff & Balancing": "Drei Testpersonen aus der Zielgruppe schaffen Level 1 ohne Hilfe; keine bekannten Fehler offen.",
+  "Veröffentlichung": "Alle Builds und Store-Texte sind fertig; die Launch-Checkliste ist abgearbeitet."
+};
+
+function buildPrompt() {
+  const a = st.a, v = visible().filter(q => !q.quiz), L = [];
+  const doc = concept(), lvl = LEVELS.find(l => l.n === st.level);
+  const P = (...x) => L.push(...x), blank = () => L.push("");
+  const skill = val("devSkill");
+
+  P(`# Spiel-Bauauftrag: „${doc.title}“ (Arbeitstitel)`, "");
+  P("Dieses Dokument ist der vollständige Bauauftrag für ein Videospiel. Es wurde mit einem Fragebogen erstellt, den ich (der Auftraggeber) ausgefüllt habe. Lies es komplett, bevor du irgendetwas tust.", "");
+  P("**Aufbau des Dokuments:**", "- **Teil A** – So arbeitest du (Regeln, Rangfolge, Begriffe)", "- **Teil B** – Das Spielidee-System (was für ein Spiel es ist und wie es funktioniert)", "- **Teil C** – Alle Detailvorgaben aus dem Fragebogen", "- **Teil D** – Umsetzung, Abnahme, Tests und deine erste Antwort", "");
+  P("---", "", "## Teil A – So arbeitest du", "");
+  P("### A1. Deine Rolle", "", "Du bist ein komplettes kleines Spielestudio in einer Person: Game Designer, Programmierer, Grafiker, Sounddesigner und Tester. Du baust dieses Spiel von Anfang bis Ende so, dass es fertig, spielbar und fehlerfrei ist.", "");
+  P("### A2. Grundregeln", "");
+  const rules = [
+    "Setze jede Vorgabe dieses Dokuments exakt um. Weiche nur ab, wenn eine Vorgabe technisch unmöglich ist, und sag das dann ausdrücklich mit einer Alternative.",
+    "Erfinde keine Features, Modi oder Systeme, die hier nicht stehen. Ausnahme: Dinge, die zwingend nötig sind, damit das Spiel vollständig funktioniert (z. B. Pausenmenü). Liste jede solche Ergänzung auf.",
+    "Steht bei einem Punkt „KI entscheidet“, triff die beste Entscheidung passend zu Zielgruppe, Spielidee und Stil. Sammle alle diese Entscheidungen in der Tabelle „Meine Entscheidungen“ (Spalten: Punkt | Entscheidung | abgeleitet aus).",
+    `Der Fragebogen wurde in der Detailstufe „${lvl.name}“ ausgefüllt.${st.level < 4 ? " Was hier nicht genannt ist, entscheidest du selbst, konsistent mit allen Vorgaben, und trägst es in „Meine Entscheidungen“ ein." : ""}`,
+    "Ich bin kein Spieleentwickler. Viele Antworten beschreiben Gefühle und Vorlieben statt Technik. Leite daraus alle konkreten Details ab: Technik, Waffen und Angriffe, Gegnerverhalten, Zahlenwerte, Kamera, Menüs, Speichern, Datenschutz, Animationen.",
+    "Lieblingsspiele sind nur eine Referenz für das Spielgefühl. Kopiere keine geschützten Namen, Figuren, Grafiken, Level, Sounds oder Musik. Das Spiel muss eigenständig sein.",
+    "Schreibe vollständigen, lauffähigen Code. Keine Platzhalter wie „TODO“ oder „hier Logik einfügen“, keine gekürzten Dateien, kein „Rest wie oben“.",
+    "Alle Spieltexte stehen zentral in einem Text-Objekt bzw. einer Sprachdatei. Alle Zahlenwerte stehen zentral in der Konfiguration (siehe Teil B, „Startwerte“).",
+    "Wähle die Technik so, dass das Spiel auf den genannten Plattformen läuft und für meine Kenntnisse machbar ist. Bei wenig Erfahrung: HTML5/JavaScript, das ohne Installation im Browser läuft.",
+    "Kommuniziere mit mir auf Deutsch, in kurzen, klaren Sätzen."
+  ];
+  const sk = {
+    "Gar nicht": "Ich kann nicht programmieren. Erkläre jeden Schritt so, dass ein Laie ihn nachmachen kann: welche Programme ich installiere, wo ich welche Datei speichere, wie ich das Spiel starte und teste. Jeder Fachbegriff bekommt beim ersten Mal eine Erklärung in einem Satz.",
+    "Anfänger": "Ich habe Grundkenntnisse. Erkläre neue Konzepte kurz und kommentiere den Code verständlich.",
+    "Fortgeschritten": "Ich kann programmieren. Kommentiere nur Nicht-Offensichtliches und erkläre Architekturentscheidungen kurz.",
+    "Profi": "Ich bin erfahren. Konzentriere dich auf saubere Architektur, Performance und Wartbarkeit."
+  }[skill];
+  if (sk) rules.push(sk);
+  rules.forEach((r, i) => P(`${i + 1}. ${r}`)); blank();
+  P("### A3. Rangfolge bei Widersprüchen", "", "Wenn sich Angaben widersprechen, gilt diese Reihenfolge (oben gewinnt). Melde jeden Widerspruch trotzdem bei mir.", "");
+  P("1. Strikte Verbote und Schutz der Zielgruppe (Teil C, „Strikte Verbote“, „Zielgruppe“)", "2. Das Spielidee-System (Teil B)", "3. Die Detailvorgaben (Teil C)", "4. Deine eigenen Entscheidungen", "");
+  P("### A4. Begriffe in diesem Dokument", "");
+  [["Kernschleife", "Die Handlung, die sich im Spiel ständig wiederholt und Spaß machen muss."], ["Level / Welt", "Ein Level ist ein spielbarer Abschnitt. Eine Welt ist eine Gruppe von Leveln mit gemeinsamem Ort und Thema."],
+   ["Run", "Ein kompletter Durchlauf von Anfang bis zum Scheitern oder Sieg."], ["Power-up", "Ein Gegenstand, der kurzzeitig einen Vorteil gibt."],
+   ["Kontrollpunkt", "Stelle, an der man nach dem Scheitern wieder startet."], ["Balancing", "Das Feineinstellen von Zahlen (Tempo, Schaden, Belohnungen), damit es fair und spannend ist."],
+   ["Softlock", "Ein Zustand, in dem man nicht mehr weiterkommt und auch nicht zurück kann. Muss ausgeschlossen sein."], ["Platzhalter", "Einfache Formen oder Töne, die später durch fertige Grafik und Sounds ersetzt werden."],
+   ["„KI entscheidet“", "Ich habe hier bewusst keine Vorgabe gemacht; du entscheidest."], ["Text nach „–“", "Bei jeder Antwort erklärt der Text nach dem Gedankenstrich verbindlich, was gemeint ist."]]
+    .forEach(([k, x]) => P(`- **${k}:** ${x}`));
+  blank();
+
+  /* Teil B */
+  P("---", "", "## Teil B – Das Spielidee-System", "");
+  P("### B1. Die Spielidee in einem Absatz", "", `> ${ideaText() || summarySentence()}`, "");
+  P("### B2. Steckbrief", "");
+  P(`- **Arbeitstitel / Namensideen:** ${doc.blocks.find(b => b.t === "kv").x[0][1]}${val("nameStyle") ? ` (gewünschter Namensstil: ${val("nameStyle")})` : ""}`);
+  prof().forEach(([k, x]) => P(`- **${k}:** ${x}`));
+  if (val("ideaRef")) P(`- **Gewünschtes Spielgefühl ähnlich wie:** ${val("ideaRef")} (nur als Gefühl, nicht kopieren)`);
+  blank();
+  P("### B3. Die Bausteine der Idee", "", "Diese Bausteine sind das Herz des Spiels. Jeder muss im fertigen Spiel klar erkennbar sein.", "");
+  ["ideaVerb", "ideaGoal", "hero", "setting", "ideaChallenge", "ideaTwist", "ideaEscalation", "ideaStart", "ideaWow", "ideaFinale", "ideaRule", "ideaPerfect"].forEach(id => {
+    const q = qOf(id); if (!q || !answered(q)) return; const l = answerLines(q); if (l) P(...l);
+  });
+  blank();
+  const verbs = arrOf("ideaVerb"), w = WORLD[val("setting")] || DEF_WORLD;
+  P("### B4. Die Kernschleife", "", "Das Spiel besteht aus drei ineinander greifenden Schleifen:", "");
+  P(`1. **Sekunde für Sekunde:** Der Spieler ${verbs.length ? verbs.map(v => (PH.verb[v] || v).split("|").map((s, i) => i ? s : s.replace(/st$/, "t").replace(/st /, "t ")).join(" ")).join(" und ") : "führt die Hauptaktion aus"}${arrOf("ideaChallenge").length ? `, während ${arrOf("ideaChallenge").map(c => PH.ch[c]).filter(Boolean).join(" und ") || "die Herausforderung wächst"}` : ""}. Jede gelungene Aktion gibt sofort sichtbares und hörbares Feedback.`);
+  P(`2. **Runde für Runde:** Ziel ist ${val("ideaGoal") ? `„${val("ideaGoal")}“` : "das Level zu schaffen"}. Dabei werden ${val("collect") && val("collect") !== "Nichts" ? val("collect") : w.item} gesammelt. Die Runde endet mit ${val("ideaFinale") ? `„${val("ideaFinale")}“` : "einer Auswertung"} und einer Belohnung.`);
+  P(`3. **Tag für Tag:** ${val("progress") ? `Fortschritt durch ${val("progress")}` : "Neue Level und Belohnungen werden freigeschaltet"}${val("daily") && val("daily") !== "Nein" ? `; dazu ${val("daily")}` : ""}. Mit der Zeit wird es spannender durch ${val("ideaEscalation") || "neue Herausforderungen"}.`);
+  blank();
+  let bn = 5;
+  P(...conceptMD(doc, ["Das Spiel in Kürze", "Umsetzungsplan", "Darauf solltest du achten", "Technik, Plattform & Geld"]).map(x => x.startsWith("### ") ? `### B${bn++}. ${x.slice(4)}` : x));
+  blank();
+  P(`### B${bn++}. Bildschirme & Ablauf`, "", "Das Spiel hat mindestens diese Bildschirme. Von jedem Bildschirm gibt es einen Weg zurück.", "");
+  screens().forEach((s, i) => P(`${i + 1}. ${s}`));
+  P("", "Ablauf: Laden → Titel → (Levelauswahl) → Spiel ⇄ Pause → Gewonnen oder Verloren → nächstes Level bzw. Nochmal.", "");
+  P(`### B${bn++}. Startwerte für das Balancing`, "", "Beginne mit diesen Werten in einer zentralen Konfiguration. Du darfst sie beim Testen anpassen; nenne jede Änderung.", "", "```js", ...balancing(), "```", "");
+
+  /* Teil C */
+  P("---", "", "## Teil C – Alle Detailvorgaben", "", "Hier stehen alle Antworten aus dem Fragebogen, nach Bereichen sortiert. Der Text nach „–“ erklärt jeweils verbindlich, was gemeint ist.", "");
+  let n = 1;
+  S.forEach(s => {
+    const qs = v.filter(q => q.sec === s.id && answered(q) && s.id !== "idea");
+    if (!qs.length) return;
+    P(`### C${n++}. ${s.name}`, "");
+    qs.forEach(q => { const l = answerLines(q); if (l) P(...l); });
+    blank();
+  });
+  const taboo = Array.isArray(a.taboo) ? a.taboo.filter(x => x !== AI && x !== "Keine Einschränkungen") : [];
+  P(`### C${n++}. Strikte Verbote`, "");
+  if (taboo.length) taboo.forEach(t => P(`- **NIEMALS:** ${t} – ${descOf(qOf("taboo"), t)}`));
+  if (kids(a)) P("- **NIEMALS:** Inhalte, Links oder Käufe, die Kinder ohne Elternschranke erreichen.");
+  P("- **NIEMALS:** Geschützte Namen, Figuren, Grafiken oder Musik aus bestehenden Spielen.");
+  blank();
+  const c = conflicts();
+  if (c.length) { P(`### C${n++}. Hinweise & mögliche Konflikte`, "", "Kläre diese Punkte mit mir, bevor du die betroffenen Teile baust:", ""); c.forEach(x => P(`- ${x.k === "warn" ? "⚠️" : "ℹ️"} ${x.t}`)); blank(); }
+
+  /* Teil D */
+  P("---", "", "## Teil D – Umsetzung & Abnahme", "");
+  P("### D1. Technik", "");
+  const tech = doc.blocks.findIndex(b => b.t === "h2" && b.x === "Technik, Plattform & Geld");
+  if (tech >= 0) doc.blocks[tech + 1].x.forEach(x => P(`- ${x}`));
+  P("- Spielzustand, Texte und Konfiguration sind klar voneinander getrennt.", "- Der Code ist in sinnvolle Teile gegliedert (z. B. Spielschleife, Eingabe, Figuren, Level, Oberfläche, Sound, Speichern).", "");
+  P("### D2. Meilensteine", "");
+  milestones().forEach((m, i) => P(`${i + 1}. **${m[0]}:** ${m[1]}`, `   - *Fertig, wenn:* ${DOD[m[0]] || "alles darin funktioniert und getestet ist."}`));
+  if (has(a, "workflow", "Schritt für Schritt")) P("", "Nach jedem Meilenstein: stoppen, kurz zusammenfassen, was fertig ist und wie ich es teste, und auf mein OK warten.");
+  else if (has(a, "workflow", "Erst eine Probe")) P("", "Liefere zuerst Meilenstein 1 als spielbare Probe und warte auf mein Feedback. Danach die restlichen Meilensteine.");
+  else if (has(a, "workflow", "Alles auf einmal")) P("", "Arbeite alle Meilensteine nacheinander ab, ohne zwischendurch auf Rückmeldung zu warten.");
+  blank();
+  P("### D3. Abnahmekriterien", "", "Das Spiel gilt erst als fertig, wenn alles hiervon erfüllt ist:", "");
+  acceptance().forEach(x => P(`- [ ] ${x}`));
+  P("- [ ] Level 1 läuft genau so ab, wie in Teil B beschrieben.", "- [ ] Alle Bausteine aus B3 sind im Spiel klar erkennbar.", "");
+  P("### D4. Testplan", "", "Führe diese Tests selbst gedanklich bzw. im Code durch und beschreibe mir, wie ich sie nachmache:", "");
+  ["Spiel starten: In höchstens 10 Sekunden ist man im Spiel.", "Level 1 komplett durchspielen und gewinnen.", "Absichtlich scheitern: Der Neustart funktioniert wie beschrieben.",
+   "Mitten im Spiel pausieren, Einstellungen ändern, weiterspielen.", "Spiel schließen und neu öffnen: Fortschritt ist noch da.",
+   touch(a) ? "Auf einem kleinen Handy und einem Tablet testen: nichts ist abgeschnitten, alle Knöpfe sind gut treffbar." : "In verschiedenen Fenstergrößen testen: nichts ist abgeschnitten.",
+   "Ton aus und wieder an: Musik und Effekte reagieren richtig.", "Alles aus „Strikte Verbote“ prüfen: nichts davon kommt vor.", "Zehn Minuten am Stück spielen: kein Ruckeln, kein Absturz, kein Softlock."]
+    .forEach((t, i) => P(`${i + 1}. ${t}`));
+  blank();
+  P("### D5. Lieferumfang", "");
+  P("- Vollständiger, lauffähiger Code", "- Anleitung: Wie starte ich das Spiel und wie teste ich es?", "- Tabelle „Meine Entscheidungen“", "- Liste aller Ergänzungen, die nicht im Auftrag standen", "- Liste aller verwendeten fremden Inhalte mit Lizenz (falls vorhanden)");
+  if (publicLaunch(a)) P(`- Unterstützung für die Veröffentlichung auf: ${val("launchWhere")}${val("storeAssets") ? ` (${val("storeAssets")})` : ""}`);
+  blank();
+  P("### D6. Deine erste Antwort", "", "Beginne NICHT sofort mit Code. Antworte zuerst in dieser Reihenfolge:", "");
+  P("1. **Verständnischeck:** Beantworte diese Fragen in je einem Satz:",
+    "   - Was macht der Spieler die meiste Zeit?", "   - Was ist sein Ziel, und wie gewinnt er ein Level?", "   - Wie verliert man, und was passiert dann?",
+    "   - Was ist der besondere Clou des Spiels?", "   - Wie läuft Level 1 ab?", "   - Für wen ist das Spiel, und was darf auf keinen Fall vorkommen?",
+    "   - Wie wird das Spiel mit der Zeit spannender?", "   - Auf welchen Geräten läuft es, und wie wird es bedient?",
+    "2. **Dein Plan:** Technik, Dateistruktur, Meilensteine.", "3. **Offene Fragen:** Alles, was unklar oder widersprüchlich ist.",
+    "4. **Namen:** Drei Namensvorschläge im gewünschten Stil.", "5. Dann wartest du auf mein OK und startest mit Meilenstein 1.");
+  return L.join("\n");
+}
+
+/* ---------- PDF des KI-Prompts ---------- */
+async function savePromptPDF(btn) {
+  const J = window.jspdf && window.jspdf.jsPDF, old = btn.textContent;
+  if (!J || !canPDF()) { btn.textContent = "PDF hier nicht verfügbar"; setTimeout(() => btn.textContent = old, 2500); return; }
+  const md = buildPrompt(), title = concept().title, pdf = new J({ unit: "mm", format: "a4" });
+  const W = 210, M = 18, CW = W - 2 * M, BOT = 280, ink = [23, 26, 51], acc = [45, 60, 203], mut = [90, 96, 132];
+  let y = M;
+  const need = h => { if (y + h > BOT) { pdf.addPage(); y = M; } };
+  const text = (s, size, style, color, x = M, width = CW, font = "helvetica") => {
+    pdf.setFont(font, style); pdf.setFontSize(size); pdf.setTextColor(...color);
+    const h = size * 0.3528 * 1.42;
+    pdf.splitTextToSize(pdfTxt(s.replace(/\*\*/g, "").replace(/\*/g, "")), width).forEach(l => { need(h); pdf.text(l, x, y + h * 0.8); y += h; });
+  };
+  pdf.setFillColor(...ink); pdf.rect(0, 0, W, 70, "F"); pdf.setFillColor(255, 197, 61); pdf.rect(0, 70, W, 3, "F");
+  pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(10.5); pdf.text("KI-BAUAUFTRAG", M, 26);
+  pdf.setFontSize(24); pdf.splitTextToSize(pdfTxt(title), CW).forEach((l, i) => pdf.text(l, M, 40 + i * 10));
+  pdf.setFont("helvetica", "normal"); pdf.setFontSize(10); pdf.text(pdfTxt(`Komplett in eine KI kopieren (z. B. Claude). Erstellt am ${new Date().toLocaleDateString("de-DE")}.`), M, 62);
+  y = 82;
+  let code = false;
+  md.split("\n").forEach((line, idx) => {
+    if (idx === 0) return;
+    if (line.startsWith("```")) { code = !code; y += 1.5; return; }
+    if (code) { need(4.5); pdf.setFillColor(238, 240, 248); pdf.rect(M, y, CW, 4.6, "F"); text(line, 8.5, "normal", ink, M + 2, CW - 4, "courier"); return; }
+    if (!line.trim()) { y += 2; return; }
+    if (line === "---") { need(8); y += 3; pdf.setDrawColor(211, 216, 234); pdf.setLineWidth(0.3); pdf.line(M, y, W - M, y); y += 3; return; }
+    if (line.startsWith("## ")) { if (y > M + 40) { pdf.addPage(); y = M; } text(line.slice(3), 17, "bold", acc); y += 2; return; }
+    if (line.startsWith("### ")) { need(14); y += 3; text(line.slice(4), 12.5, "bold", ink); y += 1; return; }
+    if (line.startsWith("> ")) { const y0 = y; text(line.slice(2), 11, "italic", ink, M + 5, CW - 5); pdf.setDrawColor(...acc); pdf.setLineWidth(1); pdf.line(M + 1, y0 + 1, M + 1, y - 0.5); return; }
+    let m;
+    if ((m = line.match(/^(\s*)- \[ \] (.*)/))) { need(6); pdf.setDrawColor(...ink); pdf.setLineWidth(0.3); pdf.rect(M, y + 1, 3.2, 3.2); text(m[2], 10, "normal", ink, M + 6, CW - 6); return; }
+    if ((m = line.match(/^(\s*)- (.*)/))) { const ind = m[1].length ? 6 : 0; need(5); pdf.setFillColor(...acc); pdf.circle(M + ind + 1.2, y + 2.6, 0.7, "F"); text(m[2], 10, "normal", ink, M + ind + 5, CW - ind - 5); return; }
+    if ((m = line.match(/^(\s*)(\d+)\. (.*)/))) { const ind = m[1].length ? 6 : 0; need(5); pdf.setFont("helvetica", "bold"); pdf.setFontSize(10); pdf.setTextColor(...acc); pdf.text(`${m[2]}.`, M + ind, y + 3.6); text(m[3], 10, "normal", ink, M + ind + 6, CW - ind - 6); return; }
+    text(line, 10, "normal", ink);
+  });
+  const n = pdf.getNumberOfPages();
+  for (let i = 2; i <= n; i++) { pdf.setPage(i); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(...mut); pdf.text(pdfTxt(`${title} - KI-Bauauftrag`), M, 290); pdf.text(`${i} / ${n}`, W - M, 290, { align: "right" }); }
+  const file = (pdfTxt(title).replace(/[^A-Za-z0-9ÄÖÜäöüß -]/g, "").trim() || "Spiel") + " - KI-Bauauftrag.pdf";
+  try { btn.textContent = "Speichern bestätigen …"; await deliverPDF(pdf, file); btn.textContent = "PDF gespeichert ✓"; }
+  catch (e) { btn.textContent = e && e.code === "declined" ? "Abgebrochen" : "PDF ging nicht"; }
+  setTimeout(() => btn.textContent = old, 2500);
+}
+
+/* Game-Bauplan – Online speichern & teilen (Supabase) */
+const SUPABASE_URL = "https://rpiopejbdhqjdhgdrnne.supabase.co";
+const SUPABASE_KEY = "sb_publishable_sZN7Px0rPVVmAjptx2Sj9A_RhCldM7H";
+let sb = null;
+try { if (window.supabase && !(window.claude && window.claude.use)) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+const CLOUD = { id: null, secret: null, msg: "", busy: false, lastSaved: "" };
+try { Object.assign(CLOUD, JSON.parse(localStorage.getItem("gamebauplan.cloud")) || {}); } catch (e) {}
+const cloudKeep = () => { try { localStorage.setItem("gamebauplan.cloud", JSON.stringify({ id: CLOUD.id, secret: CLOUD.secret })); } catch (e) {} };
+const rnd = n => { const c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789", b = crypto.getRandomValues(new Uint8Array(n)); return [...b].map(x => c[x % c.length]).join(""); };
+const shareURL = () => `${location.origin}${location.pathname}?b=${CLOUD.id}`;
+const payload = () => ({ a: st.a, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null });
+
+async function cloudSave(silent) {
+  if (!sb || CLOUD.busy) return;
+  if (!CLOUD.id || !CLOUD.secret) { CLOUD.id = rnd(10); CLOUD.secret = rnd(32); cloudKeep(); }
+  CLOUD.busy = true; if (!silent) { CLOUD.msg = "Speichere …"; render(); }
+  const data = JSON.stringify(payload());
+  const { data: ok, error } = await sb.rpc("gb_save", { p_id: CLOUD.id, p_secret: CLOUD.secret, p_data: payload() });
+  CLOUD.busy = false;
+  if (error) CLOUD.msg = /gb_save|function|schema/i.test(error.message) ? "Online-Speichern ist noch nicht eingerichtet." : "Speichern hat nicht geklappt. Prüfe deine Internetverbindung.";
+  else if (ok === false) { CLOUD.id = null; CLOUD.secret = null; cloudKeep(); return cloudSave(silent); }
+  else { CLOUD.lastSaved = data; CLOUD.msg = "Online gespeichert ✓"; }
+  if (!silent || error) render();
+}
+async function cloudLoad(id) {
+  if (!sb) return;
+  const { data, error } = await sb.rpc("gb_load", { p_id: id });
+  if (error || !data) { CLOUD.msg = "Dieser Bauplan wurde nicht gefunden."; render(); return; }
+  st.a = data.a || {}; st.level = data.level || 2; st.ai = data.ai || null; st.aiSig = data.aiSig || null;
+  st.view = "result"; st.tab = "sum";
+  if (CLOUD.id !== id) { CLOUD.id = null; CLOUD.secret = null; CLOUD.msg = "Geteilter Bauplan geladen. Wenn du speicherst, entsteht deine eigene Kopie."; cloudKeep(); }
+  else CLOUD.lastSaved = JSON.stringify(payload());
+  render();
+}
+function cloudBox() {
+  if (!sb) return "";
+  return `<div class="cloud">
+    <div><b>Online speichern & teilen</b><small>${CLOUD.id ? "Dein Bauplan hat einen eigenen Link. Änderungen werden automatisch gespeichert." : "Speichere deinen Bauplan online, um ihn zu teilen oder auf einem anderen Gerät weiterzumachen."}</small></div>
+    ${CLOUD.id ? `<input class="sharelink" id="shareLink" readonly value="${esc(shareURL())}"><button class="btn sm" data-act="copylink">Link kopieren</button>` : ""}
+    <button class="btn sm primary" data-act="cloud" ${CLOUD.busy ? "disabled" : ""}>${CLOUD.id ? "Jetzt speichern" : "Online speichern"}</button>
+    ${CLOUD.msg ? `<p class="fine">${esc(CLOUD.msg)}</p>` : ""}</div>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  if (b.dataset.act === "cloud") cloudSave(false);
+  if (b.dataset.act === "copylink") {
+    const t = shareURL();
+    navigator.clipboard.writeText(t).then(() => { b.textContent = "Kopiert ✓"; setTimeout(() => b.textContent = "Link kopieren", 2000); },
+      () => { const i = document.getElementById("shareLink"); i.select(); });
+  }
+});
+/* Automatisch speichern, sobald sich etwas ändert (nur eigener Bauplan) */
+setInterval(() => { if (sb && CLOUD.id && !CLOUD.busy && JSON.stringify(payload()) !== CLOUD.lastSaved) cloudSave(true); }, 4000);
+(() => { const id = new URLSearchParams(location.search).get("b"); if (sb && id && /^[A-Za-z0-9]{10}$/.test(id)) cloudLoad(id); })();
+
+/* Start – ganz am Ende, wenn alle Teile geladen sind */
+try { window.claude?.hot?.snapshot(() => ({ st })); } catch (e) {}
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+</script>
+</body></html>
