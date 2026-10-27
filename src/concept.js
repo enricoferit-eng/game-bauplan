@@ -3,7 +3,7 @@ const CAPS = { downloads: null, sample: null };
 const inClaude = !!(window.claude && window.claude.use);
 const canPDF = () => !!(window.jspdf && (CAPS.downloads || !inClaude));
 async function deliverPDF(pdf, file) {
-  if (CAPS.downloads) { await deliverPDF(pdf, file); return; }
+  if (CAPS.downloads) { await CAPS.downloads.save({ filename: file, data: pdf.output("blob") }); return; }
   pdf.save(file);
 }
 const arrOf = id => Array.isArray(st.a[id]) ? st.a[id].filter(x => x !== AI) : (val(id) ? [val(id)] : []);
@@ -198,6 +198,8 @@ function concept() {
   H("Umsetzungsplan");
   P(`Geschätzter Aufwand mit KI-Unterstützung: ${sp.effort}${has(a, "devSkill", "Gar nicht", "Anfänger") ? " (eher am oberen Ende, weil du noch lernst)" : ""}.`);
   OL(ai && ai.erste_schritte ? ai.erste_schritte : milestones().map(m => `${m[0]}: ${m[1]}`));
+  const notes = visible().filter(q => noteOf(q.id));
+  if (val("finalNotes") || notes.length) { H("Deine Notizen"); UL((val("finalNotes") ? [`Zum Schluss: ${val("finalNotes")}`] : []).concat(notes.map(q => `${q.label}: ${noteOf(q.id)}`))); }
   const c = conflicts();
   if (c.length) { H("Darauf solltest du achten"); UL(c.map(x => x.t)); }
   return { title: names[0], blocks: B };
@@ -287,7 +289,7 @@ async function savePDF(btn) {
   S.forEach(sec => {
     const qs = v.filter(q => q.sec === sec.id && answered(q)); if (!qs.length) return;
     need(14); y += 2; text(sec.name, 11.5, "bold", ink);
-    qs.forEach(q => { const y0 = y; text(q.label, 9, "normal", mut, M, 55); const y1 = y; y = y0; text(fmt(q), 9.5, "normal", ink, M + 58, CW - 58); y = Math.max(y, y1) + 0.8; });
+    qs.forEach(q => { const y0 = y; text(q.label, 9, "normal", mut, M, 55); const y1 = y; y = y0; text(fmt(q) + (noteOf(q.id) ? `  |  Notiz: ${noteOf(q.id)}` : ""), 9.5, "normal", ink, M + 58, CW - 58); y = Math.max(y, y1) + 0.8; });
   });
   const n = pdf.getNumberOfPages();
   for (let i = 2; i <= n; i++) { pdf.setPage(i); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(...mut); pdf.text(pdfTxt(`${doc.title} - Spielkonzept`), M, 290); pdf.text(`${i} / ${n}`, W - M, 290, { align: "right" }); }

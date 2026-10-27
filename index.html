@@ -129,6 +129,12 @@ main { padding-block: 28px 64px; }
 .opt.on .tick::after { content: ""; position: absolute; left: 7px; top: 2px; width: 6px; height: 12px; border: solid var(--accent-ink); border-width: 0 3px 3px 0; transform: rotate(45deg); }
 .badge { position: absolute; top: 8px; right: 8px; background: var(--sun); color: var(--sun-ink); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; border: 1.5px solid var(--ink); }
 .txt { width: 100%; margin-top: 22px; font: inherit; font-size: 18px; padding: 14px 16px; border: 2px solid var(--ink); border-radius: 12px; background: var(--surface2); color: var(--ink); resize: vertical; }
+.note { margin-top: 18px; border: 2px dashed var(--line2); border-radius: 12px; padding: 10px 14px; background: var(--surface2); }
+.note[open] { border-style: solid; border-color: var(--accent); }
+.note summary { cursor: pointer; font-weight: 700; color: var(--accent); }
+.note .txt.sm { margin-top: 10px; font-size: 16px; padding: 10px 12px; }
+.note small { display: block; color: var(--muted); font-size: 13px; margin-top: 6px; }
+.rnote { display: block; font-weight: 400; color: var(--muted); font-size: 13px; margin-top: 2px; }
 .qnav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 26px; padding-top: 18px; border-top: 2px dashed var(--line); }
 .qnav .sp { flex: 1; }
 .kb { font-size: 13px; }
@@ -961,6 +967,12 @@ q("ugc", "Spieler-Inhalte", "Können Spieler eigene Inhalte erstellen?", [
   ["➖", "Nein", ""], ["🛠️", "Ja, nur für sich", ""], ["🌐", "Ja, und online teilen", "Mit Moderation."]], { l: 3 });
 q("push", "Push-Nachrichten", "Soll das Spiel Benachrichtigungen senden?", [
   ["➖", "Nie", ""], ["🔔", "Nur wichtige", "z. B. 'Deine Energie ist wieder voll'."], ["📣", "Regelmäßig", ""]], { l: 3, if: mobileApp });
+/* ======================================================= */
+sec("final", "Zum Schluss", "📝", "Alles, was dir sonst noch wichtig ist.");
+q("finalNotes", "Notizen zum Schluss", "Gibt es noch etwas Wichtiges, das die KI wissen muss?", [], { t: "t", area: 1,
+  ph: "z. B. Der Chef des Restaurants soll als Endgegner vorkommen. Die Musik soll italienisch klingen. Bitte keine Anmeldung.",
+  h: "Optional. Alles, was du hier schreibst, steht ganz oben im KI-Bauauftrag und hat Vorrang." });
+
 /* ---------- Reihenfolge: vom Groben ins Feine ---------- */
 S.push({ id: "rules", name: "Jugendschutz & Sprachen", icon: "🛡️", desc: "Was tabu ist, Altersfreigabe und Sprachen." });
 const MOVE = { languages: "rules", taboo: "rules", parents: "rules", rating: "rules",
@@ -972,7 +984,7 @@ Q.find(q => q.id === "nameStyle").sec = "launch";
 Q.find(q => q.id === "perspective").sec = "graphics";
 S.splice(S.findIndex(s => s.id === "camera"), 1);
 const ORDER = ["audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
-  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops"];
+  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "final"];
 const SEQ = {
   audience: ["age", "skill", "whereplay", "reading"],
   platform: ["platforms", "primaryPlat", "orientation"],
@@ -1018,8 +1030,8 @@ const LEVELS = [
   { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Mehr Feingefühl: Gegner, Effekte, Abwechslung und mehr." },
   { n: 4, name: "Alles", tag: "Jedes kleinste Feature", desc: "Jedes kleinste Detail, ganz ohne Fachwissen." }
 ];
-let st = { view: "start", level: 2, off: {}, a: {}, cur: null, tab: "prompt", done: {}, resetArm: false };
-try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); } catch (e) {}
+let st = { view: "start", level: 2, off: {}, a: {}, notes: {}, noteOpen: {}, cur: null, tab: "prompt", done: {}, resetArm: false };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 
 const $ = s => document.querySelector(s);
@@ -1069,6 +1081,7 @@ function quizRank() {
 function fmt(q) {
   const x = st.a[q.id];
   if (x === undefined) return "–";
+  if (q.t === "t" && (x === AI || x === "")) return "–";
   if (x === AI || x === "") return "KI entscheidet";
   if (Array.isArray(x)) return x.includes(AI) ? "KI entscheidet" : x.join(", ");
   return x;
@@ -1153,7 +1166,7 @@ function viewQuiz() {
         ${i < 9 ? `<kbd>${i + 1}</kbd>` : ""}${q.t === "m" ? `<span class="tick" aria-hidden="true"></span>` : ""}${o.best ? `<span class="badge">${q.id === "core" ? "Passt zu deiner Idee" : "Beste Wahl"}</span>` : ""}</button>`;
     }).join("")}</div>`;
   }
-  const canNext = q.t === "t" || answered(q);
+  const canNext = q.t === "t" || answered(q) || !!noteOf(q.id);
   const hint = q.h || (q.t === "m" ? (q.max ? `Bis zu ${q.max} auswählen.` : "Mehrfachauswahl möglich.") : "");
   return `<div class="layout">
     <nav class="secnav" aria-label="Bereiche">${nav}</nav>
@@ -1164,6 +1177,7 @@ function viewQuiz() {
       <h2 class="qtitle">${esc(q.title)}</h2>
       ${hint ? `<p class="hint">${esc(hint)}</p>` : ""}
       ${body}
+      ${q.t === "t" ? "" : noteBox(q)}
       <div class="qnav">
         <button class="btn ghost" data-act="back">← Zurück</button>
         <span class="sp"></span>
@@ -1216,7 +1230,7 @@ function pick(i) {
     render();
     clearTimeout(pick.t);
     const id = q.id;
-    pick.t = setTimeout(() => { if (st.view === "quiz" && st.cur === id) go(1); }, 260);
+    if (!st.noteOpen[id] && !st.notes[id]) pick.t = setTimeout(() => { if (st.view === "quiz" && st.cur === id) go(1); }, 260);
   }
 }
 document.addEventListener("click", e => {
@@ -1237,12 +1251,13 @@ document.addEventListener("click", e => {
     case "toresult": st.view = "result"; render(); window.scrollTo(0, 0); break;
     case "reset":
       if (!st.resetArm) { st.resetArm = true; render(); break; }
-      st = { view: "start", level: st.level, off: {}, a: {}, cur: null, tab: "prompt", done: {}, resetArm: false }; render(); break;
+      st = { view: "start", level: st.level, off: {}, a: {}, notes: {}, noteOpen: {}, cur: null, tab: "prompt", done: {}, resetArm: false }; render(); break;
     case "tostart": st.view = "start"; render(); break;
     case "pick": pick(+b.dataset.i); break;
     case "next": {
       const q = qOf(st.cur);
       if (q.t === "t") { const t = $("#txt"); st.a[q.id] = t && t.value.trim() ? t.value.trim() : AI; }
+      else if (!answered(q)) st.a[q.id] = AI;
       go(1); break;
     }
     case "skip": st.a[st.cur] = AI; go(1); break;
@@ -1267,8 +1282,17 @@ document.addEventListener("click", e => {
   }
 });
 document.addEventListener("input", e => {
+  if (e.target.id === "note") {
+    const t = e.target.value; if (t.trim()) st.notes[st.cur] = t; else delete st.notes[st.cur]; save();
+    const n = document.querySelector('[data-act="next"]'); if (n) n.disabled = !(answered(qOf(st.cur)) || t.trim()); return;
+  }
   if (e.target.id === "txt") { const q = qOf(st.cur); st.a[q.id] = e.target.value.trim() || AI; save(); renderTop(); }
 });
+document.addEventListener("toggle", e => {
+  const d = e.target; if (!d.matches || !d.matches("details.note")) return;
+  st.noteOpen[d.dataset.q] = d.open; save();
+  if (d.open) { const t = d.querySelector("textarea"); if (t && !t.value) t.focus(); }
+}, true);
 document.addEventListener("keydown", e => {
   if (st.view !== "quiz") return;
   const inText = e.target.matches("input, textarea");
@@ -1329,8 +1353,21 @@ function prof() {
 }
 
 /* ---------- KI-Prompt ---------- */
+function noteBox(q) {
+  const n = st.notes[q.id] || "", open = !!(n || st.noteOpen[q.id]);
+  return `<details class="note" data-q="${q.id}" ${open ? "open" : ""}><summary>📝 ${n ? "Deine Notiz zu dieser Frage" : "Notiz zu dieser Frage hinzufügen"}</summary>
+    <textarea id="note" class="txt sm" rows="3" placeholder="z. B. Genau so wie bei … aber ohne … / Das ist mir besonders wichtig, weil …">${esc(n)}</textarea>
+    <small>Optional. Die Notiz landet im KI-Bauauftrag direkt bei dieser Antwort.</small></details>`;
+}
+const noteOf = id => (st.notes && st.notes[id] || "").trim();
 function answerLines(q) {
+  const base = answerLinesBase(q), n = noteOf(q.id);
+  if (!base) return n ? [`- **${q.label}:** (keine Auswahl)`, `  - 📝 **Notiz des Auftraggebers (verbindlich):** „${n}“`] : null;
+  return n ? base.concat([`  - 📝 **Notiz des Auftraggebers (verbindlich):** „${n}“`]) : base;
+}
+function answerLinesBase(q) {
   const x = st.a[q.id];
+  if (q.t === "t" && (x === AI || x === "" || x === undefined)) return null;
   if (x === undefined) return null;
   if (x === AI || x === "" || (Array.isArray(x) && x.includes(AI))) return [`- **${q.label}:** KI entscheidet. Wähle passend zum Gesamtkonzept und trage es in „Meine Entscheidungen“ ein.`];
   if (q.t === "t") return [`- **${q.label}:** „${x}“`];
@@ -1476,7 +1513,7 @@ function buildSummaryText() {
   L.push(`ZUSAMMENFASSUNG: Mein Spiel`, "", ideaText() || summarySentence(), "");
   S.forEach(s => {
     const qs = v.filter(q => q.sec === s.id && answered(q)); if (!qs.length) return;
-    L.push(`— ${s.name} —`); qs.forEach(q => L.push(`• ${q.label}: ${fmt(q)}`)); L.push("");
+    L.push(`— ${s.name} —`); qs.forEach(q => { L.push(`• ${q.label}: ${fmt(q)}`); if (noteOf(q.id)) L.push(`  📝 ${noteOf(q.id)}`); }); L.push("");
   });
   const c = conflicts(); if (c.length) { L.push("— Hinweise —"); c.forEach(x => L.push(`• ${x.t}`)); L.push(""); }
   L.push("— Launch-Checkliste —"); launchItems().forEach(i => L.push(`☐ ${i.t}: ${i.d}`));
@@ -1500,7 +1537,7 @@ function viewResult() {
       const qs = v.filter(q => q.sec === s.id && answered(q)); if (!qs.length) return "";
       return `<article class="scard"><h3>${s.icon} ${esc(s.name)}</h3><dl>${qs.map(q => {
         const f = fmt(q);
-        return `<button class="row" data-act="edit" data-q="${q.id}" title="Antwort ändern"><dt>${esc(q.label)}</dt><dd class="${f === "KI entscheidet" ? "aiv" : ""}">${esc(f)}</dd></button>`;
+        return `<button class="row" data-act="edit" data-q="${q.id}" title="Antwort ändern"><dt>${esc(q.label)}</dt><dd class="${f === "KI entscheidet" ? "aiv" : ""}">${esc(f)}${noteOf(q.id) ? `<span class="rnote">📝 ${esc(noteOf(q.id))}</span>` : ""}</dd></button>`;
       }).join("")}</dl></article>`;
     }).join("");
     const doc = concept(), stale = st.ai && st.aiSig !== JSON.stringify(st.a);
@@ -1550,7 +1587,7 @@ const CAPS = { downloads: null, sample: null };
 const inClaude = !!(window.claude && window.claude.use);
 const canPDF = () => !!(window.jspdf && (CAPS.downloads || !inClaude));
 async function deliverPDF(pdf, file) {
-  if (CAPS.downloads) { await deliverPDF(pdf, file); return; }
+  if (CAPS.downloads) { await CAPS.downloads.save({ filename: file, data: pdf.output("blob") }); return; }
   pdf.save(file);
 }
 const arrOf = id => Array.isArray(st.a[id]) ? st.a[id].filter(x => x !== AI) : (val(id) ? [val(id)] : []);
@@ -1745,6 +1782,8 @@ function concept() {
   H("Umsetzungsplan");
   P(`Geschätzter Aufwand mit KI-Unterstützung: ${sp.effort}${has(a, "devSkill", "Gar nicht", "Anfänger") ? " (eher am oberen Ende, weil du noch lernst)" : ""}.`);
   OL(ai && ai.erste_schritte ? ai.erste_schritte : milestones().map(m => `${m[0]}: ${m[1]}`));
+  const notes = visible().filter(q => noteOf(q.id));
+  if (val("finalNotes") || notes.length) { H("Deine Notizen"); UL((val("finalNotes") ? [`Zum Schluss: ${val("finalNotes")}`] : []).concat(notes.map(q => `${q.label}: ${noteOf(q.id)}`))); }
   const c = conflicts();
   if (c.length) { H("Darauf solltest du achten"); UL(c.map(x => x.t)); }
   return { title: names[0], blocks: B };
@@ -1834,7 +1873,7 @@ async function savePDF(btn) {
   S.forEach(sec => {
     const qs = v.filter(q => q.sec === sec.id && answered(q)); if (!qs.length) return;
     need(14); y += 2; text(sec.name, 11.5, "bold", ink);
-    qs.forEach(q => { const y0 = y; text(q.label, 9, "normal", mut, M, 55); const y1 = y; y = y0; text(fmt(q), 9.5, "normal", ink, M + 58, CW - 58); y = Math.max(y, y1) + 0.8; });
+    qs.forEach(q => { const y0 = y; text(q.label, 9, "normal", mut, M, 55); const y1 = y; y = y0; text(fmt(q) + (noteOf(q.id) ? `  |  Notiz: ${noteOf(q.id)}` : ""), 9.5, "normal", ink, M + 58, CW - 58); y = Math.max(y, y1) + 0.8; });
   });
   const n = pdf.getNumberOfPages();
   for (let i = 2; i <= n; i++) { pdf.setPage(i); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(...mut); pdf.text(pdfTxt(`${doc.title} - Spielkonzept`), M, 290); pdf.text(`${i} / ${n}`, W - M, 290, { align: "right" }); }
@@ -1948,7 +1987,7 @@ function buildPrompt() {
   if (sk) rules.push(sk);
   rules.forEach((r, i) => P(`${i + 1}. ${r}`)); blank();
   P("### A3. Rangfolge bei Widersprüchen", "", "Wenn sich Angaben widersprechen, gilt diese Reihenfolge (oben gewinnt). Melde jeden Widerspruch trotzdem bei mir.", "");
-  P("1. Strikte Verbote und Schutz der Zielgruppe (Teil C, „Strikte Verbote“, „Zielgruppe“)", "2. Das Spielidee-System (Teil B)", "3. Die Detailvorgaben (Teil C)", "4. Deine eigenen Entscheidungen", "");
+  P("1. Strikte Verbote und Schutz der Zielgruppe (Teil C, „Strikte Verbote“, „Zielgruppe“)", "2. Meine Notizen (📝) – sie präzisieren oder ändern die ausgewählte Antwort", "3. Das Spielidee-System (Teil B)", "4. Die Detailvorgaben (Teil C)", "5. Deine eigenen Entscheidungen", "");
   P("### A4. Begriffe in diesem Dokument", "");
   [["Kernschleife", "Die Handlung, die sich im Spiel ständig wiederholt und Spaß machen muss."], ["Level / Welt", "Ein Level ist ein spielbarer Abschnitt. Eine Welt ist eine Gruppe von Leveln mit gemeinsamem Ort und Thema."],
    ["Run", "Ein kompletter Durchlauf von Anfang bis zum Scheitern oder Sieg."], ["Power-up", "Ein Gegenstand, der kurzzeitig einen Vorteil gibt."],
@@ -1961,6 +2000,13 @@ function buildPrompt() {
   /* Teil B */
   P("---", "", "## Teil B – Das Spielidee-System", "");
   P("### B1. Die Spielidee in einem Absatz", "", `> ${ideaText() || summarySentence()}`, "");
+  const allNotes = visible().filter(q => noteOf(q.id) || (q.id === "finalNotes" && val("finalNotes")));
+  if (allNotes.length) {
+    P("### ⚠️ Wichtige Notizen des Auftraggebers", "", "Diese Notizen habe ich selbst geschrieben. Sie sind verbindlich und gehen den Auswahl-Antworten vor.", "");
+    if (val("finalNotes")) P(`- **Zum Schluss:** „${val("finalNotes")}“`);
+    allNotes.filter(q => noteOf(q.id)).forEach(q => P(`- **${q.label}** (Antwort: ${fmt(q)}): „${noteOf(q.id)}“`));
+    blank();
+  }
   P("### B2. Steckbrief", "");
   P(`- **Arbeitstitel / Namensideen:** ${doc.blocks.find(b => b.t === "kv").x[0][1]}${val("nameStyle") ? ` (gewünschter Namensstil: ${val("nameStyle")})` : ""}`);
   prof().forEach(([k, x]) => P(`- **${k}:** ${x}`));
@@ -1989,7 +2035,7 @@ function buildPrompt() {
   P("---", "", "## Teil C – Alle Detailvorgaben", "", "Hier stehen alle Antworten aus dem Fragebogen, nach Bereichen sortiert. Der Text nach „–“ erklärt jeweils verbindlich, was gemeint ist.", "");
   let n = 1;
   S.forEach(s => {
-    const qs = v.filter(q => q.sec === s.id && answered(q) && s.id !== "idea");
+    const qs = v.filter(q => q.sec === s.id && (answered(q) || noteOf(q.id)) && s.id !== "idea" && q.id !== "finalNotes");
     if (!qs.length) return;
     P(`### C${n++}. ${s.name}`, "");
     qs.forEach(q => { const l = answerLines(q); if (l) P(...l); });
@@ -2092,7 +2138,7 @@ try { Object.assign(CLOUD, JSON.parse(localStorage.getItem("gamebauplan.cloud"))
 const cloudKeep = () => { try { localStorage.setItem("gamebauplan.cloud", JSON.stringify({ id: CLOUD.id, secret: CLOUD.secret })); } catch (e) {} };
 const rnd = n => { const c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789", b = crypto.getRandomValues(new Uint8Array(n)); return [...b].map(x => c[x % c.length]).join(""); };
 const shareURL = () => `${location.origin}${location.pathname}?b=${CLOUD.id}`;
-const payload = () => ({ a: st.a, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null });
+const payload = () => ({ a: st.a, notes: st.notes || {}, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null });
 
 async function cloudSave(silent) {
   if (!sb || CLOUD.busy) return;
@@ -2110,7 +2156,7 @@ async function cloudLoad(id) {
   if (!sb) return;
   const { data, error } = await sb.rpc("gb_load", { p_id: id });
   if (error || !data) { CLOUD.msg = "Dieser Bauplan wurde nicht gefunden."; render(); return; }
-  st.a = data.a || {}; st.level = data.level || 2; st.ai = data.ai || null; st.aiSig = data.aiSig || null;
+  st.a = data.a || {}; st.notes = data.notes || {}; st.level = data.level || 2; st.ai = data.ai || null; st.aiSig = data.aiSig || null;
   st.view = "result"; st.tab = "sum";
   if (CLOUD.id !== id) { CLOUD.id = null; CLOUD.secret = null; CLOUD.msg = "Geteilter Bauplan geladen. Wenn du speicherst, entsteht deine eigene Kopie."; cloudKeep(); }
   else CLOUD.lastSaved = JSON.stringify(payload());

@@ -6,8 +6,8 @@ const LEVELS = [
   { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Mehr Feingefühl: Gegner, Effekte, Abwechslung und mehr." },
   { n: 4, name: "Alles", tag: "Jedes kleinste Feature", desc: "Jedes kleinste Detail, ganz ohne Fachwissen." }
 ];
-let st = { view: "start", level: 2, off: {}, a: {}, cur: null, tab: "prompt", done: {}, resetArm: false };
-try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); } catch (e) {}
+let st = { view: "start", level: 2, off: {}, a: {}, notes: {}, noteOpen: {}, cur: null, tab: "prompt", done: {}, resetArm: false };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 
 const $ = s => document.querySelector(s);
@@ -57,6 +57,7 @@ function quizRank() {
 function fmt(q) {
   const x = st.a[q.id];
   if (x === undefined) return "–";
+  if (q.t === "t" && (x === AI || x === "")) return "–";
   if (x === AI || x === "") return "KI entscheidet";
   if (Array.isArray(x)) return x.includes(AI) ? "KI entscheidet" : x.join(", ");
   return x;
@@ -141,7 +142,7 @@ function viewQuiz() {
         ${i < 9 ? `<kbd>${i + 1}</kbd>` : ""}${q.t === "m" ? `<span class="tick" aria-hidden="true"></span>` : ""}${o.best ? `<span class="badge">${q.id === "core" ? "Passt zu deiner Idee" : "Beste Wahl"}</span>` : ""}</button>`;
     }).join("")}</div>`;
   }
-  const canNext = q.t === "t" || answered(q);
+  const canNext = q.t === "t" || answered(q) || !!noteOf(q.id);
   const hint = q.h || (q.t === "m" ? (q.max ? `Bis zu ${q.max} auswählen.` : "Mehrfachauswahl möglich.") : "");
   return `<div class="layout">
     <nav class="secnav" aria-label="Bereiche">${nav}</nav>
@@ -152,6 +153,7 @@ function viewQuiz() {
       <h2 class="qtitle">${esc(q.title)}</h2>
       ${hint ? `<p class="hint">${esc(hint)}</p>` : ""}
       ${body}
+      ${q.t === "t" ? "" : noteBox(q)}
       <div class="qnav">
         <button class="btn ghost" data-act="back">← Zurück</button>
         <span class="sp"></span>
@@ -204,7 +206,7 @@ function pick(i) {
     render();
     clearTimeout(pick.t);
     const id = q.id;
-    pick.t = setTimeout(() => { if (st.view === "quiz" && st.cur === id) go(1); }, 260);
+    if (!st.noteOpen[id] && !st.notes[id]) pick.t = setTimeout(() => { if (st.view === "quiz" && st.cur === id) go(1); }, 260);
   }
 }
 document.addEventListener("click", e => {
@@ -225,12 +227,13 @@ document.addEventListener("click", e => {
     case "toresult": st.view = "result"; render(); window.scrollTo(0, 0); break;
     case "reset":
       if (!st.resetArm) { st.resetArm = true; render(); break; }
-      st = { view: "start", level: st.level, off: {}, a: {}, cur: null, tab: "prompt", done: {}, resetArm: false }; render(); break;
+      st = { view: "start", level: st.level, off: {}, a: {}, notes: {}, noteOpen: {}, cur: null, tab: "prompt", done: {}, resetArm: false }; render(); break;
     case "tostart": st.view = "start"; render(); break;
     case "pick": pick(+b.dataset.i); break;
     case "next": {
       const q = qOf(st.cur);
       if (q.t === "t") { const t = $("#txt"); st.a[q.id] = t && t.value.trim() ? t.value.trim() : AI; }
+      else if (!answered(q)) st.a[q.id] = AI;
       go(1); break;
     }
     case "skip": st.a[st.cur] = AI; go(1); break;
@@ -255,8 +258,17 @@ document.addEventListener("click", e => {
   }
 });
 document.addEventListener("input", e => {
+  if (e.target.id === "note") {
+    const t = e.target.value; if (t.trim()) st.notes[st.cur] = t; else delete st.notes[st.cur]; save();
+    const n = document.querySelector('[data-act="next"]'); if (n) n.disabled = !(answered(qOf(st.cur)) || t.trim()); return;
+  }
   if (e.target.id === "txt") { const q = qOf(st.cur); st.a[q.id] = e.target.value.trim() || AI; save(); renderTop(); }
 });
+document.addEventListener("toggle", e => {
+  const d = e.target; if (!d.matches || !d.matches("details.note")) return;
+  st.noteOpen[d.dataset.q] = d.open; save();
+  if (d.open) { const t = d.querySelector("textarea"); if (t && !t.value) t.focus(); }
+}, true);
 document.addEventListener("keydown", e => {
   if (st.view !== "quiz") return;
   const inText = e.target.matches("input, textarea");
@@ -317,8 +329,21 @@ function prof() {
 }
 
 /* ---------- KI-Prompt ---------- */
+function noteBox(q) {
+  const n = st.notes[q.id] || "", open = !!(n || st.noteOpen[q.id]);
+  return `<details class="note" data-q="${q.id}" ${open ? "open" : ""}><summary>📝 ${n ? "Deine Notiz zu dieser Frage" : "Notiz zu dieser Frage hinzufügen"}</summary>
+    <textarea id="note" class="txt sm" rows="3" placeholder="z. B. Genau so wie bei … aber ohne … / Das ist mir besonders wichtig, weil …">${esc(n)}</textarea>
+    <small>Optional. Die Notiz landet im KI-Bauauftrag direkt bei dieser Antwort.</small></details>`;
+}
+const noteOf = id => (st.notes && st.notes[id] || "").trim();
 function answerLines(q) {
+  const base = answerLinesBase(q), n = noteOf(q.id);
+  if (!base) return n ? [`- **${q.label}:** (keine Auswahl)`, `  - 📝 **Notiz des Auftraggebers (verbindlich):** „${n}“`] : null;
+  return n ? base.concat([`  - 📝 **Notiz des Auftraggebers (verbindlich):** „${n}“`]) : base;
+}
+function answerLinesBase(q) {
   const x = st.a[q.id];
+  if (q.t === "t" && (x === AI || x === "" || x === undefined)) return null;
   if (x === undefined) return null;
   if (x === AI || x === "" || (Array.isArray(x) && x.includes(AI))) return [`- **${q.label}:** KI entscheidet. Wähle passend zum Gesamtkonzept und trage es in „Meine Entscheidungen“ ein.`];
   if (q.t === "t") return [`- **${q.label}:** „${x}“`];
@@ -464,7 +489,7 @@ function buildSummaryText() {
   L.push(`ZUSAMMENFASSUNG: Mein Spiel`, "", ideaText() || summarySentence(), "");
   S.forEach(s => {
     const qs = v.filter(q => q.sec === s.id && answered(q)); if (!qs.length) return;
-    L.push(`— ${s.name} —`); qs.forEach(q => L.push(`• ${q.label}: ${fmt(q)}`)); L.push("");
+    L.push(`— ${s.name} —`); qs.forEach(q => { L.push(`• ${q.label}: ${fmt(q)}`); if (noteOf(q.id)) L.push(`  📝 ${noteOf(q.id)}`); }); L.push("");
   });
   const c = conflicts(); if (c.length) { L.push("— Hinweise —"); c.forEach(x => L.push(`• ${x.t}`)); L.push(""); }
   L.push("— Launch-Checkliste —"); launchItems().forEach(i => L.push(`☐ ${i.t}: ${i.d}`));
@@ -488,7 +513,7 @@ function viewResult() {
       const qs = v.filter(q => q.sec === s.id && answered(q)); if (!qs.length) return "";
       return `<article class="scard"><h3>${s.icon} ${esc(s.name)}</h3><dl>${qs.map(q => {
         const f = fmt(q);
-        return `<button class="row" data-act="edit" data-q="${q.id}" title="Antwort ändern"><dt>${esc(q.label)}</dt><dd class="${f === "KI entscheidet" ? "aiv" : ""}">${esc(f)}</dd></button>`;
+        return `<button class="row" data-act="edit" data-q="${q.id}" title="Antwort ändern"><dt>${esc(q.label)}</dt><dd class="${f === "KI entscheidet" ? "aiv" : ""}">${esc(f)}${noteOf(q.id) ? `<span class="rnote">📝 ${esc(noteOf(q.id))}</span>` : ""}</dd></button>`;
       }).join("")}</dl></article>`;
     }).join("");
     const doc = concept(), stale = st.ai && st.aiSig !== JSON.stringify(st.a);

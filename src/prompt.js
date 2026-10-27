@@ -89,7 +89,7 @@ function buildPrompt() {
   if (sk) rules.push(sk);
   rules.forEach((r, i) => P(`${i + 1}. ${r}`)); blank();
   P("### A3. Rangfolge bei Widersprüchen", "", "Wenn sich Angaben widersprechen, gilt diese Reihenfolge (oben gewinnt). Melde jeden Widerspruch trotzdem bei mir.", "");
-  P("1. Strikte Verbote und Schutz der Zielgruppe (Teil C, „Strikte Verbote“, „Zielgruppe“)", "2. Das Spielidee-System (Teil B)", "3. Die Detailvorgaben (Teil C)", "4. Deine eigenen Entscheidungen", "");
+  P("1. Strikte Verbote und Schutz der Zielgruppe (Teil C, „Strikte Verbote“, „Zielgruppe“)", "2. Meine Notizen (📝) – sie präzisieren oder ändern die ausgewählte Antwort", "3. Das Spielidee-System (Teil B)", "4. Die Detailvorgaben (Teil C)", "5. Deine eigenen Entscheidungen", "");
   P("### A4. Begriffe in diesem Dokument", "");
   [["Kernschleife", "Die Handlung, die sich im Spiel ständig wiederholt und Spaß machen muss."], ["Level / Welt", "Ein Level ist ein spielbarer Abschnitt. Eine Welt ist eine Gruppe von Leveln mit gemeinsamem Ort und Thema."],
    ["Run", "Ein kompletter Durchlauf von Anfang bis zum Scheitern oder Sieg."], ["Power-up", "Ein Gegenstand, der kurzzeitig einen Vorteil gibt."],
@@ -102,6 +102,13 @@ function buildPrompt() {
   /* Teil B */
   P("---", "", "## Teil B – Das Spielidee-System", "");
   P("### B1. Die Spielidee in einem Absatz", "", `> ${ideaText() || summarySentence()}`, "");
+  const allNotes = visible().filter(q => noteOf(q.id) || (q.id === "finalNotes" && val("finalNotes")));
+  if (allNotes.length) {
+    P("### ⚠️ Wichtige Notizen des Auftraggebers", "", "Diese Notizen habe ich selbst geschrieben. Sie sind verbindlich und gehen den Auswahl-Antworten vor.", "");
+    if (val("finalNotes")) P(`- **Zum Schluss:** „${val("finalNotes")}“`);
+    allNotes.filter(q => noteOf(q.id)).forEach(q => P(`- **${q.label}** (Antwort: ${fmt(q)}): „${noteOf(q.id)}“`));
+    blank();
+  }
   P("### B2. Steckbrief", "");
   P(`- **Arbeitstitel / Namensideen:** ${doc.blocks.find(b => b.t === "kv").x[0][1]}${val("nameStyle") ? ` (gewünschter Namensstil: ${val("nameStyle")})` : ""}`);
   prof().forEach(([k, x]) => P(`- **${k}:** ${x}`));
@@ -130,7 +137,7 @@ function buildPrompt() {
   P("---", "", "## Teil C – Alle Detailvorgaben", "", "Hier stehen alle Antworten aus dem Fragebogen, nach Bereichen sortiert. Der Text nach „–“ erklärt jeweils verbindlich, was gemeint ist.", "");
   let n = 1;
   S.forEach(s => {
-    const qs = v.filter(q => q.sec === s.id && answered(q) && s.id !== "idea");
+    const qs = v.filter(q => q.sec === s.id && (answered(q) || noteOf(q.id)) && s.id !== "idea" && q.id !== "finalNotes");
     if (!qs.length) return;
     P(`### C${n++}. ${s.name}`, "");
     qs.forEach(q => { const l = answerLines(q); if (l) P(...l); });

@@ -720,6 +720,12 @@ q("ugc", "Spieler-Inhalte", "Können Spieler eigene Inhalte erstellen?", [
   ["➖", "Nein", ""], ["🛠️", "Ja, nur für sich", ""], ["🌐", "Ja, und online teilen", "Mit Moderation."]], { l: 3 });
 q("push", "Push-Nachrichten", "Soll das Spiel Benachrichtigungen senden?", [
   ["➖", "Nie", ""], ["🔔", "Nur wichtige", "z. B. 'Deine Energie ist wieder voll'."], ["📣", "Regelmäßig", ""]], { l: 3, if: mobileApp });
+/* ======================================================= */
+sec("final", "Zum Schluss", "📝", "Alles, was dir sonst noch wichtig ist.");
+q("finalNotes", "Notizen zum Schluss", "Gibt es noch etwas Wichtiges, das die KI wissen muss?", [], { t: "t", area: 1,
+  ph: "z. B. Der Chef des Restaurants soll als Endgegner vorkommen. Die Musik soll italienisch klingen. Bitte keine Anmeldung.",
+  h: "Optional. Alles, was du hier schreibst, steht ganz oben im KI-Bauauftrag und hat Vorrang." });
+
 /* ---------- Reihenfolge: vom Groben ins Feine ---------- */
 S.push({ id: "rules", name: "Jugendschutz & Sprachen", icon: "🛡️", desc: "Was tabu ist, Altersfreigabe und Sprachen." });
 const MOVE = { languages: "rules", taboo: "rules", parents: "rules", rating: "rules",
@@ -731,7 +737,7 @@ Q.find(q => q.id === "nameStyle").sec = "launch";
 Q.find(q => q.id === "perspective").sec = "graphics";
 S.splice(S.findIndex(s => s.id === "camera"), 1);
 const ORDER = ["audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
-  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops"];
+  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "final"];
 const SEQ = {
   audience: ["age", "skill", "whereplay", "reading"],
   platform: ["platforms", "primaryPlat", "orientation"],

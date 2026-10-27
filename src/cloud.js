@@ -8,7 +8,7 @@ try { Object.assign(CLOUD, JSON.parse(localStorage.getItem("gamebauplan.cloud"))
 const cloudKeep = () => { try { localStorage.setItem("gamebauplan.cloud", JSON.stringify({ id: CLOUD.id, secret: CLOUD.secret })); } catch (e) {} };
 const rnd = n => { const c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789", b = crypto.getRandomValues(new Uint8Array(n)); return [...b].map(x => c[x % c.length]).join(""); };
 const shareURL = () => `${location.origin}${location.pathname}?b=${CLOUD.id}`;
-const payload = () => ({ a: st.a, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null });
+const payload = () => ({ a: st.a, notes: st.notes || {}, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null });
 
 async function cloudSave(silent) {
   if (!sb || CLOUD.busy) return;
@@ -26,7 +26,7 @@ async function cloudLoad(id) {
   if (!sb) return;
   const { data, error } = await sb.rpc("gb_load", { p_id: id });
   if (error || !data) { CLOUD.msg = "Dieser Bauplan wurde nicht gefunden."; render(); return; }
-  st.a = data.a || {}; st.level = data.level || 2; st.ai = data.ai || null; st.aiSig = data.aiSig || null;
+  st.a = data.a || {}; st.notes = data.notes || {}; st.level = data.level || 2; st.ai = data.ai || null; st.aiSig = data.aiSig || null;
   st.view = "result"; st.tab = "sum";
   if (CLOUD.id !== id) { CLOUD.id = null; CLOUD.secret = null; CLOUD.msg = "Geteilter Bauplan geladen. Wenn du speicherst, entsteht deine eigene Kopie."; cloudKeep(); }
   else CLOUD.lastSaved = JSON.stringify(payload());
