@@ -132,6 +132,20 @@ main { padding-block: 28px 64px; }
 .note .txt.sm { margin-top: 10px; font-size: 16px; padding: 10px 12px; }
 .note small { display: block; color: var(--muted); font-size: 13px; margin-top: 6px; }
 .rnote { display: block; font-weight: 400; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.txt.big { min-height: 220px; font-size: 18px; line-height: 1.5; }
+.starters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip { border: 1.5px solid var(--line2); background: var(--surface); border-radius: 99px; padding: 5px 12px; font-size: 14px; color: var(--muted); }
+.chip:hover { border-color: var(--accent); color: var(--ink); }
+.fromth { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+.analysis { display: grid; gap: 18px; max-width: 860px; }
+.analysis h1 { font-family: var(--f-disp); font-weight: 400; font-size: clamp(28px, 4.5vw, 44px); line-height: 1.05; }
+.thoughts { margin: 0; padding: 14px 18px; border-left: 4px solid var(--sun); background: var(--surface); border-radius: 0 12px 12px 0; white-space: pre-wrap; font-size: 16px; max-height: 220px; overflow: auto; }
+.an-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; background: var(--surface); border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; }
+.an-list li { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 12px; padding: 10px 16px; border-top: 1px solid var(--line); }
+.an-list li:first-child { border-top: 0; }
+.an-q { color: var(--muted); font-size: 14px; }
+.an-a { font-weight: 700; overflow-wrap: anywhere; }
+@media (max-width: 560px) { .an-list li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
 .qnav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 26px; padding-top: 18px; border-top: 2px dashed var(--line); }
 .qnav .sp { flex: 1; }
 .kb { font-size: 13px; }

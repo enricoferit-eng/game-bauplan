@@ -6,8 +6,8 @@ const LEVELS = [
   { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Mehr Feingefühl: Gegner, Effekte, Abwechslung und mehr." },
   { n: 4, name: "Alles", tag: "Jedes kleinste Feature", desc: "Jedes kleinste Detail, ganz ohne Fachwissen." }
 ];
-let st = { view: "start", level: 2, off: {}, a: {}, notes: {}, noteOpen: {}, cur: null, tab: "prompt", done: {}, resetArm: false };
-try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; } catch (e) {}
+let st = { view: "start", level: 2, off: {}, a: {}, notes: {}, noteOpen: {}, sugg: {}, fromThoughts: {}, skipKnown: false, cur: null, tab: "prompt", done: {}, resetArm: false };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; st.sugg = st.sugg || {}; st.fromThoughts = st.fromThoughts || {}; } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 
 const $ = s => document.querySelector(s);
@@ -69,6 +69,7 @@ function render() {
   renderTop();
   const app = $("#app");
   if (st.view === "quiz") app.innerHTML = viewQuiz();
+  else if (st.view === "analysis") app.innerHTML = viewAnalysis();
   else if (st.view === "result") app.innerHTML = viewResult();
   else app.innerHTML = viewStart();
   if (st.view === "quiz") { const t = $("#txt"); if (t) t.focus(); }
@@ -112,7 +113,7 @@ function viewStart() {
 }
 
 function viewQuiz() {
-  const v = visible();
+  const v = navList();
   let q = v.find(x => x.id === st.cur);
   if (!q) { q = v.find(x => !answered(x)) || v[0]; st.cur = q && q.id; }
   if (!q) return `<p>Keine Fragen ausgewählt.</p>`;
@@ -128,7 +129,7 @@ function viewQuiz() {
   let body = "";
   if (q.t === "t") {
     const tv = cur && cur !== AI ? cur : "";
-    body = q.area ? `<textarea id="txt" class="txt" rows="4" placeholder="${esc(q.ph || "")}" data-act="text">${esc(tv)}</textarea>`
+    body = q.area ? `<textarea id="txt" class="txt${q.id === "thoughts" ? " big" : ""}" rows="${q.id === "thoughts" ? 9 : 4}" placeholder="${esc(q.ph || "")}" data-act="text">${esc(tv)}</textarea>${q.id === "thoughts" ? starterChips() : ""}`
       : `<input id="txt" class="txt" type="text" maxlength="160" placeholder="${esc(q.ph || "")}" value="${esc(tv)}" data-act="text">`;
   } else {
     const os = optsFor(q).slice();
@@ -138,7 +139,7 @@ function viewQuiz() {
       const sel = Array.isArray(cur) ? cur.includes(o.v) : cur === o.v;
       return `<button class="opt${sel ? " on" : ""}${o.ai ? " ai" : ""}${o.best ? " best" : ""}" data-act="pick" data-i="${i}" aria-pressed="${sel}">
         <span class="pic" style="--h:${hue(q.id + o.v)}">${pic(o.i)}</span>
-        <span class="otx"><b>${esc(o.label || o.v)}</b>${o.d ? `<small>${esc(o.d)}</small>` : ""}</span>
+        <span class="otx"><b>${esc(o.label || o.v)}</b>${o.d ? `<small>${esc(o.d)}</small>` : ""}${st.sugg && st.sugg[q.id] && st.sugg[q.id].includes(o.v) ? `<em class="fromth">💭 aus deinen Gedanken</em>` : ""}</span>
         ${i < 9 ? `<kbd>${i + 1}</kbd>` : ""}${q.t === "m" ? `<span class="tick" aria-hidden="true"></span>` : ""}${o.best ? `<span class="badge">${q.id === "core" ? "Passt zu deiner Idee" : "Beste Wahl"}</span>` : ""}</button>`;
     }).join("")}</div>`;
   }
@@ -174,7 +175,10 @@ function pic(i) {
 /* ---------- Aktionen ---------- */
 function go(dir) {
   clearTimeout(pick.t);
-  const v = visible(), i = v.findIndex(x => x.id === st.cur);
+  if (dir > 0 && st.cur === "thoughts" && val("thoughts")) {
+    st.sugg = analyzeThoughts(val("thoughts")); st.view = "analysis"; window.scrollTo(0, 0); return render();
+  }
+  const v = navList(), i = v.findIndex(x => x.id === st.cur);
   if (dir > 0) {
     const n = v[i + 1];
     if (!n) { st.view = "result"; st.tab = "sum"; window.scrollTo(0, 0); return render(); }
@@ -219,7 +223,7 @@ document.addEventListener("click", e => {
     case "allsec": st.off = {}; render(); break;
     case "go": {
       st.view = "quiz";
-      const v = visible(); const f = v.find(x => !answered(x));
+      const v = navList(); const f = v.find(x => !answered(x));
       st.cur = f ? f.id : (v[0] && v[0].id);
       if (!f && v.length) st.view = "result";
       render(); break;
@@ -227,7 +231,7 @@ document.addEventListener("click", e => {
     case "toresult": st.view = "result"; render(); window.scrollTo(0, 0); break;
     case "reset":
       if (!st.resetArm) { st.resetArm = true; render(); break; }
-      st = { view: "start", level: st.level, off: {}, a: {}, notes: {}, noteOpen: {}, cur: null, tab: "prompt", done: {}, resetArm: false }; render(); break;
+      st = { view: "start", level: st.level, off: {}, a: {}, notes: {}, noteOpen: {}, sugg: {}, fromThoughts: {}, skipKnown: false, cur: null, tab: "prompt", done: {}, resetArm: false }; render(); break;
     case "tostart": st.view = "start"; render(); break;
     case "pick": pick(+b.dataset.i); break;
     case "next": {
@@ -239,14 +243,14 @@ document.addEventListener("click", e => {
     case "skip": st.a[st.cur] = AI; go(1); break;
     case "back": go(-1); break;
     case "jump": {
-      const v = visible().filter(x => x.sec === b.dataset.s);
+      const v = navList().filter(x => x.sec === b.dataset.s);
       st.cur = (v.find(x => !answered(x)) || v[0]).id; render(); break;
     }
     case "edit": st.view = "quiz"; st.cur = b.dataset.q; render(); window.scrollTo(0, 0); break;
     case "tab": st.tab = b.dataset.t; render(); break;
     case "deeper": {
       st.level = Math.min(4, st.level + 1); st.view = "quiz";
-      const f = visible().find(x => !answered(x)); st.cur = f && f.id;
+      const f = navList().find(x => !answered(x)); st.cur = f && f.id;
       if (!f) st.view = "result";
       render(); window.scrollTo(0, 0); break;
     }
@@ -470,7 +474,7 @@ function ideaPanel() {
   const steps = ["ideaVerb", "ideaGoal", "hero", "setting", "ideaChallenge", "ideaTwist", "ideaEscalation"];
   const n = steps.filter(id => st.a[id] !== undefined).length;
   return `<aside class="idea"><div class="idea-h"><b>Deine Spielidee</b><span class="idea-bricks">${steps.map((id, i) => `<i class="${st.a[id] !== undefined ? "f" : ""}" title="${esc(qOf(id).label)}"></i>`).join("")}</span><small>${n}/${steps.length} Bausteine</small></div>
-    <p>${t ? esc(t) : "Beantworte die Fragen im Bereich „Spielidee“, dann entsteht hier Satz für Satz dein Spiel."}</p></aside>`;
+    <p>${t ? esc(t) : val("thoughts") ? `Deine Gedanken: „${esc(val("thoughts").slice(0, 220))}${val("thoughts").length > 220 ? " …" : ""}“` : "Beantworte die Fragen im Bereich „Spielidee“, dann entsteht hier Satz für Satz dein Spiel."}</p></aside>`;
 }
 function summarySentence() {
   const g = val, a = st.a;

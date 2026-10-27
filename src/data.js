@@ -721,6 +721,12 @@ q("ugc", "Spieler-Inhalte", "Können Spieler eigene Inhalte erstellen?", [
 q("push", "Push-Nachrichten", "Soll das Spiel Benachrichtigungen senden?", [
   ["➖", "Nie", ""], ["🔔", "Nur wichtige", "z. B. 'Deine Energie ist wieder voll'."], ["📣", "Regelmäßig", ""]], { l: 3, if: mobileApp });
 /* ======================================================= */
+sec("thoughts", "Deine Gedanken", "💭", "Erst einmal alles aufschreiben, was dir zu deinem Spiel einfällt.");
+q("thoughts", "Meine Gedanken", "Schreib erst einmal alles auf, was dir zu deinem Spiel einfällt.", [], { t: "t", area: 1, noAi: true,
+  ph: "Egal wie ungeordnet: Worum geht es? Wer spielt? Was macht man? Wo spielt es? Was wäre richtig cool? Was auf keinen Fall?",
+  h: "Das ist die Grundlage für alles Weitere. Daraus werden Antworten erkannt und vorausgefüllt, und deine Gedanken stehen ganz oben im KI-Bauauftrag." });
+
+/* ======================================================= */
 sec("final", "Zum Schluss", "📝", "Alles, was dir sonst noch wichtig ist.");
 q("finalNotes", "Notizen zum Schluss", "Gibt es noch etwas Wichtiges, das die KI wissen muss?", [], { t: "t", area: 1,
   ph: "z. B. Der Chef des Restaurants soll als Endgegner vorkommen. Die Musik soll italienisch klingen. Bitte keine Anmeldung.",
@@ -736,7 +742,7 @@ Object.entries(MOVE).forEach(([id, s]) => { Q.find(q => q.id === id).sec = s; })
 Q.find(q => q.id === "nameStyle").sec = "launch";
 Q.find(q => q.id === "perspective").sec = "graphics";
 S.splice(S.findIndex(s => s.id === "camera"), 1);
-const ORDER = ["audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
+const ORDER = ["thoughts", "audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
   "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "final"];
 const SEQ = {
   audience: ["age", "skill", "whereplay", "reading"],

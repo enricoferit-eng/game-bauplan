@@ -89,7 +89,7 @@ function buildPrompt() {
   if (sk) rules.push(sk);
   rules.forEach((r, i) => P(`${i + 1}. ${r}`)); blank();
   P("### A3. Rangfolge bei Widersprüchen", "", "Wenn sich Angaben widersprechen, gilt diese Reihenfolge (oben gewinnt). Melde jeden Widerspruch trotzdem bei mir.", "");
-  P("1. Strikte Verbote und Schutz der Zielgruppe (Teil C, „Strikte Verbote“, „Zielgruppe“)", "2. Meine Notizen (📝) – sie präzisieren oder ändern die ausgewählte Antwort", "3. Das Spielidee-System (Teil B)", "4. Die Detailvorgaben (Teil C)", "5. Deine eigenen Entscheidungen", "");
+  P("1. Strikte Verbote und Schutz der Zielgruppe (Teil C, „Strikte Verbote“, „Zielgruppe“)", "2. Meine eigenen Worte: meine Gedanken (B0) und Notizen (📝) – sie präzisieren oder ändern die ausgewählten Antworten", "3. Das Spielidee-System (Teil B)", "4. Die Detailvorgaben (Teil C)", "5. Deine eigenen Entscheidungen", "");
   P("### A4. Begriffe in diesem Dokument", "");
   [["Kernschleife", "Die Handlung, die sich im Spiel ständig wiederholt und Spaß machen muss."], ["Level / Welt", "Ein Level ist ein spielbarer Abschnitt. Eine Welt ist eine Gruppe von Leveln mit gemeinsamem Ort und Thema."],
    ["Run", "Ein kompletter Durchlauf von Anfang bis zum Scheitern oder Sieg."], ["Power-up", "Ein Gegenstand, der kurzzeitig einen Vorteil gibt."],
@@ -101,6 +101,10 @@ function buildPrompt() {
 
   /* Teil B */
   P("---", "", "## Teil B – Das Spielidee-System", "");
+  if (val("thoughts")) {
+    P("### B0. Meine Gedanken – der Ausgangspunkt für alles", "", "So habe ich mein Spiel zuerst in eigenen Worten beschrieben. Alle Antworten unten sind daraus entstanden. Das fertige Spiel muss sich wie diese Beschreibung anfühlen. Widerspricht eine Detailantwort diesen Gedanken, frag nach.", "");
+    val("thoughts").split(/\n+/).forEach(l => l.trim() && P(`> ${l.trim()}`)); blank();
+  }
   P("### B1. Die Spielidee in einem Absatz", "", `> ${ideaText() || summarySentence()}`, "");
   const allNotes = visible().filter(q => noteOf(q.id) || (q.id === "finalNotes" && val("finalNotes")));
   if (allNotes.length) {
@@ -137,7 +141,7 @@ function buildPrompt() {
   P("---", "", "## Teil C – Alle Detailvorgaben", "", "Hier stehen alle Antworten aus dem Fragebogen, nach Bereichen sortiert. Der Text nach „–“ erklärt jeweils verbindlich, was gemeint ist.", "");
   let n = 1;
   S.forEach(s => {
-    const qs = v.filter(q => q.sec === s.id && (answered(q) || noteOf(q.id)) && s.id !== "idea" && q.id !== "finalNotes");
+    const qs = v.filter(q => q.sec === s.id && (answered(q) || noteOf(q.id)) && s.id !== "idea" && q.id !== "finalNotes" && q.id !== "thoughts");
     if (!qs.length) return;
     P(`### C${n++}. ${s.name}`, "");
     qs.forEach(q => { const l = answerLines(q); if (l) P(...l); });

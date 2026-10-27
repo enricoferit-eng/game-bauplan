@@ -71,6 +71,7 @@ function concept() {
   const H = x => B.push({ t: "h2", x }), P = x => x && B.push({ t: "p", x }), UL = x => x.length && B.push({ t: "ul", x }), OL = x => x.length && B.push({ t: "ol", x }), KV = x => B.push({ t: "kv", x: x.filter(r => r[1]) });
   const ai = st.ai;
 
+  if (val("thoughts")) { H("Deine Ausgangsidee"); P(`„${val("thoughts")}“`); }
   /* 1 Überblick */
   const names = ai && ai.titel && ai.titel.length ? ai.titel : nameIdeas(w);
   H("Das Spiel in Kürze");

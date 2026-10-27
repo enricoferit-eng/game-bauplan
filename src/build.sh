@@ -1,6 +1,6 @@
 #!/bin/zsh
 cd "$(dirname "$0")"
-JS() { echo '<script>'; cat data.js; echo; cat app.js; echo; cat concept.js; echo; cat prompt.js; echo; cat cloud.js; echo; cat boot.js; echo '</script>'; }
+JS() { echo '<script>'; cat data.js; echo; cat app.js; echo; cat concept.js; echo; cat prompt.js; echo; cat thoughts.js; echo; cat cloud.js; echo; cat boot.js; echo '</script>'; }
 # claude.ai-Artifact
 { cat shell.html; echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>'; JS; } > ../artifact.html
 # GitHub Pages
