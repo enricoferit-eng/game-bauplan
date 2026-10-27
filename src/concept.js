@@ -58,7 +58,7 @@ function sizePlan() {
     "Mini-Prototyp": { worlds: 1, levels: 1, effort: "1–3 Tage" }, "Kleines Spiel": { worlds: 2, levels: 4, effort: "1–3 Wochen" },
     "Mittleres Spiel": { worlds: 4, levels: 8, effort: "2–4 Monate" }, "Großes Spiel": { worlds: 6, levels: 15, effort: "6–12 Monate" },
     "Endlos / prozedural": { worlds: 3, levels: 0, effort: "2–6 Wochen" }
-  }[val("scope")] || { worlds: 3, levels: 5, effort: "2–6 Wochen" };
+  }[val("scope")] || (has(st.a, "structure", "Endloser Lauf", "Zufällig generierte Runs") ? { worlds: 3, levels: 0, effort: "2–6 Wochen" } : { worlds: 3, levels: 5, effort: "2–6 Wochen" });
 }
 
 function concept() {
@@ -143,7 +143,7 @@ function concept() {
 
   /* 6 Welten */
   const sp = sizePlan();
-  H(val("scope") === "Endlos / prozedural" ? "Ablauf eines endlosen Laufs" : "Welten & Levelplan");
+  H(has(st.a, "structure", "Endloser Lauf", "Zufällig generierte Runs") ? "Ablauf eines endlosen Laufs" : "Welten & Levelplan");
   if (ai && ai.welten) UL(ai.welten.map(x => `${x.name}: Neu: ${x.neu}. Gegner/Hindernisse: ${x.gegner}. Finale: ${x.finale}.`));
   else {
     const biomes = arrOf("biomes"), places = biomes.length ? biomes.concat(w.places) : w.places;
@@ -154,7 +154,7 @@ function concept() {
       const neu = i === 0 ? "Grundlagen" : i === 1 && val("ideaTwist") && val("ideaTwist") !== "Kein Kniff, klassisch gut" ? `der Clou „${val("ideaTwist")}“` : news[(i - 1) % news.length];
       const foe = w.foes[i % w.foes.length];
       const last = i === Math.min(sp.worlds, 6) - 1;
-      rows.push(`${val("scope") === "Endlos / prozedural" ? `Abschnitt ${i + 1}` : `Welt ${i + 1}`}: ${place}${sp.levels ? ` (${sp.levels} Level)` : ""}. Neu: ${neu}. Typisch: ${foe[0]} (${foe[1]}).${last ? ` Großes Finale (${val("ideaFinale") || "Bosskampf"}) mit ${w.boss}.` : ""}`);
+      rows.push(`${has(st.a, "structure", "Endloser Lauf", "Zufällig generierte Runs") ? `Abschnitt ${i + 1}` : `Welt ${i + 1}`}: ${place}${sp.levels ? ` (${sp.levels} Level)` : ""}. Neu: ${neu}. Typisch: ${foe[0]} (${foe[1]}).${last ? ` Großes Finale (${val("ideaFinale") || "Bosskampf"}) mit ${w.boss}.` : ""}`);
     }
     UL(rows);
   }

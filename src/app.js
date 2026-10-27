@@ -309,7 +309,7 @@ function prof() {
     ["Look", [g("dimension"), g("artStyle"), g("palette")].filter(Boolean).join(", ")],
     ["Perspektive", g("perspective")],
     ["Setting", g("setting")],
-    ["Gefühl", [g("feeling"), g("tone")].filter(Boolean).join(", ")],
+    ["Gefühl", [g("feeling"), g("pace")].filter(Boolean).join(", ")],
     ["Rundendauer", g("session")],
     ["Multiplayer", g("mp")],
     ["Geschäftsmodell", g("monet")]

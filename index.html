@@ -371,29 +371,13 @@ q("scope", "Umfang", "Wie groß soll das Spiel werden?", [
   ["🧸", "Kleines Spiel", "Ca. 5–10 Level oder 30–60 Minuten Inhalt, komplett und poliert."],
   ["🏘️", "Mittleres Spiel", "Ca. 20–50 Level oder mehrere Welten, 3–8 Stunden Inhalt."],
   ["🏰", "Großes Spiel", "100+ Level oder offene Welt, 10+ Stunden Inhalt."],
-  ["♾️", "Endlos / prozedural", "Inhalte werden zufällig erzeugt, unbegrenzt spielbar."]]);
-q("tone", "Grundton", "Welchen Grundton hat dein Spiel?", [
-  ["🌈", "Fröhlich & kindlich", "Bunt und freundlich, keine echten Gefahren."],
-  ["🤪", "Humorvoll", "Witze und Übertreibung, nimmt sich nicht ernst."],
-  ["🛡️", "Episch & heroisch", "Große Momente, Heldenreise, mitreißend."],
-  ["🌑", "Düster & ernst", "Bedrückende Stimmung, ernste Themen."],
-  ["🍂", "Melancholisch & poetisch", "Ruhig, nachdenklich, emotional."],
-  ["🌀", "Absurd & surreal", "Traumartig und verrückt, auf charmante Art unlogisch."]], { l: 2 });
+  ]);
 q("pace", "Tempo", "Wie schnell soll sich das Spiel anfühlen?", [
   ["🐢", "Gemütlich", "Kein Zeitdruck, der Spieler bestimmt das Tempo."],
   ["🚶", "Mittel", "Gleichmäßiges Tempo mit gelegentlichen Spannungsspitzen."],
   ["🏃", "Schnell", "Ständige Action, schnelle Reaktionen nötig."],
   ["🌪️", "Hektisch", "Viele Dinge gleichzeitig, maximale Reizdichte."],
   ["🎢", "Wechselnd", "Bewusster Wechsel zwischen ruhigen und hektischen Phasen."]], { l: 2 });
-q("usp", "Alleinstellungsmerkmal", "Was soll dein Spiel besonders machen?", [
-  ["💡", "Neue Mechanik", "Eine ungewöhnliche Spielidee, die es so selten gibt."],
-  ["🖼️", "Einzigartiger Look", "Der Grafikstil ist das Aushängeschild."],
-  ["📜", "Starke Geschichte", "Story und Figuren sind das Herzstück."],
-  ["😄", "Humor", "Das Spiel ist vor allem lustig."],
-  ["👯", "Gemeinsam spielen", "Das Erlebnis mit anderen steht im Mittelpunkt."],
-  ["🧱", "Selbst gestalten", "Spieler erschaffen eigene Inhalte."],
-  ["🎓", "Lernwert", "Man lernt beim Spielen etwas."],
-  ["🏪", "Echter Ort oder Marke", "Spielt an einem echten Ort oder für eine echte Marke (z. B. Restaurant, Verein)."]], { l: 2, t: "m" });
 q("purpose", "Projektziel", "Wofür entsteht das Spiel?", [
   ["🎈", "Hobby & Spaß", "Für mich selbst, zum Lernen und Ausprobieren."],
   ["🎁", "Für Familie oder Freunde", "Als Geschenk oder für eine bestimmte Gruppe."],
@@ -401,12 +385,6 @@ q("purpose", "Projektziel", "Wofür entsteht das Spiel?", [
   ["💶", "Geld verdienen", "Kommerzieller Erfolg ist ein Ziel."],
   ["🏫", "Bildung", "Für Schule, Unterricht oder Lernzwecke."],
   ["📣", "Marketing für Firma/Verein", "Das Spiel bewirbt ein Geschäft, einen Verein oder eine Marke."]], { l: 2 });
-q("ending", "Spielende", "Hat das Spiel ein richtiges Ende?", [
-  ["🎬", "Ja, mit Abspann", "Klares Ende nach dem letzten Level oder Kapitel."],
-  ["🔁", "Ende plus Weiterspielen", "Nach dem Ende gibt es Zusatzinhalte (Postgame)."],
-  ["📈", "Endlos mit Highscore", "Kein Ende; Ziel ist eine möglichst hohe Punktzahl."],
-  ["📅", "Wächst ständig weiter", "Das Spiel wird mit Updates und Saisons immer erweitert."]], { l: 2 });
-
 /* ======================================================= */
 sec("idea", "Spielidee", "🧠", "Deine Idee wird Baustein für Baustein aufgebaut: Was tust du, warum, wo und was macht es besonders?");
 q("ideaRef", "Lieblingsspiele", "Welche Spiele magst du selbst? (Nur als Gefühl, nicht zum Kopieren.)", [
@@ -505,15 +483,6 @@ q("rating", "Altersfreigabe", "Welche Alterseinstufung strebst du an?", [
   ["🟠", "USK 12 / PEGI 12", "Fantasy-Gewalt, etwas Spannung."],
   ["🔴", "USK 16 / PEGI 16", "Realistischere Gewalt, ernste Themen."],
   ["⛔", "USK 18 / PEGI 18", "Nur für Erwachsene."]], { l: 3 });
-q("motivation", "Motivatoren", "Was motiviert deine Spieler am meisten weiterzuspielen?", [
-  ["🗂️", "Sammeln", "Alles einsammeln und komplettieren."],
-  ["📊", "Zahlen steigen", "Werte, Level, Highscores verbessern."],
-  ["📖", "Wie geht's weiter?", "Neugier auf die Story."],
-  ["🥇", "Andere schlagen", "Ranglisten und Duelle."],
-  ["🌳", "Etwas wachsen sehen", "Basis, Stadt oder Figur entwickelt sich sichtbar."],
-  ["🧠", "Neues lernen", "Neue Fähigkeiten und Wissen."],
-  ["🌿", "Abschalten", "Ein entspannter Rückzugsort."]], { l: 3, t: "m" });
-
 /* ======================================================= */
 sec("platform", "Plattform & Geräte", "📱", "Wo läuft dein Spiel und unter welchen Bedingungen?");
 q("platforms", "Plattformen", "Auf welchen Geräten soll das Spiel laufen?", [
@@ -628,25 +597,14 @@ q("runDir", "Laufrichtung", "Wie läuft die Figur?", [
   ["🐦", "Fliegen per Tippen", "Jeder Tipp lässt die Figur aufsteigen, sonst fällt sie."]], { l: 2, if: coreIs("runner") });
 q("runInput", "Runner-Eingabe", "Wie reagiert der Spieler?", [
   ["👆", "Ein-Tipp", "Nur eine Aktion (z. B. springen)."], ["👉", "Wischen", "Wischen nach oben, unten, links, rechts."], ["📐", "Neigen", "Gerät kippen zum Lenken."]], { l: 3, if: coreIs("runner") });
-q("runSpeed", "Tempo-Steigerung", "Wie verändert sich das Tempo?", [
-  ["➖", "Konstant", "Gleiches Tempo, Schwierigkeit über Hindernisse."], ["📈", "Steigt langsam", "Tempo wächst sanft mit der Distanz."], ["🚀", "Steigt stark", "Wird schnell sehr hektisch."]], { l: 3, if: coreIs("runner") });
 q("actCombat", "Kampfgefühl", "Was macht dir beim Kämpfen in Spielen am meisten Spaß?", [
   ["💥", "Wild draufhauen", "Viele schnelle Treffer, laut und chaotisch."],
   ["⏱️", "Den richtigen Moment abpassen", "Gegner beobachten und genau dann zuschlagen oder blocken."],
   ["🤸", "Geschickt ausweichen", "Elegant um Angriffe herumtanzen."],
   ["✨", "Coole Spezialkräfte", "Seltene, besonders starke Angriffe einsetzen."]], { l: 2, t: "m", max: 2, if: coreIs("act") });
-q("actEnemies", "Gegnermenge", "Lieber gegen wenige starke oder viele schwache Gegner?", [
-  ["🤺", "Wenige starke", "Jeder Kampf ist ein Duell."], ["👥", "Kleine Gruppen", "Ein paar Gegner gleichzeitig."], ["🧟", "Riesige Massen", "Hunderte schwache Gegner auf einmal."]], { l: 3, if: coreIs("act") });
 q("actWeapons", "Kampf-Look", "Wie soll der Kampf aussehen?", [
   ["🧙", "Fantasy", "Wie in Märchen und Sagen."], ["🪖", "Realistisch", "Wie es in echt aussehen könnte."], ["🥄", "Albern", "Mit Kissen, Kochlöffeln und Quatsch."],
   ["🥋", "Ohne Waffen", "Nur mit Körper und Geschick."], ["🚀", "Futuristisch", "Hightech und Laser."]], { l: 2, if: coreIs("act", "rpg") , h: "Die KI denkt sich passend dazu die Waffen und Angriffe aus." });
-q("shootType", "Shooter-Sicht", "Wie erlebst du das Zielen und Schießen?", [
-  ["🔝", "Von oben", "Man sieht die Figur von oben und schießt in alle Richtungen."],
-  ["➡️", "Von der Seite", "Laufen und schießen wie in einem Jump'n'Run."],
-  ["🧍", "Hinter der Figur", "Man sieht die Figur von hinten."],
-  ["👁️", "Durch die Augen", "Man sieht nur die eigenen Hände."],
-  ["🔄", "Schießt von selbst", "Du musst nur ausweichen und Verbesserungen wählen."],
-  ["🚀", "Mit einem Raumschiff", "Fliegen und Gegnerwellen abschießen."]], { l: 2, if: coreIs("shoot") });
 q("shootAim", "Zielen", "Wie leicht soll das Treffen sein?", [
   ["🧲", "Sehr leicht", "Das Spiel hilft stark beim Zielen."], ["🤏", "Etwas Hilfe", ""], ["🎯", "Nur mit Können", "Kein bisschen Hilfe."]], { l: 3, if: coreIs("shoot") });
 q("tbsGrid", "Spielfeld", "Wie sieht das Spielfeld aus?", [
@@ -661,8 +619,6 @@ q("puzType", "Rätselart", "Welche Art Rätsel?", [
   ["🧊", "Logik & Schieben", "Blöcke schieben, Wege finden."], ["🔤", "Wörter", "Buchstaben und Begriffe."],
   ["🔢", "Zahlen & Mathe", "Rechnen und Zahlenrätsel."], ["🔀", "Zusammenführen (Merge)", "Zwei Gleiche ergeben ein besseres Objekt."],
   ["〰️", "Linien verbinden", "Punkte oder Rohre verbinden."], ["🔍", "Versteckte Objekte", "Dinge in Bildern finden."], ["🧺", "Sortieren & Stapeln", "Farben oder Dinge ordnen."]], { l: 2, t: "m", if: coreIs("puz") });
-q("puzHints", "Tipps", "Wie bekommt man Hilfe bei Rätseln?", [
-  ["💡", "Unbegrenzte Tipps", ""], ["🪙", "Begrenzt, verdienbar", "Tipps kosten Spielwährung."], ["🚫", "Keine Tipps", ""]], { l: 2, if: coreIs("puz") });
 q("puzLimit", "Begrenzung", "Wie wird ein Rätsel begrenzt?", [
   ["♾️", "Ohne Limit", "Beliebig viel Zeit und Züge."], ["🔢", "Zuglimit", "Maximale Anzahl Züge."], ["⏳", "Zeitlimit", "Countdown pro Rätsel."]], { l: 3, if: coreIs("puz") });
 q("simType", "Simulationsart", "Was wird aufgebaut oder verwaltet?", [
@@ -678,8 +634,6 @@ q("rpgCombat", "RPG-Kampf", "Wie sollen Kämpfe ablaufen?", [
   ["🤖", "Läuft von selbst", "Du stellst dein Team zusammen, der Kampf läuft automatisch."]], { l: 2, if: coreIs("rpg") });
 q("rpgClasses", "Spezialisierung", "Soll man sich auf eine Rolle festlegen?", [
   ["🛡️", "Ja, feste Rollen", "z. B. Krieger, Magier, Heiler."], ["🌿", "Nein, alles frei mischbar", ""], ["➖", "Egal, nur Ausrüstung zählt", ""]], { l: 3, if: coreIs("rpg") });
-q("rogueRun", "Run-Länge", "Wie lange dauert ein kompletter Durchlauf?", [
-  ["⏱️", "Ca. 10 Minuten", ""], ["🕐", "20–30 Minuten", ""], ["🕰️", "Ca. 60 Minuten", ""]], { l: 2, if: coreIs("rogue") });
 q("rogueMeta", "Nach dem Scheitern", "Was soll bleiben, wenn ein Versuch scheitert?", [
   ["🧊", "Nichts", "Jeder Versuch startet bei null."], ["📈", "Etwas Stärke", "Man wird von Versuch zu Versuch dauerhaft etwas stärker."], ["🔓", "Neues freigeschaltet", "Neue Figuren oder Gegenstände für die nächsten Versuche."]], { l: 2, if: coreIs("rogue") });
 q("raceType", "Rennstil", "Wie fühlt sich das Fahren an?", [
@@ -688,8 +642,6 @@ q("raceVehicles", "Fahrzeuge", "Womit wird gefahren?", [
   ["🚗", "Autos", ""], ["🏍️", "Motorräder", ""], ["🚤", "Boote", ""], ["✈️", "Flugzeuge", ""], ["🐎", "Tiere", ""], ["🛸", "Fantasie-Fahrzeuge", ""]], { l: 3, t: "m", if: coreIs("race") });
 q("sandBuild", "Bausystem", "Wie wird gebaut?", [
   ["🧊", "Blöcke im Raster", "Würfel platzieren und abbauen."], ["🪑", "Freies Platzieren", "Objekte frei drehen und setzen."], ["🌉", "Physikbasiert", "Konstruktionen müssen halten."]], { l: 2, if: coreIs("sand") });
-q("sandGoal", "Sandbox-Ziel", "Gibt es ein Ziel?", [
-  ["🕊️", "Kein Ziel", "Reines Kreativspielen."], ["🎯", "Lockere Ziele", "Optionale Aufgaben als Anreiz."], ["🔥", "Überlebensmodus", "Zusätzlich Gefahren und Ressourcenknappheit."]], { l: 3, if: coreIs("sand") });
 q("advInteract", "Erzählform", "Wie interagiert man im Abenteuer?", [
   ["👆", "Point & Click", "Auf Dinge tippen, um sie zu untersuchen."], ["🚶", "Direkte Steuerung", "Figur frei bewegen."], ["💬", "Dialog-lastig (Visual Novel)", "Viel Text und Entscheidungen."], ["⌨️", "Text-Adventure", "Alles in Textform."]], { l: 2, if: coreIs("adv") });
 q("advPuzzles", "Abenteuer-Rätsel", "Welche Rätsel enthält das Abenteuer?", [
@@ -704,17 +656,8 @@ q("cardMode", "Kartenspiel-Art", "Welche Art Kartenspiel?", [
   ["🧗", "Deckbuilder-Run", "Im Einzelspieler-Lauf das Deck verbessern."], ["🆚", "Sammelkarten-Duell", "Gegen andere mit eigenem Deck."], ["🂡", "Klassisches Kartenspiel", "Bekannte Regeln digital."], ["🧘", "Solitär-ähnlich", "Alleine Karten ordnen."]], { l: 2, if: coreIs("card") });
 q("survNeeds", "Bedürfnisse", "Welche Bedürfnisse muss man im Blick behalten?", [
   ["🍖", "Hunger", ""], ["💧", "Durst", ""], ["🔥", "Wärme", ""], ["😴", "Schlaf", ""], ["❤️", "Gesundheit", ""], ["🧠", "Psyche", ""]], { l: 2, t: "m", if: coreIs("surv") });
-q("survThreat", "Bedrohung", "Was ist die größte Gefahr?", [
-  ["🌙", "Gegner in der Nacht", ""], ["⛈️", "Wetter & Natur", ""], ["👥", "Andere Spieler", ""], ["📉", "Knappe Ressourcen", ""]], { l: 3, t: "m", if: coreIs("surv") });
 q("horrorType", "Horror-Art", "Welche Art Grusel?", [
   ["🧠", "Psychologisch", "Unbehagen, Wahrnehmung täuscht."], ["👹", "Verfolgung", "Ein Monster jagt den Spieler."], ["💥", "Jumpscares", "Plötzliche Schreckmomente."], ["🌫️", "Atmosphärisch", "Leise Spannung, kaum Schocks."]], { l: 2, if: coreIs("horror") });
-q("coreLoop", "Spielkreislauf", "Welcher Kreislauf beschreibt dein Spiel am besten?", [
-  ["🔁", "Spielen → Belohnung → Upgrade", "Level spielen, Belohnung bekommen, stärker werden, schwerere Level."],
-  ["🧭", "Erkunden → Finden → Freischalten", "Neue Orte entdecken, Dinge finden, neue Bereiche öffnen."],
-  ["🏗️", "Sammeln → Bauen → Wachsen", "Ressourcen sammeln, bauen, das Erbaute erzeugt mehr."],
-  ["🏁", "Runde → Punkte → Rangliste", "Kurze Runde, Punktzahl, mit sich oder anderen vergleichen."],
-  ["📖", "Kapitel → Entscheidung → Folgen", "Story erleben, entscheiden, Konsequenzen spüren."],
-  ["🎲", "Run → Scheitern → Neu & besser", "Durchlauf, scheitern, mit neuem Wissen oder Meta-Upgrades erneut."]], { l: 2 });
 q("structure", "Levelstruktur", "Wie ist die Spielwelt aufgebaut?", [
   ["🗺️", "Einzelne Level mit Levelkarte", "Level nacheinander freischalten."],
   ["🚪", "Hub-Welt mit Toren", "Zentraler Ort, von dem aus Level betreten werden."],
@@ -729,8 +672,7 @@ q("failPenalty", "Rückschlag", "Wenn man scheitert: Wie weit muss man zurück?"
   ["⚡", "Fast gar nicht", "Direkt kurz vor der Stelle weiter."], ["🚩", "Ein Stück", "Bis zur Hälfte des Abschnitts."], ["🔄", "Ganz an den Anfang", "Das Level beginnt neu."],
   ["🎲", "Alles von vorn", "Der ganze Durchlauf beginnt neu."]], { l: 2 });
 q("extraSystems", "Zusatzsysteme", "Welche zusätzlichen Systeme soll es geben?", [
-  ["🔨", "Crafting", "Aus Materialien Gegenstände herstellen."], ["🎁", "Beute & Items", "Gegenstände mit Werten finden."], ["🌳", "Fähigkeitenbaum", "Punkte in Fähigkeiten investieren."],
-  ["🏠", "Basisbau", "Eigene Basis errichten und ausbauen."], ["💱", "Handel", "Kaufen und verkaufen."], ["🗨️", "Dialogsystem", "Gespräche mit Antwortmöglichkeiten."],
+  ["🔨", "Crafting", "Aus Materialien Gegenstände herstellen."], ["🏠", "Basisbau", "Eigene Basis errichten und ausbauen."], ["💱", "Handel", "Kaufen und verkaufen."], ["🗨️", "Dialogsystem", "Gespräche mit Antwortmöglichkeiten."],
   ["🎯", "Quests & Aufträge", ""], ["📷", "Fotomodus", ""], ["🎰", "Minispiele", "Kleine Nebenspiele im Spiel."], ["➖", "Keine", "", "x"]], { l: 2, t: "m" });
 
 /* ======================================================= */
@@ -749,7 +691,7 @@ q("enemyAI", "Gegner-Verhalten", "Wie schlau sollen Gegner wirken?", [
   ["🔁", "Leicht durchschaubar", "Machen immer dasselbe; man lernt sie auswendig."], ["👀", "Aufmerksam", "Bemerken dich und verfolgen dich."],
   ["🧠", "Gerissen", "Arbeiten zusammen und stellen Fallen."]], { l: 3, if: a => a.enemies && a.enemies !== "Keine Gegner" });
 q("npcs", "Nicht-Spieler-Figuren", "Welche Figuren leben außer dem Spieler in der Welt?", [
-  ["🛒", "Händler", ""], ["❗", "Auftraggeber", ""], ["🏘️", "Bewohner mit Tagesablauf", ""], ["🧑‍🏫", "Mentor / Helfer", ""], ["➖", "Keine", "", "x"]], { l: 3, t: "m" });
+  ["🛒", "Händler", ""], ["❗", "Auftraggeber", ""], ["🏘️", "Bewohner mit Tagesablauf", ""], ["➖", "Keine", "", "x"]], { l: 3, t: "m" });
 q("physics", "Bewegung der Dinge", "Wie sollen sich Dinge im Spiel bewegen?", [
   ["🕹️", "Wie im Zeichentrick", "Vorhersehbar und einfach."], ["🌍", "Wie in echt", "Dinge fallen, rollen und prallen realistisch ab."],
   ["🤸", "Wackelig & lustig", "Alles schwabbelt, kippt und fliegt herum."]], { l: 3 });
@@ -759,15 +701,13 @@ q("secrets", "Geheimnisse", "Wie viele Geheimnisse sind versteckt?", [
   ["🔍", "Viele", "Geheime Räume, Abkürzungen, Bonuslevel."], ["🥚", "Ein paar Easter Eggs", "Kleine Überraschungen."], ["➖", "Keine", ""]], { l: 3 });
 q("inventory", "Gepäck", "Wie viele Dinge trägt die Figur mit sich herum?", [
   ["➖", "Gar keine", ""], ["🎒", "Ein paar", "Eine Handvoll Gegenstände zur schnellen Auswahl."], ["🧳", "Eine ganze Tasche voll", "Viele Dinge zum Sortieren."]], { l: 3 });
-q("procedural", "Abwechslung", "Soll jede Runde gleich aussehen oder jedes Mal anders?", [
-  ["✍️", "Immer gleich", "Man kann Level auswendig lernen."], ["🎲", "Etwas anders", "Bekannt, aber mit Überraschungen."], ["🌀", "Jedes Mal komplett neu", ""]], { l: 3 });
 /* ======================================================= */
 sec("controls", "Steuerung", "🕹️", "Wie der Spieler das Spiel bedient.");
 q("inputTouch", "Touch-Steuerung", "Wie wird auf dem Touchscreen gesteuert?", [
   ["👆", "Tippen", "Auf Dinge oder den Bildschirm tippen."], ["👉", "Wischen", "Wischgesten für Richtungen."], ["🕹️", "Virtueller Joystick + Buttons", "Steuerkreuz links, Aktionsknöpfe rechts."],
-  ["📐", "Neigen", "Gerät kippen (Bewegungssensor)."], ["✋", "Ziehen & Ablegen", "Objekte mit dem Finger verschieben."], ["⏺️", "Halten & Loslassen", "Ein Finger, Dauer zählt."]], { t: "m", if: touch });
+  ["📐", "Neigen", "Gerät kippen (Bewegungssensor)."], ["✋", "Ziehen & Ablegen", "Objekte mit dem Finger verschieben."], ["⏺️", "Halten & Loslassen", "Ein Finger, Dauer zählt."]], { l: 2, t: "m", if: touch });
 q("inputDesk", "PC-Bedienung", "Womit spielt man am Computer?", [
-  ["⌨️", "Tastatur", ""], ["🖱️", "Maus", ""], ["🖱️⌨️", "Maus und Tastatur", ""], ["🎮", "Gamepad", ""]], { t: "m", if: desk });
+  ["⌨️", "Tastatur", ""], ["🖱️", "Maus", ""], ["🖱️⌨️", "Maus und Tastatur", ""], ["🎮", "Gamepad", ""]], { l: 2, t: "m", if: desk });
 q("controller", "Gamepad", "Soll man auch mit einem Gamepad spielen können?", [
   ["✅", "Ja", ""], ["❌", "Nein", ""]], { l: 3, if: desk });
 q("actions", "Bedienung", "Wie kompliziert darf die Bedienung sein?", [
@@ -789,8 +729,6 @@ q("biomes", "Gebiete", "Welche Gebiete gibt es?", [
   ["🏖️", "Strand", ""], ["🪐", "Weltall", ""], ["🐸", "Sumpf", ""], ["☁️", "Wolken & Himmel", ""], ["🏠", "Innenräume", ""]], { t: "m" });
 q("worldSize", "Weltgröße", "Wie groß ist die begehbare Welt?", [
   ["🏘️", "Klein", "In wenigen Minuten durchquert."], ["🗺️", "Mittel", "Mehrere Gebiete, Schnellreise hilfreich."], ["🌏", "Riesig", "Stundenlanges Erkunden."]], { l: 2, if: iff("structure", "Offene Welt", "Hub-Welt mit Toren") });
-q("era", "Epoche", "Wann spielt die Geschichte?", [
-  ["🦕", "Urzeit", ""], ["📜", "Vergangenheit", ""], ["📱", "Gegenwart", ""], ["🛸", "Zukunft", ""], ["⌛", "Zeitlos", ""]], { l: 3 });
 q("dayNight", "Tag & Nacht", "Gibt es einen Tag-Nacht-Wechsel?", [
   ["➖", "Nein", ""], ["🌗", "Nur optisch", "Licht ändert sich, Gameplay nicht."], ["🌙", "Mit Auswirkungen", "Nachts andere Gegner, Läden zu usw."]], { l: 3 });
 q("weather", "Wetter", "Gibt es Wetter?", [
@@ -807,11 +745,8 @@ sec("story", "Story & Figuren", "📖", "Geschichte, Spielfigur und Charaktere."
 q("storyAmount", "Story-Umfang", "Wie viel Geschichte hat das Spiel?", [
   ["➖", "Keine Story", "Reines Gameplay."], ["🎞️", "Kurzes Intro", "Ein paar Sätze oder Bilder zum Start."],
   ["📗", "Leichte Geschichte", "Roter Faden zwischen den Leveln."], ["📚", "Story im Mittelpunkt", "Die Geschichte treibt das Spiel an."]]);
-q("storyTheme", "Story-Thema", "Worum geht es in der Geschichte?", [
-  ["🦸", "Rettung", "Jemanden oder etwas retten."], ["🧭", "Abenteuerreise", "Aufbruch ins Unbekannte."], ["🤝", "Freundschaft", ""], ["🕵️", "Geheimnis lösen", ""],
-  ["🔥", "Überleben", ""], ["📈", "Vom Nichts nach oben", "Klein anfangen, groß rauskommen."], ["⚖️", "Rache / Gerechtigkeit", ""]], { l: 2, if: someStory });
 q("storyTell", "Erzählweise", "Wie wird die Geschichte erzählt?", [
-  ["🎬", "Zwischensequenzen", ""], ["💬", "Textboxen", ""], ["🎙️", "Sprachausgabe", ""], ["🏚️", "Durch die Umgebung", "Details in der Welt erzählen."],
+  ["🎬", "Zwischensequenzen", ""], ["💬", "Textboxen", ""], ["🏚️", "Durch die Umgebung", "Details in der Welt erzählen."],
   ["🗯️", "Comic-Bilder", ""], ["📔", "Tagebücher & Notizen", ""]], { l: 3, t: "m", if: hasStory });
 q("choices", "Entscheidungen", "Beeinflusst der Spieler die Geschichte?", [
   ["➡️", "Linear", "Feste Geschichte."], ["🔀", "Kleine Entscheidungen", "Ändern Dialoge, nicht das Ende."], ["🌳", "Verzweigt mit mehreren Enden", ""]], { l: 3, if: hasStory });
@@ -831,7 +766,7 @@ q("companion", "Begleiter", "Hat die Spielfigur einen Begleiter?", [
 q("villain", "Gegenspieler", "Wer ist der Gegenspieler?", [
   ["➖", "Keiner", ""], ["😈", "Klassischer Bösewicht", ""], ["🌗", "Grauzone", "Mit nachvollziehbaren Motiven."], ["🌪️", "Naturgewalt", ""], ["🪞", "Der Spieler selbst", "Innere Konflikte."]], { l: 3, if: hasStory });
 q("humor", "Humor-Art", "Welche Art Humor?", [
-  ["➖", "Kein Humor", ""], ["🔤", "Wortwitz", ""], ["🍌", "Slapstick", ""], ["🪞", "Selbstironisch & Meta", ""], ["🖤", "Schwarzer Humor", ""]], { l: 3, if: iff("tone", "Humorvoll", "Absurd & surreal") });
+  ["➖", "Kein Humor", ""], ["🔤", "Wortwitz", ""], ["🍌", "Slapstick", ""], ["🪞", "Selbstironisch & Meta", ""], ["🖤", "Schwarzer Humor", ""]], { l: 3, if: iff("feeling", "Lachen & Spaß") });
 
 /* ======================================================= */
 sec("graphics", "Grafik & Kunststil", "🎨", "Wie dein Spiel aussieht.");
@@ -848,8 +783,6 @@ q("palette", "Farbpalette", "Welche Farben dominieren?", [
   ["pal:#0B0C10,#1F2833,#45525E,#66737F,#8A1C1C", "Dunkel & düster", ""], ["pal:#6B4F2A,#A47148,#D6B88D,#7C8C4A,#3F5A36", "Natürlich & erdig", ""],
   ["pal:#0D0221,#FF2A6D,#05D9E8,#D1F7FF,#F9C80E", "Neon", ""], ["pal:#111111,#555555,#999999,#DDDDDD,#FFFFFF", "Schwarz-Weiß", ""],
   ["pal:#0F380F,#306230,#8BAC0F,#9BBC0F,#CADC9F", "Retro begrenzt", "Wenige Farben wie alte Konsolen."]], { l: 2 });
-q("animation", "Animationsstil", "Wie sind Bewegungen animiert?", [
-  ["🎞️", "Wenige Bilder (retro)", "Bewusst ruckelig."], ["🌊", "Flüssig", ""], ["🫧", "Gummi-artig", "Quetschen und Dehnen, sehr lebendig."], ["🏃", "Realistisch", "Wie echte Bewegungen."]], { l: 3 });
 q("effects", "Effekte", "Welche visuellen Effekte gibt es?", [
   ["✨", "Partikel", "Funken, Staub, Glitzer."], ["📳", "Bildschirmwackeln", ""], ["💡", "Leuchten & Glow", ""], ["🎉", "Konfetti bei Erfolgen", ""],
   ["💥", "Explosionen", ""], ["🌫️", "Nebel & Tiefenunschärfe", ""], ["➖", "Minimal", "", "x"]], { l: 3, t: "m" });
@@ -889,8 +822,6 @@ q("daily", "Tägliche Anreize", "Gibt es Gründe, täglich zu spielen?", [
   ["➖", "Nein", "Kein Druck, täglich zu spielen."], ["🎁", "Tägliche Belohnung", ""], ["📋", "Tägliche Aufgaben", ""], ["🔥", "Serien-Bonus", "Mehr Belohnung für Tage am Stück."]], { l: 3, t: "m" });
 q("levelRating", "Level-Bewertung", "Wie wird ein Level bewertet?", [
   ["⭐", "1–3 Sterne", ""], ["⏱️", "Bestzeit", ""], ["💯", "Prozent", ""], ["➖", "Gar nicht", ""]], { l: 3 });
-q("unlocks", "Freischaltbares", "Was kann man freischalten?", [
-  ["🧑", "Figuren", ""], ["🗺️", "Level / Welten", ""], ["👕", "Outfits", ""], ["🎮", "Spielmodi", ""], ["🎵", "Musik", ""], ["🖼️", "Galerie & Konzeptkunst", ""]], { l: 3, t: "m" });
 /* ======================================================= */
 sec("difficulty", "Schwierigkeit & Balancing", "⚖️", "Wie schwer das Spiel ist und wie es sich anpasst.");
 q("diff", "Grundschwierigkeit", "Wie schwer ist das Spiel?", [
@@ -962,13 +893,13 @@ q("revenue", "Umsatzziel", "Wie viel soll das Spiel einbringen?", [
 
 /* ======================================================= */
 sec("access", "Barrierefreiheit", "♿", "Damit möglichst viele mitspielen können.");
-q("a11yVis", "Sehen", "Welche Hilfen fürs Sehen?", [
+q("a11yVis", "Hilfen: Sehen", "Welche Hilfen fürs Sehen?", [
   ["🎨", "Farbenblind-Modus", "Infos nie nur über Farbe."], ["🔠", "Größere Schrift", ""], ["🌗", "Hoher Kontrast", ""], ["🔊", "Screenreader für Menüs", ""], ["➖", "Keine", "", "x"]],  { t: "m" });
-q("a11yMotor", "Bedienung", "Welche Hilfen für die Bedienung?", [
+q("a11yMotor", "Hilfen: Bedienung", "Welche Hilfen für die Bedienung?", [
   ["✋", "Einhändig spielbar", ""], ["🐌", "Spieltempo regelbar", ""], ["⏺️", "Halten statt Hämmern", "Kein schnelles Wiederholtes Drücken nötig."], ["🎯", "Größere Trefferflächen", ""], ["➖", "Keine", "", "x"]], { l: 3, t: "m" });
-q("a11yCog", "Verständnis", "Welche Hilfen fürs Verständnis?", [
+q("a11yCog", "Hilfen: Verständnis", "Welche Hilfen fürs Verständnis?", [
   ["🌈", "Weniger Effekte", "Keine Blitze, weniger Bewegung (Epilepsie)."], ["🧭", "Ziel jederzeit abrufbar", ""], ["🐢", "Kein Zeitdruck einstellbar", ""], ["📝", "Einfache Sprache", ""], ["➖", "Keine", "", "x"]], { l: 3, t: "m" });
-q("a11yHear", "Hören", "Welche Hilfen fürs Hören?", [
+q("a11yHear", "Hilfen: Hören", "Welche Hilfen fürs Hören?", [
   ["💬", "Untertitel", ""], ["👁️", "Sounds sichtbar machen", "Wichtige Geräusche als Symbol anzeigen."], ["➖", "Keine", "", "x"]], { l: 4, t: "m" });
 
 /* ======================================================= */
@@ -1030,19 +961,39 @@ q("ugc", "Spieler-Inhalte", "Können Spieler eigene Inhalte erstellen?", [
   ["➖", "Nein", ""], ["🛠️", "Ja, nur für sich", ""], ["🌐", "Ja, und online teilen", "Mit Moderation."]], { l: 3 });
 q("push", "Push-Nachrichten", "Soll das Spiel Benachrichtigungen senden?", [
   ["➖", "Nie", ""], ["🔔", "Nur wichtige", "z. B. 'Deine Energie ist wieder voll'."], ["📣", "Regelmäßig", ""]], { l: 3, if: mobileApp });
-/* ---------- Reihenfolge: Gameplay zuerst, Idee baut sich auf ---------- */
+/* ---------- Reihenfolge: vom Groben ins Feine ---------- */
+S.push({ id: "rules", name: "Jugendschutz & Sprachen", icon: "🛡️", desc: "Was tabu ist, Altersfreigabe und Sprachen." });
+const MOVE = { languages: "rules", taboo: "rules", parents: "rules", rating: "rules",
+  ideaStart: "mechanics", ideaFinale: "mechanics", ideaWow: "mechanics", ideaRule: "mechanics", ideaPerfect: "mechanics",
+  internet: "tech", deviceClass: "tech", tablet: "tech", webLaunch: "tech", pcWindow: "tech", size: "tech" };
+Object.entries(MOVE).forEach(([id, s]) => { Q.find(q => q.id === id).sec = s; });
 ["hero", "setting"].forEach(id => { Q.find(q => q.id === id).sec = "idea"; });
 Q.find(q => q.id === "nameStyle").sec = "launch";
 Q.find(q => q.id === "perspective").sec = "graphics";
 S.splice(S.findIndex(s => s.id === "camera"), 1);
-const ORDER = ["audience", "vision", "idea", "core", "mechanics", "difficulty", "progression", "multiplayer", "world", "story", "graphics", "audio",
-  "platform", "controls", "ui", "access", "data", "monetization", "tech", "launch", "liveops"];
-const IDEA_ORDER = ["ideaRef", "ideaVerb", "ideaGoal", "hero", "setting", "ideaChallenge", "ideaTwist", "ideaEscalation", "ideaStart", "ideaWow", "ideaFinale", "ideaRule", "ideaPerfect", "ideaReplay"];
-S.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
+const ORDER = ["audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
+  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops"];
+const SEQ = {
+  audience: ["age", "skill", "whereplay", "reading"],
+  platform: ["platforms", "primaryPlat", "orientation"],
+  vision: ["purpose", "scope", "session", "feeling", "pace"],
+  idea: ["ideaRef", "ideaVerb", "ideaGoal", "hero", "setting", "ideaChallenge", "ideaTwist", "ideaEscalation"],
+  core: ["core", "qz1", "qz2", "qz4", "qz6", "qz7", "qz8", "coreQuiz", "coreMix", "structure"],
+  mechanics: ["ideaStart", "ideaFinale", "ideaWow", "collect", "powerups", "enemies", "bosses", "enemyAI", "npcs", "interact", "physics", "secrets", "inventory", "ideaRule", "ideaPerfect"],
+  controls: ["actions", "inputTouch", "inputDesk", "controller", "controlFeel", "haptics"],
+  graphics: ["dimension", "artStyle", "perspective", "palette", "effects", "assets"],
+  rules: ["languages", "taboo", "rating", "parents"],
+  tech: ["devSkill", "workflow", "timeline", "budget", "team", "internet", "deviceClass", "tablet", "webLaunch", "pcWindow", "size"],
+  launch: ["nameStyle", "launchWhere"]
+};
 const _pos = new Map(Q.map((q, i) => [q.id, i]));
-const FIRST = ["nameStyle", "dimension", "artStyle", "perspective"];
-const _rank = q => q.sec === "idea" ? IDEA_ORDER.indexOf(q.id) : FIRST.includes(q.id) ? -10 + FIRST.indexOf(q.id) : _pos.get(q.id);
-Q.sort((a, b) => ORDER.indexOf(a.sec) - ORDER.indexOf(b.sec) || _rank(a) - _rank(b));
+const _rank = q => { const l = SEQ[q.sec] || [], i = l.indexOf(q.id); return i >= 0 ? i : 1000 + _pos.get(q.id); };
+S.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
+// Innerhalb eines Bereichs: erst die groben Fragen (Stufe 1), dann die feineren.
+// Ausnahme Spielsystem: dort bleiben die Fragen zum gewählten System zusammen (und folgen auf ihre Auslöser).
+const _lv = q => q.sec === "core" ? 0 : q.l;
+const _rk = _rank;
+Q.sort((a, b) => ORDER.indexOf(a.sec) - ORDER.indexOf(b.sec) || _lv(a) - _lv(b) || _rk(a) - _rk(b));
 
 /* Satzbausteine für die wachsende Spielidee */
 const PH = {
@@ -1370,7 +1321,7 @@ function prof() {
     ["Look", [g("dimension"), g("artStyle"), g("palette")].filter(Boolean).join(", ")],
     ["Perspektive", g("perspective")],
     ["Setting", g("setting")],
-    ["Gefühl", [g("feeling"), g("tone")].filter(Boolean).join(", ")],
+    ["Gefühl", [g("feeling"), g("pace")].filter(Boolean).join(", ")],
     ["Rundendauer", g("session")],
     ["Multiplayer", g("mp")],
     ["Geschäftsmodell", g("monet")]
@@ -1654,7 +1605,7 @@ function sizePlan() {
     "Mini-Prototyp": { worlds: 1, levels: 1, effort: "1–3 Tage" }, "Kleines Spiel": { worlds: 2, levels: 4, effort: "1–3 Wochen" },
     "Mittleres Spiel": { worlds: 4, levels: 8, effort: "2–4 Monate" }, "Großes Spiel": { worlds: 6, levels: 15, effort: "6–12 Monate" },
     "Endlos / prozedural": { worlds: 3, levels: 0, effort: "2–6 Wochen" }
-  }[val("scope")] || { worlds: 3, levels: 5, effort: "2–6 Wochen" };
+  }[val("scope")] || (has(st.a, "structure", "Endloser Lauf", "Zufällig generierte Runs") ? { worlds: 3, levels: 0, effort: "2–6 Wochen" } : { worlds: 3, levels: 5, effort: "2–6 Wochen" });
 }
 
 function concept() {
@@ -1739,7 +1690,7 @@ function concept() {
 
   /* 6 Welten */
   const sp = sizePlan();
-  H(val("scope") === "Endlos / prozedural" ? "Ablauf eines endlosen Laufs" : "Welten & Levelplan");
+  H(has(st.a, "structure", "Endloser Lauf", "Zufällig generierte Runs") ? "Ablauf eines endlosen Laufs" : "Welten & Levelplan");
   if (ai && ai.welten) UL(ai.welten.map(x => `${x.name}: Neu: ${x.neu}. Gegner/Hindernisse: ${x.gegner}. Finale: ${x.finale}.`));
   else {
     const biomes = arrOf("biomes"), places = biomes.length ? biomes.concat(w.places) : w.places;
@@ -1750,7 +1701,7 @@ function concept() {
       const neu = i === 0 ? "Grundlagen" : i === 1 && val("ideaTwist") && val("ideaTwist") !== "Kein Kniff, klassisch gut" ? `der Clou „${val("ideaTwist")}“` : news[(i - 1) % news.length];
       const foe = w.foes[i % w.foes.length];
       const last = i === Math.min(sp.worlds, 6) - 1;
-      rows.push(`${val("scope") === "Endlos / prozedural" ? `Abschnitt ${i + 1}` : `Welt ${i + 1}`}: ${place}${sp.levels ? ` (${sp.levels} Level)` : ""}. Neu: ${neu}. Typisch: ${foe[0]} (${foe[1]}).${last ? ` Großes Finale (${val("ideaFinale") || "Bosskampf"}) mit ${w.boss}.` : ""}`);
+      rows.push(`${has(st.a, "structure", "Endloser Lauf", "Zufällig generierte Runs") ? `Abschnitt ${i + 1}` : `Welt ${i + 1}`}: ${place}${sp.levels ? ` (${sp.levels} Level)` : ""}. Neu: ${neu}. Typisch: ${foe[0]} (${foe[1]}).${last ? ` Großes Finale (${val("ideaFinale") || "Bosskampf"}) mit ${w.boss}.` : ""}`);
     }
     UL(rows);
   }
