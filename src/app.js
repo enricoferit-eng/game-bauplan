@@ -6,7 +6,8 @@ const LEVELS = [
   { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Mehr Feingefühl: Gegner, Effekte, Abwechslung und mehr." },
   { n: 4, name: "Alles", tag: "Jedes kleinste Feature", desc: "Jedes kleinste Detail, ganz ohne Fachwissen." }
 ];
-let st = { view: "start", level: 2, off: {}, a: {}, notes: {}, noteOpen: {}, sugg: {}, fromThoughts: {}, skipKnown: false, cur: null, tab: "prompt", done: {}, resetArm: false };
+const blank = level => ({ view: "start", level: level || 2, off: {}, a: {}, notes: {}, noteOpen: {}, sugg: {}, fromThoughts: {}, skipKnown: false, cur: null, tab: "prompt", done: {}, resetArm: false, pid: null, title: "" });
+let st = blank();
 try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; st.sugg = st.sugg || {}; st.fromThoughts = st.fromThoughts || {}; } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 
@@ -81,6 +82,27 @@ function renderTop() {
   $("#progTxt").textContent = `${done} / ${v.length} Fragen`;
   $("#btnResult").hidden = st.view !== "quiz" || done === 0;
   $("#btnStart").hidden = st.view === "start";
+  const nb = $("#btnNew"); nb.hidden = !Object.keys(st.a).length; nb.textContent = st.resetArm ? "Wirklich verwerfen?" : "+ Neues Projekt";
+}
+/* Projektname: selbst vergeben oder aus den Antworten abgeleitet */
+function projTitle() {
+  if (st.title) return st.title;
+  const core = val(st.a.core === QUIZ_OPT ? "coreQuiz" : "core"), set = val("setting");
+  return core && set ? `${core} · ${set}` : core || set || "Neues Spiel";
+}
+function startQuiz() {
+  st.view = "quiz";
+  const v = navList(); const f = v.find(x => !answered(x));
+  st.cur = f ? f.id : (v[0] && v[0].id);
+  if (!f && v.length) st.view = "result";
+  render(); window.scrollTo(0, 0);
+}
+/* Neues Projekt: mit Konto bleibt das alte gespeichert, ohne Konto wird es ersetzt */
+function newProject() {
+  if (typeof projFlush === "function") projFlush();
+  st = blank(st.level);
+  if (typeof cloudForget === "function") cloudForget();
+  startQuiz();
 }
 
 function viewStart() {
@@ -97,6 +119,7 @@ function viewStart() {
       <h1>Von der Idee zum <span class="hl">exakten Bauplan</span> für die KI.</h1>
       <p class="lead">Du klickst dich durch Multiple-Choice-Fragen mit Beispielbildern. Am Ende bekommst du einen Prompt, mit dem eine KI genau dein Spiel baut, und eine Zusammenfassung mit Launch-Checkliste für dich.</p>
     </div>
+    ${typeof accountBox === "function" ? accountBox() : ""}
     <div class="step"><h2><span class="stepn">1</span> Wie detailliert willst du planen?</h2>
       <div class="levels">${lv}</div>
       <p class="fine">Die Zahl wächst je nach Antworten: Wählst du z. B. Multiplayer oder Werbung, kommen passende Folgefragen dazu.</p></div>
@@ -106,9 +129,9 @@ function viewStart() {
     <div class="cta">
       <button class="btn primary big" data-act="go">${started ? "Weitermachen" : "Los geht's"} →</button>
       ${started ? `<button class="btn" data-act="toresult">Zur Auswertung</button>
-      <button class="btn ghost danger" data-act="reset">${st.resetArm ? "Wirklich alles löschen?" : "Neu beginnen"}</button>` : ""}
+      <button class="btn ghost${signedIn() ? "" : " danger"}" data-act="reset">${st.resetArm ? "Wirklich verwerfen?" : "+ Neues Projekt"}</button>` : ""}
     </div>
-    <p class="fine">Deine Antworten werden nur in diesem Browser gespeichert.</p>
+    <p class="fine">${signedIn() ? "Deine Projekte werden automatisch in deinem Konto gespeichert." : "Ohne Konto werden deine Antworten nur in diesem Browser gespeichert."}</p>
   </section>`;
 }
 
@@ -216,22 +239,16 @@ function pick(i) {
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const act = b.dataset.act;
-  if (act !== "reset") st.resetArm = false;
+  if (act !== "reset" && act !== "newproj") st.resetArm = false;
   switch (act) {
     case "level": st.level = +b.dataset.n; render(); break;
     case "togsec": st.off[b.dataset.s] = !st.off[b.dataset.s]; render(); break;
     case "allsec": st.off = {}; render(); break;
-    case "go": {
-      st.view = "quiz";
-      const v = navList(); const f = v.find(x => !answered(x));
-      st.cur = f ? f.id : (v[0] && v[0].id);
-      if (!f && v.length) st.view = "result";
-      render(); break;
-    }
+    case "go": startQuiz(); break;
     case "toresult": st.view = "result"; render(); window.scrollTo(0, 0); break;
-    case "reset":
-      if (!st.resetArm) { st.resetArm = true; render(); break; }
-      st = { view: "start", level: st.level, off: {}, a: {}, notes: {}, noteOpen: {}, sugg: {}, fromThoughts: {}, skipKnown: false, cur: null, tab: "prompt", done: {}, resetArm: false }; render(); break;
+    case "reset": case "newproj":
+      if (!signedIn() && Object.keys(st.a).length && !st.resetArm) { st.resetArm = true; render(); break; }
+      newProject(); break;
     case "tostart": st.view = "start"; render(); break;
     case "pick": pick(+b.dataset.i); break;
     case "next": {
@@ -559,5 +576,6 @@ function viewResult() {
 }
 
 /* ---------- Start ---------- */
+const signedIn = () => typeof AUTH !== "undefined" && !!AUTH.user;
 function boot(d) { if (d && d.st) st = d.st; render(); }
 
