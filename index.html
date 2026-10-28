@@ -1,7 +1,7 @@
 <!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Fragebogen, der deine Spielidee Schritt für Schritt aufbaut und daraus ein Spielkonzept und einen exakten KI-Bauauftrag macht.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
-<title>Game-Bauplan</title>
+<title>Nordlicht</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -182,6 +182,12 @@ main { padding-block: 28px 64px; }
 .cloud small { color: var(--muted); }
 .cloud .fine { flex-basis: 100%; margin: 0; }
 .sharelink { flex: 1 1 240px; min-width: 0; font: 14px var(--f-mono); padding: 8px 10px; border: 2px solid var(--line2); border-radius: 8px; background: var(--surface); color: var(--ink); }
+/* Projektart & KI */
+.opts.kinds { grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.thinking .spin { width: 46px; height: 46px; border-radius: 50%; border: 5px solid var(--line); border-top-color: var(--accent); animation: spin 0.9s linear infinite; margin: 18px 0 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.aibox .cov { display: block; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 6px 0 2px; max-width: 320px; }
+.aibox .cov i { display: block; height: 100%; background: var(--ok); }
 /* Konto & Projekte */
 .acct { display: grid; gap: 14px; background: var(--surface); border: 2px solid var(--ink); border-radius: var(--r); padding: 18px; box-shadow: 0 4px 0 var(--ink); }
 .acct-h { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
@@ -272,7 +278,7 @@ pre.code { margin: 0; background: var(--code-bg); color: var(--code-ink); font: 
 </head><body>
 
 <header class="top"><div class="wrap">
-  <button class="logo" data-act="tostart" aria-label="Zum Start"><i>GB</i><span>Game-Bauplan</span></button>
+  <button class="logo" data-act="tostart" aria-label="Zum Start"><i>NL</i><span>Nordlicht</span></button>
   <div class="prog" id="prog" hidden><div class="bar"><span id="progFill"></span></div><small id="progTxt"></small></div>
   <div class="topbtns">
     <button class="btn sm" id="btnResult" data-act="toresult" hidden>Auswertung</button>
@@ -284,7 +290,7 @@ pre.code { margin: 0; background: var(--code-bg); color: var(--code-ink); font: 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-/* Game-Bauplan – Fragenkatalog */
+/* Nordlicht – Fragenkatalog */
 const AI = "__ai";
 const S = [], Q = [];
 let _sec;
@@ -1007,9 +1013,9 @@ q("ugc", "Spieler-Inhalte", "Können Spieler eigene Inhalte erstellen?", [
 q("push", "Push-Nachrichten", "Soll das Spiel Benachrichtigungen senden?", [
   ["➖", "Nie", ""], ["🔔", "Nur wichtige", "z. B. 'Deine Energie ist wieder voll'."], ["📣", "Regelmäßig", ""]], { l: 3, if: mobileApp });
 /* ======================================================= */
-sec("thoughts", "Deine Gedanken", "💭", "Erst einmal alles aufschreiben, was dir zu deinem Spiel einfällt.");
-q("thoughts", "Meine Gedanken", "Schreib erst einmal alles auf, was dir zu deinem Spiel einfällt.", [], { t: "t", area: 1, noAi: true,
-  ph: "Egal wie ungeordnet: Worum geht es? Wer spielt? Was macht man? Wo spielt es? Was wäre richtig cool? Was auf keinen Fall?",
+sec("thoughts", "Deine Gedanken", "💭", "Erst einmal alles aufschreiben, was dir zu deiner Idee einfällt.");
+q("thoughts", "Meine Gedanken", "Schreib erst einmal alles auf, was dir zu deiner Idee einfällt.", [], { t: "t", area: 1, noAi: true,
+  ph: "Egal wie ungeordnet: Worum geht es? Wer benutzt es? Was soll man damit machen? Was wäre richtig cool? Was auf keinen Fall?",
   h: "Das ist die Grundlage für alles Weitere. Daraus werden Antworten erkannt und vorausgefüllt, und deine Gedanken stehen ganz oben im KI-Bauauftrag." });
 
 /* ======================================================= */
@@ -1017,6 +1023,112 @@ sec("final", "Zum Schluss", "📝", "Alles, was dir sonst noch wichtig ist.");
 q("finalNotes", "Notizen zum Schluss", "Gibt es noch etwas Wichtiges, das die KI wissen muss?", [], { t: "t", area: 1,
   ph: "z. B. Der Chef des Restaurants soll als Endgegner vorkommen. Die Musik soll italienisch klingen. Bitte keine Anmeldung.",
   h: "Optional. Alles, was du hier schreibst, steht ganz oben im KI-Bauauftrag und hat Vorrang." });
+
+/* ---------- Projektart: Spiel oder alles andere ---------- */
+/* Alle bisherigen Fragen sind Spiel-Fragen und erscheinen nur, wenn „Spiel“ gewählt ist. */
+const isGame = a => has(a, "kind", "Spiel");
+const notGame = a => a.kind !== undefined && !isGame(a);
+Q.forEach(q => {
+  if (q.id === "thoughts" || q.id === "finalNotes") return;
+  const f = q.if; q.game = true; q.if = f ? a => isGame(a) && f(a) : isGame;
+});
+sec("kind", "Projektart", "🧭", "Was willst du bauen?");
+q("kind", "Projektart", "Was willst du bauen?", [
+  ["🎮", "Spiel", "Ein Spiel für Handy, Computer, Browser oder Konsole."],
+  ["📱", "Handy-App", "Eine App fürs iPhone oder Android, z. B. Planer, Tracker, Vereins-App."],
+  ["🌐", "Website", "Eine Homepage, Landingpage, Blog oder Portfolio."],
+  ["💼", "Programm zum Arbeiten", "Werkzeug für Büro und Betrieb: Kunden, Aufträge, Termine, Lager, Rechnungen."],
+  ["🛒", "Online-Shop", "Produkte oder Dienstleistungen im Internet verkaufen."],
+  ["🤖", "KI-Assistent / Chatbot", "Ein Helfer, der Fragen beantwortet, Texte schreibt oder Aufgaben erledigt."],
+  ["⚙️", "Automatisierung", "Etwas, das wiederkehrende Aufgaben von allein erledigt."],
+  ["🎓", "Lern-App / Quiz", "Etwas zum Lernen, Üben oder Abfragen."],
+  ["📊", "Dashboard / Auswertung", "Zahlen und Daten übersichtlich anzeigen und auswerten."],
+  ["✨", "Etwas anderes", "Passt nirgends rein? Kein Problem, die KI fragt genau nach."]
+], { t: "m", noAi: true, h: "Du kannst auch mehreres wählen, z. B. Spiel + Lern-App für ein Lernspiel." });
+
+sec("gbasics", "Grundidee", "💡", "Wofür das Projekt da ist und für wen.");
+q("gGoal", "Hauptaufgabe", "Was soll dein Projekt hauptsächlich tun?", [
+  ["🗓️", "Organisieren & Planen", "Termine, Aufgaben, Listen, Abläufe."], ["🤝", "Kunden & Aufträge verwalten", "Wer will was, bis wann, zu welchem Preis."],
+  ["💶", "Verkaufen", "Produkte, Gutscheine oder Dienstleistungen."], ["📣", "Informieren & Präsentieren", "Über dich, deine Firma oder ein Thema."],
+  ["💬", "Kommunizieren & Vernetzen", "Nachrichten, Gruppen, Community."], ["📚", "Lernen & Üben", "Wissen vermitteln und abfragen."],
+  ["📈", "Zahlen auswerten", "Umsätze, Statistiken, Berichte."], ["⚡", "Aufgaben automatisieren", "Lästiges von allein erledigen lassen."],
+  ["🎨", "Kreativ gestalten", "Bilder, Texte, Musik, Designs erstellen."], ["📅", "Buchen & Reservieren", "Tische, Termine, Kurse, Räume."],
+  ["❤️", "Gesundheit & Fitness", "Training, Ernährung, Gewohnheiten."], ["😄", "Unterhalten", "Spaß, Zeitvertreib, Neugier."]
+], { if: notGame });
+q("gAudience", "Zielgruppe", "Wer soll es benutzen?", [
+  ["🙋", "Nur ich", "Ein Werkzeug für mich selbst."], ["👨‍👩‍👧", "Familie & Freunde", ""], ["👥", "Mein Team / meine Firma", "Mitarbeiter und Kollegen."],
+  ["🛍️", "Meine Kunden", "Leute, die bei mir kaufen oder buchen."], ["🌍", "Alle im Internet", "Öffentlich für jeden."],
+  ["🧒", "Kinder", ""], ["🧑", "Jugendliche", ""], ["👵", "Ältere Menschen", "Große Schrift, einfache Bedienung."], ["🧑‍🔬", "Fachleute", "z. B. Handwerker, Ärzte, Lehrer."]
+], { if: notGame });
+q("gUsers", "Anzahl Nutzer", "Wie viele Leute benutzen es ungefähr?", [
+  ["1️⃣", "Nur eine Person", ""], ["👥", "Bis 10", "Kleines Team oder Familie."], ["🏢", "Bis 100", "Verein, Firma, Stammkunden."],
+  ["🏟️", "Hunderte bis Tausende", ""], ["🌐", "So viele wie möglich", "Soll mitwachsen können."]
+], { if: notGame });
+q("gRef", "Vorbild", "Gibt es etwas Ähnliches, an dem man sich orientieren kann?", [
+  ["📋", "Wie eine Excel-Liste, nur schöner", ""], ["✅", "Wie eine To-do-App", "z. B. Todoist, Trello."], ["🛒", "Wie ein bekannter Shop", "z. B. Shopify-Shops, Etsy."],
+  ["💬", "Wie ein Messenger", "z. B. WhatsApp."], ["📸", "Wie Social Media", "z. B. Instagram."], ["📅", "Wie ein Buchungssystem", "z. B. Doctolib, OpenTable."],
+  ["🤖", "Wie ChatGPT oder Claude", ""], ["🆕", "Nein, etwas ganz Neues", "", "x"]
+], { if: notGame, h: "Hilft der KI, schnell zu verstehen, was du meinst. Mehrere Vorbilder sind okay." });
+
+sec("gplatform", "Geräte & Aussehen", "📱", "Wo es läuft und wie es aussieht.");
+q("gPlatforms", "Läuft auf", "Wo soll es laufen?", [
+  ["🌐", "Im Browser", "Am PC und am Handy über eine Internetadresse, ohne Installation."], ["🍎", "iPhone/iPad (iOS)", "Als App aus dem App Store."],
+  ["🤖", "Android", "Als App aus Google Play."], ["💻", "Als Programm auf PC/Mac", "Wird installiert."], ["⌚", "Smartwatch", ""],
+  ["💬", "In einem Messenger", "z. B. als WhatsApp- oder Telegram-Bot."], ["🗄️", "Im Hintergrund auf einem Server", "Läuft ohne Bildschirm, z. B. jede Nacht."]
+], { if: notGame });
+q("gLook", "Aussehen", "Wie soll es aussehen?", [
+  ["⬜", "Schlicht & seriös", "Klar, ruhig, professionell."], ["🌈", "Modern & farbenfroh", ""], ["🧸", "Verspielt & freundlich", ""],
+  ["💎", "Edel & hochwertig", ""], ["🖥️", "Technisch, wie ein Cockpit", "Viele Zahlen, Tabellen, Diagramme."], ["🏷️", "Passend zu meiner Marke", "Logo und Farben gibt es schon."],
+  ["🌙", "Mit dunklem Modus", "Hell und dunkel umschaltbar."]
+], { if: notGame });
+q("gLang", "Sprachen", "In welchen Sprachen?", [
+  ["🇩🇪", "Deutsch", ""], ["🇬🇧", "Englisch", ""], ["🇪🇸", "Spanisch", ""], ["🇫🇷", "Französisch", ""], ["🇹🇷", "Türkisch", ""], ["🌍", "Viele Sprachen", "Umschaltbar."]
+], { if: notGame });
+
+sec("gdata", "Daten & Konten", "🗂️", "Was gespeichert wird und wer worauf zugreift.");
+q("gAccounts", "Konten", "Müssen sich Nutzer anmelden?", [
+  ["🚪", "Nein, ohne Anmeldung", "", "x"], ["📧", "Mit E-Mail und Passwort", ""], ["🔑", "Mit Google oder Apple", "Ein Klick, kein neues Passwort."],
+  ["👑", "Verschiedene Rollen", "z. B. Chef sieht alles, Mitarbeiter nur ihres, Kunden nur ihre Bestellungen."], ["🔢", "Einfacher PIN oder Code", ""]
+], { if: notGame });
+q("gData", "Gespeicherte Daten", "Was soll gespeichert werden?", [
+  ["➖", "Nichts", "", "x"], ["👤", "Kontakte & Kunden", ""], ["📅", "Termine & Aufgaben", ""], ["📝", "Texte & Notizen", ""],
+  ["🖼️", "Bilder & Dateien", ""], ["📦", "Produkte & Lager", ""], ["🧾", "Bestellungen & Rechnungen", ""], ["💳", "Zahlungen", ""],
+  ["📍", "Standorte", ""], ["❤️‍🩹", "Gesundheitsdaten", "Besonders geschützt."], ["📊", "Messwerte & Zahlen", ""]
+], { if: notGame });
+q("gConnect", "Verbindungen", "Womit soll es zusammenarbeiten?", [
+  ["➖", "Mit nichts", "", "x"], ["📅", "Kalender", "z. B. Google- oder Outlook-Kalender."], ["📧", "E-Mail", "Automatisch Mails verschicken."],
+  ["💳", "Bezahlen", "z. B. PayPal, Stripe, Kreditkarte."], ["📗", "Excel / Google Sheets", ""], ["💬", "WhatsApp / SMS", ""],
+  ["📸", "Social Media", ""], ["🧾", "Buchhaltung", "z. B. lexoffice, sevDesk, DATEV."], ["🗺️", "Karten", "z. B. Google Maps."], ["🧠", "Künstliche Intelligenz", "z. B. Claude für Texte oder Antworten."]
+], { if: notGame });
+q("gOffline", "Ohne Internet", "Muss es auch ohne Internet funktionieren?", [
+  ["📶", "Nein, Internet ist immer da", "", "x"], ["✈️", "Ja, komplett offline", ""], ["🔄", "Offline arbeiten, später abgleichen", ""]
+], { if: notGame });
+q("gPrivacy", "Datenschutz", "Wie sensibel sind die Daten?", [
+  ["🙂", "Unkritisch", "Nichts Persönliches."], ["👤", "Normale persönliche Daten", "Namen, E-Mails, Adressen."],
+  ["🔒", "Sehr sensibel", "Gesundheit, Finanzen, Kinder."], ["🇪🇺", "Server müssen in der EU stehen", ""]
+], { if: notGame });
+
+sec("gbiz", "Umsetzung & Start", "🚀", "Geld, Zeitplan und wie es an den Start geht.");
+q("gMoney", "Geld verdienen", "Soll es Geld einbringen?", [
+  ["🎁", "Nein, kostenlos", "", "x"], ["🏷️", "Einmal kaufen", ""], ["🔁", "Abo", "Monatlich oder jährlich."], ["📢", "Werbung", ""],
+  ["🛍️", "Über verkaufte Produkte", ""], ["🏢", "Intern, spart Zeit und Geld", "Kein Verkauf, aber nützlich für den Betrieb."]
+], { if: notGame });
+q("gSkill", "Deine Erfahrung", "Wie viel Erfahrung hast du mit dem Bauen von Software?", [
+  ["🌱", "Gar keine", "Die KI soll alles erklären."], ["🙂", "Ein bisschen", "Schon mal etwas mit KI gebaut."], ["💪", "Fortgeschritten", ""], ["🧑‍💻", "Profi", ""]
+], { if: notGame });
+q("gTimeline", "Zeitplan", "Bis wann soll eine erste Version stehen?", [
+  ["⚡", "In ein paar Tagen", "Ein schneller Prototyp."], ["📆", "In ein paar Wochen", ""], ["🗓️", "In ein paar Monaten", ""], ["🧘", "Kein Zeitdruck", ""]
+], { if: notGame });
+q("gBudget", "Laufende Kosten", "Was darf es im Monat kosten (Server, Dienste)?", [
+  ["0️⃣", "Nichts", "Nur kostenlose Dienste.", "x"], ["💶", "Bis 10 €", ""], ["💶💶", "Bis 50 €", ""], ["💰", "Mehr ist okay", "Wenn es sich lohnt."]
+], { if: notGame });
+q("gLaunch", "Veröffentlichung", "Wo soll es am Ende zu finden sein?", [
+  ["🔒", "Nur privat / intern", "", "x"], ["🌐", "Unter einer eigenen Internetadresse", ""], ["🍎", "Apple App Store", ""],
+  ["▶️", "Google Play", ""], ["💻", "Zum Herunterladen für PC/Mac", ""], ["🏢", "Im Firmennetz", ""]
+], { if: notGame });
+
+/* Fragen, die die KI sich selbst ausdenkt, landen in diesem Bereich (siehe ai.js) */
+sec("ai", "Feinschliff durch die KI", "🤖", "Fragen, die die KI passend zu deinem Projekt stellt, bis keine Lücken mehr offen sind.");
 
 /* ---------- Reihenfolge: vom Groben ins Feine ---------- */
 S.push({ id: "rules", name: "Jugendschutz & Sprachen", icon: "🛡️", desc: "Was tabu ist, Altersfreigabe und Sprachen." });
@@ -1028,8 +1140,8 @@ Object.entries(MOVE).forEach(([id, s]) => { Q.find(q => q.id === id).sec = s; })
 Q.find(q => q.id === "nameStyle").sec = "launch";
 Q.find(q => q.id === "perspective").sec = "graphics";
 S.splice(S.findIndex(s => s.id === "camera"), 1);
-const ORDER = ["thoughts", "audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
-  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "final"];
+const ORDER = ["kind", "thoughts", "gbasics", "gplatform", "gdata", "gbiz", "audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
+  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "ai", "final"];
 const SEQ = {
   audience: ["age", "skill", "whereplay", "reading"],
   platform: ["platforms", "primaryPlat", "orientation"],
@@ -1078,27 +1190,30 @@ const PH = {
     "Knifflige Logik": "jede Aufgabe eine Denkaufgabe ist", "Andere Spieler": "andere Spieler dasselbe wollen", "Immer mehr gleichzeitig": "immer mehr gleichzeitig passiert", "Unberechenbare Physik": "die Physik unberechenbar ist" }
 };
 
-/* Game-Bauplan – App */
+/* Nordlicht – App */
 const KEY = "gamebauplan.v1";
 const LEVELS = [
-  { n: 1, name: "Schnell", tag: "Nur das Wichtigste", desc: "Die großen Entscheidungen. Den Rest übernimmt die KI." },
-  { n: 2, name: "Standard", tag: "Gute Balance", desc: "Alle Bereiche mit den wichtigsten Details." },
-  { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Mehr Feingefühl: Gegner, Effekte, Abwechslung und mehr." },
-  { n: 4, name: "Alles", tag: "Jedes kleinste Feature", desc: "Jedes kleinste Detail, ganz ohne Fachwissen." }
+  { n: 1, name: "Schnell", tag: "Nur das Wichtigste", desc: "Die großen Entscheidungen. Den Rest übernimmt die KI beim Bauen.", ai: "ca. 10 KI-Fragen" },
+  { n: 2, name: "Standard", tag: "Gute Balance", desc: "Alle wichtigen Punkte, ohne dich mit Kleinkram aufzuhalten.", ai: "ca. 25 KI-Fragen" },
+  { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Auch die Details: Sonderfälle, Abläufe, Feinheiten.", ai: "ca. 50 KI-Fragen" },
+  { n: 4, name: "Alles", tag: "Jede Kleinigkeit", desc: "Die KI fragt so lange, bis wirklich nichts mehr offen ist.", ai: "bis alles geklärt ist" }
 ];
 const blank = level => ({ view: "start", level: level || 2, off: {}, a: {}, notes: {}, noteOpen: {}, sugg: {}, fromThoughts: {}, skipKnown: false, cur: null, tab: "prompt", done: {}, resetArm: false, pid: null, title: "" });
 let st = blank();
-try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; st.sugg = st.sugg || {}; st.fromThoughts = st.fromThoughts || {}; } catch (e) {}
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; st.sugg = st.sugg || {}; st.fromThoughts = st.fromThoughts || {}; if (st.view === "thinking") st.view = "result"; } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.codePointAt(0)) % 360; return h; };
 const secOf = id => S.find(s => s.id === id);
-const qOf = id => Q.find(q => q.id === id);
+const qOf = id => Q.find(q => q.id === id) || aiQs().find(q => q.id === id);
 
+/* Feste Fragen (nur die nötigen, Stufe 1) + die Fragen der KI, vor „Zum Schluss“ */
 function visible() {
-  return Q.filter(q => q.l <= st.level && (!q.if || q.if(st.a)));
+  const fixed = Q.filter(q => q.l <= 1 && (!q.if || q.if(st.a)));
+  const fin = fixed.filter(q => q.sec === "final");
+  return fixed.filter(q => q.sec !== "final").concat(aiQs(), fin);
 }
 const answered = q => st.a[q.id] !== undefined && !(Array.isArray(st.a[q.id]) && !st.a[q.id].length);
 
@@ -1146,18 +1261,21 @@ function fmt(q) {
 
 /* ---------- Rendering ---------- */
 function render() {
+  /* Ältere Baupläne stammen aus der Spiele-Version */
+  if (st.a.kind === undefined && Object.keys(st.a).some(k => k !== "thoughts")) st.a.kind = ["Spiel"];
   save();
   renderTop();
   const app = $("#app");
   if (st.view === "quiz") app.innerHTML = viewQuiz();
   else if (st.view === "analysis") app.innerHTML = viewAnalysis();
   else if (st.view === "result") app.innerHTML = viewResult();
+  else if (st.view === "thinking") app.innerHTML = viewThinking();
   else app.innerHTML = viewStart();
   if (st.view === "quiz") { const t = $("#txt"); if (t) t.focus(); }
 }
 function renderTop() {
   const v = visible(), done = v.filter(answered).length, pct = v.length ? Math.round(done / v.length * 100) : 0;
-  $("#prog").hidden = st.view === "start";
+  $("#prog").hidden = st.view === "start" || st.view === "thinking";
   $("#progFill").style.width = pct + "%";
   $("#progTxt").textContent = `${done} / ${v.length} Fragen`;
   $("#btnResult").hidden = st.view !== "quiz" || done === 0;
@@ -1168,6 +1286,8 @@ function renderTop() {
 function projTitle() {
   if (st.title) return st.title;
   const first = id => { const v = val(id); return v && (Array.isArray(st.a[id]) ? st.a[id].find(x => x !== AI) : v); };
+  if (st.ai && st.ai.titel && st.ai.titel[0]) return st.ai.titel[0];
+  if (!isGame(st.a)) { const k = first("kind"), g = first("gGoal"); return k && g ? `${k} · ${g}` : k || "Neues Projekt"; }
   const core = first(st.a.core === QUIZ_OPT ? "coreQuiz" : "core"), set = first("setting");
   return core && set ? `${core} · ${set}` : core || set || "Neues Spiel";
 }
@@ -1187,28 +1307,27 @@ function newProject() {
 }
 
 function viewStart() {
-  const started = Object.keys(st.a).length > 0;
-  const lv = LEVELS.map(L => {
-    const n = Q.filter(q => q.l <= L.n && !q.quiz && !q.dyn && !q.if).length;
-    return `<button class="lvl${st.level === L.n ? " on" : ""}" data-act="level" data-n="${L.n}" aria-pressed="${st.level === L.n}">
+  const started = Object.keys(st.a).length > 0, kq = qOf("kind"), kinds = Array.isArray(st.a.kind) ? st.a.kind : [];
+  const lv = LEVELS.map(L => `<button class="lvl${st.level === L.n ? " on" : ""}" data-act="level" data-n="${L.n}" aria-pressed="${st.level === L.n}">
       <span class="lvl-bars">${[1, 2, 3, 4].map(i => `<i class="${i <= L.n ? "f" : ""}"></i>`).join("")}</span>
-      <b>${L.name}</b><span class="lvl-tag">${L.tag}</span><small>${L.desc}</small><span class="lvl-n">ab ${n} Fragen</span></button>`;
-  }).join("");
+      <b>${L.name}</b><span class="lvl-tag">${L.tag}</span><small>${L.desc}</small>${aiReady() ? `<span class="lvl-n">${L.ai}</span>` : ""}</button>`).join("");
+  const kc = kq.opts.map(o => `<button class="opt kind${kinds.includes(o.v) ? " on" : ""}" data-act="kindpick" data-v="${esc(o.v)}" aria-pressed="${kinds.includes(o.v)}">
+      <span class="pic" style="--h:${hue("kind" + o.v)}">${pic(o.i)}</span><span class="otx"><b>${esc(o.v)}</b><small>${esc(o.d)}</small></span><span class="tick" aria-hidden="true"></span></button>`).join("");
   return `<section class="start">
     <div class="hero">
-      <p class="eyebrow">Game-Bauplan</p>
+      <p class="eyebrow">Nordlicht</p>
       <h1>Von der Idee zum <span class="hl">exakten Bauplan</span> für die KI.</h1>
-      <p class="lead">Du klickst dich durch Multiple-Choice-Fragen mit Beispielbildern. Am Ende bekommst du einen Prompt, mit dem eine KI genau dein Spiel baut, und eine Zusammenfassung mit Launch-Checkliste für dich.</p>
+      <p class="lead">Spiel, App, Website, Shop oder Programm für die Arbeit: Du beantwortest ein paar Fragen mit Bildern, danach sucht die KI nach offenen Stellen und stellt dir genau die Fragen, die noch fehlen. Am Ende hast du einen lückenlosen Bauauftrag, mit dem eine KI dein Projekt baut.</p>
     </div>
     ${typeof accountBox === "function" ? accountBox() : ""}
-    <div class="step"><h2><span class="stepn">1</span> Wie detailliert willst du planen?</h2>
+    <div class="step"><h2><span class="stepn">1</span> Was willst du bauen?</h2>
+      <div class="opts kinds" role="group">${kc}</div>
+      <p class="fine">Mehrfachauswahl möglich, z. B. Spiel + Lern-App für ein Lernspiel.</p></div>
+    <div class="step"><h2><span class="stepn">2</span> Wie genau willst du planen?</h2>
       <div class="levels">${lv}</div>
-      <p class="fine">Die Zahl wächst je nach Antworten: Wählst du z. B. Multiplayer oder Werbung, kommen passende Folgefragen dazu.</p></div>
-    <div class="step"><h2><span class="stepn">2</span> Diese ${S.length} Bereiche werden immer abgedeckt</h2>
-      <div class="secpick">${S.map(s => `<span class="secchip on"><span>${s.icon}</span>${esc(s.name)}</span>`).join("")}</div>
-      <p class="fine">Die Detailstufe ändert nur, wie tief jeder Bereich abgefragt wird. Alle Fragen sind Multiple Choice.</p></div>
+      <p class="fine">${aiReady() ? "Nach den Grundfragen denkt sich die KI weitere Fragen aus. Die Stufe bestimmt, wie genau sie nachfragt. Du kannst jederzeit aufhören oder später noch genauer werden." : typeof sb !== "undefined" && sb ? "Mit einem kostenlosen Konto denkt sich die KI nach den Grundfragen passende Zusatzfragen aus, bis keine Lücken mehr offen sind." : "Die Stufe bestimmt, wie genau die KI nachfragt."}</p></div>
     <div class="cta">
-      <button class="btn primary big" data-act="go">${started ? "Weitermachen" : "Los geht's"} →</button>
+      <button class="btn primary big" data-act="go" ${kinds.length ? "" : "disabled"}>${started ? "Weitermachen" : "Los geht's"} →</button>${kinds.length ? "" : `<span class="fine">Wähle zuerst, was du bauen willst.</span>`}
       ${started ? `<button class="btn" data-act="toresult">Zur Auswertung</button>
       <button class="btn ghost${signedIn() ? "" : " danger"}" data-act="reset">${st.resetArm ? "Wirklich verwerfen?" : "+ Neues Projekt"}</button>` : ""}
     </div>
@@ -1279,12 +1398,14 @@ function pic(i) {
 /* ---------- Aktionen ---------- */
 function go(dir) {
   clearTimeout(pick.t);
-  if (dir > 0 && st.cur === "thoughts" && val("thoughts")) {
+  if (dir > 0 && st.cur === "thoughts" && val("thoughts") && isGame(st.a)) {
     st.sugg = analyzeThoughts(val("thoughts")); st.view = "analysis"; window.scrollTo(0, 0); return render();
   }
   const v = navList(), i = v.findIndex(x => x.id === st.cur);
   if (dir > 0) {
     const n = v[i + 1];
+    /* Am Ende der Fragen: die KI sucht die nächsten Lücken */
+    if ((!n || n.sec === "final") && (v[i] || {}).sec !== "final" && aiWant()) return aiRound();
     if (!n) { st.view = "result"; st.tab = "sum"; window.scrollTo(0, 0); return render(); }
     st.cur = n.id;
   } else {
@@ -1317,7 +1438,13 @@ document.addEventListener("click", e => {
   const act = b.dataset.act;
   if (act !== "reset" && act !== "newproj") st.resetArm = false;
   switch (act) {
-    case "level": st.level = +b.dataset.n; render(); break;
+    case "level": st.level = +b.dataset.n; if (st.aiDone && st.level > (st.aiLevel || 0)) st.aiDone = false; render(); break;
+    case "kindpick": {
+      const k = Array.isArray(st.a.kind) ? st.a.kind.slice() : [], v = b.dataset.v;
+      st.a.kind = k.includes(v) ? k.filter(x => x !== v) : k.concat(v);
+      if (!st.a.kind.length) delete st.a.kind;
+      render(); break;
+    }
     case "togsec": st.off[b.dataset.s] = !st.off[b.dataset.s]; render(); break;
     case "allsec": st.off = {}; render(); break;
     case "go": startQuiz(); break;
@@ -1342,7 +1469,9 @@ document.addEventListener("click", e => {
     case "edit": st.view = "quiz"; st.cur = b.dataset.q; render(); window.scrollTo(0, 0); break;
     case "tab": st.tab = b.dataset.t; render(); break;
     case "deeper": {
-      st.level = Math.min(4, st.level + 1); st.view = "quiz";
+      st.level = Math.min(4, st.level + 1); st.aiDone = false;
+      if (aiReady()) { aiRound(); break; }
+      st.view = "quiz";
       const f = navList().find(x => !answered(x)); st.cur = f && f.id;
       if (!f) st.view = "result";
       render(); window.scrollTo(0, 0); break;
@@ -1383,7 +1512,7 @@ function copy(btn, text) {
 }
 
 /* ---------- Analyse ---------- */
-function conflicts() {
+function gameConflicts() {
   const a = st.a, out = [];
   const W = t => out.push({ k: "warn", t }), I = t => out.push({ k: "info", t });
   if (kids(a) && has(a, "comms", "Text-Chat mit Filter", "Sprach-Chat")) W("Kinder-Zielgruppe mit freiem Chat: In der Kinder-Kategorie der Stores ist das kaum zulässig. Besser nur Emotes oder Schnellnachrichten.");
@@ -1493,7 +1622,7 @@ function milestones() {
 }
 
 /* ---------- Zusammenfassung & Checkliste ---------- */
-function launchItems() {
+function gameLaunchItems() {
   const a = st.a, L = [];
   const add = (k, t, d) => L.push({ k, t, d });
   if (!publicLaunch(a)) {
@@ -1563,6 +1692,7 @@ function ideaText() {
   return out.join(" ");
 }
 function ideaPanel() {
+  if (!isGame(st.a)) return "";
   const t = ideaText();
   const steps = ["ideaVerb", "ideaGoal", "hero", "setting", "ideaChallenge", "ideaTwist", "ideaEscalation"];
   const n = steps.filter(id => st.a[id] !== undefined).length;
@@ -1581,7 +1711,7 @@ function summarySentence() {
   if (g("feeling")) parts.push(`Im Kern soll es dieses Gefühl auslösen: ${g("feeling")}.`);
   return parts.join(" ");
 }
-function buildSummaryText() {
+function gameSummaryText() {
   const v = visible().filter(q => !q.quiz), L = [];
   L.push(`ZUSAMMENFASSUNG: Mein Spiel`, "", ideaText() || summarySentence(), "");
   S.forEach(s => {
@@ -1597,7 +1727,7 @@ function viewResult() {
   const v = visible().filter(q => !q.quiz);
   const ans = v.filter(answered), aiN = ans.filter(q => fmt(q) === "KI entscheidet").length, open = v.length - ans.length;
   const c = conflicts();
-  const tabs = [["sum", "Spielkonzept"], ["prompt", "KI-Prompt"], ["launch", "Launch-Checkliste"]];
+  const tabs = [["sum", isGame(st.a) ? "Spielkonzept" : "Konzept"], ["prompt", "KI-Prompt"], ["launch", "Launch-Checkliste"]];
   let panel = "";
   if (st.tab === "prompt") {
     const p = buildPrompt();
@@ -1615,17 +1745,17 @@ function viewResult() {
     }).join("");
     const doc = concept(), stale = st.ai && st.aiSig !== JSON.stringify(st.a);
     panel = `<div class="panel">
-      <div class="panelbar"><p>Dein erstes Spiel, fertig ausgedacht aus deinen Antworten.</p>
+      <div class="panelbar"><p>${isGame(st.a) ? "Dein erstes Spiel, fertig ausgedacht aus deinen Antworten." : "Dein Projekt, zusammengefasst aus deinen Antworten."}</p>
         <div class="rbtns">
-          ${CAPS.sample ? `<button class="btn" data-act="elaborate" ${elaborate.busy ? "disabled" : ""}>${elaborate.busy ? "Claude arbeitet …" : st.ai ? "Neu ausarbeiten lassen" : "✨ Von Claude ausführlich ausarbeiten"}</button>` : ""}
+          ${aiReady() ? `<button class="btn" data-act="elaborate" ${elaborate.busy ? "disabled" : ""}>${elaborate.busy ? "Claude arbeitet …" : st.ai ? "Neu ausarbeiten lassen" : "✨ Von Claude ausführlich ausarbeiten"}</button>` : ""}
           ${canPDF() ? `<button class="btn primary" data-act="pdf">Als PDF speichern</button>` : ""}
         </div></div>
-      ${elaborate.busy ? `<p class="aistatus" id="aiStatus">Claude denkt sich dein Spiel aus … das dauert etwa eine Minute.</p>` : ""}
+      ${elaborate.busy ? `<p class="aistatus" id="aiStatus">Claude arbeitet dein ${isGame(st.a) ? "Spiel" : "Projekt"} aus … das dauert etwa eine Minute.</p>` : ""}
       ${st.aiErr ? `<p class="alert warn">${esc(st.aiErr)}</p>` : ""}
       ${stale ? `<p class="alert info">Du hast Antworten geändert, seit Claude das Konzept ausgearbeitet hat. Lass es neu ausarbeiten, damit alles zusammenpasst.</p>` : ""}
       ${inClaude && !CAPS.downloads ? `<p class="fine">Der PDF-Download erscheint, sobald die Seite in claude.ai geöffnet ist.</p>` : ""}
       <article class="doc">
-        <p class="eyebrow">Spielkonzept${st.ai ? " · ausgearbeitet mit Claude" : ""}</p>
+        <p class="eyebrow">${isGame(st.a) ? "Spielkonzept" : "Konzept"}${st.ai ? " · ausgearbeitet mit Claude" : ""}</p>
         <h1>${esc(doc.title)}</h1>
         ${docHTML(doc)}
       </article>
@@ -1640,10 +1770,11 @@ function viewResult() {
   }
   return `<section class="result">
     <div class="rhead">
-      <div><p class="eyebrow">Dein Bauplan</p><h1>${esc(val("name") || "Dein Spiel")}</h1>
+      <div><p class="eyebrow">Dein Bauplan</p><h1>${esc(projTitle())}</h1>
       <p class="stats"><span><b>${ans.length}</b> beantwortet</span><span><b>${aiN}</b> entscheidet die KI</span>${open ? `<span><b>${open}</b> offen</span>` : ""}<span>Stufe „${LEVELS[st.level - 1].name}“</span></p></div>
       <div class="rbtns">${open ? `<button class="btn" data-act="go">Offene Fragen beantworten</button>` : ""}${st.level < 4 ? `<button class="btn primary" data-act="deeper">Noch detaillierter →</button>` : ""}</div>
     </div>
+    ${aiBox()}
     ${typeof cloudBox === "function" ? cloudBox() : ""}
     ${c.length ? `<div class="alerts">${c.map(x => `<p class="alert ${x.k}"><b>${x.k === "warn" ? "Achtung" : "Hinweis"}</b> ${esc(x.t)}</p>`).join("")}</div>` : ""}
     <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" class="tab${st.tab === k ? " on" : ""}" aria-selected="${st.tab === k}" data-act="tab" data-t="${k}">${l}</button>`).join("")}</div>
@@ -1656,7 +1787,7 @@ const signedIn = () => typeof AUTH !== "undefined" && !!AUTH.user;
 function boot(d) { if (d && d.st) st = d.st; render(); }
 
 
-/* Game-Bauplan – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
+/* Nordlicht – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
 const CAPS = { downloads: null, sample: null };
 const inClaude = !!(window.claude && window.claude.use);
 const canPDF = () => !!(window.jspdf && (CAPS.downloads || !inClaude));
@@ -1719,7 +1850,7 @@ function sizePlan() {
   }[val("scope")] || (has(st.a, "structure", "Endloser Lauf", "Zufällig generierte Runs") ? { worlds: 3, levels: 0, effort: "2–6 Wochen" } : { worlds: 3, levels: 5, effort: "2–6 Wochen" });
 }
 
-function concept() {
+function gameConcept() {
   const a = st.a, w = WORLD[val("setting")] || DEF_WORLD, s = seedOf();
   const verbs = arrOf("ideaVerb"), chall = arrOf("ideaChallenge"), esc2 = arrOf("ideaEscalation");
   const core = val(st.a.core === QUIZ_OPT ? "coreQuiz" : "core");
@@ -1878,7 +2009,8 @@ function docHTML(doc) {
 
 /* ---------- KI-Ausarbeitung ---------- */
 async function elaborate(btn) {
-  if (!CAPS.sample || elaborate.busy) return;
+  if (!aiReady() || elaborate.busy) return;
+  if (!isGame(st.a)) return elaborateGen();
   elaborate.busy = true; st.aiErr = ""; render();
   const status = () => document.getElementById("aiStatus");
   const schema = `{"titel":["3 Namensvorschläge"],"pitch":"3-4 Sätze, die Lust aufs Spiel machen","spielablauf":["8-12 konkrete Schritte einer typischen Runde, Moment für Moment"],"steuerung":[{"eingabe":"z. B. Tippen","aktion":"was passiert"}],"regeln":["6-10 klare Regeln mit konkreten Zahlen"],"level1":[{"abschnitt":"Name + Zeitangabe","beschreibung":"was genau passiert, was der Spieler lernt"}],"welten":[{"name":"","neu":"neue Mechanik","gegner":"","finale":""}],"gegner":[{"name":"","verhalten":"konkretes Verhalten mit Werten"}],"gegenstaende":[{"name":"","wirkung":""}],"fortschritt":["5-8 Punkte"],"look_und_sound":["5-8 konkrete Punkte"],"erste_schritte":["6-8 Umsetzungsschritte"]}`;
@@ -1890,10 +2022,10 @@ ${schema}
 SPEZIFIKATION:
 ${buildPrompt()}`;
   try {
-    const out = await CAPS.sample.json(input, { modelTier: "complex", cache: false, onText: ({ text }) => { const s = status(); if (s) s.textContent = `Claude schreibt … ${text.length.toLocaleString("de-DE")} Zeichen`; } });
+    const out = await aiCall("elaborate", input);
     if (out && typeof out === "object") { st.ai = out; st.aiSig = JSON.stringify(st.a); }
   } catch (e) {
-    st.aiErr = e && e.code === "rate_limited" ? "Gerade zu viele Anfragen. Versuch es in einer Minute noch einmal." : e && e.code === "not_granted" ? "Claude-Ausarbeitung wurde nicht erlaubt." : "Die Ausarbeitung hat nicht geklappt. Du kannst es noch einmal versuchen.";
+    st.aiErr = aiErrText(e, "Die Ausarbeitung hat nicht geklappt. Du kannst es noch einmal versuchen.");
   }
   elaborate.busy = false; render();
 }
@@ -1918,10 +2050,10 @@ async function savePDF(btn) {
   // Titelseite
   pdf.setFillColor(...acc); pdf.rect(0, 0, W, 95, "F");
   pdf.setFillColor(255, 197, 61); pdf.rect(0, 95, W, 4, "F");
-  pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.text("SPIELKONZEPT", M, 30);
+  pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.text(isGame(st.a) ? "SPIELKONZEPT" : "KONZEPT", M, 30);
   pdf.setFontSize(30); pdf.splitTextToSize(pdfTxt(doc.title), CW).forEach((l, i) => pdf.text(l, M, 48 + i * 12));
   pdf.setFont("helvetica", "normal"); pdf.setFontSize(11);
-  pdf.text(pdfTxt(`Erstellt mit dem Game-Bauplan am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
+  pdf.text(pdfTxt(`Erstellt mit Nordlicht am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
   y = 104;
   doc.blocks.forEach(b => {
     if (b.t === "h2") { need(18); y += 6; pdf.setDrawColor(...acc); pdf.setLineWidth(0.6); pdf.line(M, y, M + 14, y); y += 3; text(b.x, 15, "bold", acc); y += 1.5; }
@@ -1951,8 +2083,8 @@ async function savePDF(btn) {
     qs.forEach(q => { const y0 = y; text(q.label, 9, "normal", mut, M, 55); const y1 = y; y = y0; text(fmt(q) + (noteOf(q.id) ? `  |  Notiz: ${noteOf(q.id)}` : ""), 9.5, "normal", ink, M + 58, CW - 58); y = Math.max(y, y1) + 0.8; });
   });
   const n = pdf.getNumberOfPages();
-  for (let i = 2; i <= n; i++) { pdf.setPage(i); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(...mut); pdf.text(pdfTxt(`${doc.title} - Spielkonzept`), M, 290); pdf.text(`${i} / ${n}`, W - M, 290, { align: "right" }); }
-  const file = (pdfTxt(doc.title).replace(/[^A-Za-z0-9ÄÖÜäöüß -]/g, "").trim() || "Spielkonzept") + " - Spielkonzept.pdf";
+  for (let i = 2; i <= n; i++) { pdf.setPage(i); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(...mut); pdf.text(pdfTxt(`${doc.title} - ${isGame(st.a) ? "Spielkonzept" : "Konzept"}`), M, 290); pdf.text(`${i} / ${n}`, W - M, 290, { align: "right" }); }
+  const file = (pdfTxt(doc.title).replace(/[^A-Za-z0-9ÄÖÜäöüß -]/g, "").trim() || "Konzept") + (isGame(st.a) ? " - Spielkonzept.pdf" : " - Konzept.pdf");
   try {
     btn.textContent = "Speichern bestätigen …";
     await deliverPDF(pdf, file);
@@ -1971,7 +2103,7 @@ async function savePDF(btn) {
   if (st.view === "result") render();
 })();
 
-/* Game-Bauplan – ausführlicher KI-Bauauftrag + PDF */
+/* Nordlicht – ausführlicher KI-Bauauftrag + PDF */
 function conceptMD(doc, skip) {
   const L = [];
   let skipping = false;
@@ -2029,7 +2161,7 @@ const DOD = {
   "Veröffentlichung": "Alle Builds und Store-Texte sind fertig; die Launch-Checkliste ist abgearbeitet."
 };
 
-function buildPrompt() {
+function buildGamePrompt() {
   const a = st.a, v = visible().filter(q => !q.quiz), L = [];
   const doc = concept(), lvl = LEVELS.find(l => l.n === st.level);
   const P = (...x) => L.push(...x), blank = () => L.push("");
@@ -2207,7 +2339,7 @@ async function savePromptPDF(btn) {
   setTimeout(() => btn.textContent = old, 2500);
 }
 
-/* Game-Bauplan – Gedanken sammeln und daraus Antworten erkennen */
+/* Nordlicht – Gedanken sammeln und daraus Antworten erkennen */
 /* Schlüsselwörter je Antwort. Jedes Wort passt auch auf Verlängerungen („spring“ → springt, springen). */
 const KW = {
   age: { "3–6 Jahre": "kleinkind|kita|kindergarten|vorschul|3 jahr|4 jahr|5 jahr", "6–10 Jahre": "grundschul|kinder|kids|6 jahr|7 jahr|8 jahr|9 jahr", "10–13 Jahre": "10 jahr|11 jahr|12 jahr", "13–17 Jahre": "jugendlich|teenager|teens|schüler|13 jahr|14 jahr|15 jahr|16 jahr", "Erwachsene 18+": "erwachsen", "Alle Altersgruppen": "familie|jung und alt|alle alter|jeden alters" },
@@ -2283,7 +2415,8 @@ function analyzeThoughts(raw) {
 }
 
 function suggList() {
-  return Object.entries(st.sugg || {}).map(([id, vs]) => ({ q: qOf(id), vs })).filter(x => x.q && x.vs.length)
+  const vis = new Set(visible().map(q => q.id));
+  return Object.entries(st.sugg || {}).map(([id, vs]) => ({ q: qOf(id), vs })).filter(x => x.q && vis.has(x.q.id) && x.vs.length)
     .sort((a, b) => Q.indexOf(a.q) - Q.indexOf(b.q));
 }
 function applySugg(skip) {
@@ -2310,7 +2443,7 @@ function viewAnalysis() {
     <div class="cta">
       ${list.length ? `<button class="btn primary big" data-act="adopt" data-skip="1">Übernehmen & diese Fragen überspringen →</button>
       <button class="btn" data-act="adopt">Übernehmen, aber alle Fragen zeigen</button>` : `<button class="btn primary big" data-act="adopt">Weiter zu den Fragen →</button>`}
-      ${CAPS.sample ? `<button class="btn" data-act="thinkAI" ${analyzeThoughts.busy ? "disabled" : ""}>✨ Von Claude genauer auswerten lassen</button>` : ""}
+      ${aiReady() ? `<button class="btn" data-act="thinkAI" ${analyzeThoughts.busy ? "disabled" : ""}>✨ Von Claude genauer auswerten lassen</button>` : ""}
       <button class="btn ghost" data-act="rethink">Gedanken ändern</button>
     </div>
     <p class="fine">Alles bleibt änderbar. Übernommene Antworten sind bei den Fragen markiert.</p>
@@ -2318,9 +2451,9 @@ function viewAnalysis() {
 }
 
 async function thinkWithClaude() {
-  if (!CAPS.sample || analyzeThoughts.busy) return;
+  if (!aiReady() || analyzeThoughts.busy) return;
   analyzeThoughts.busy = true; st.thinkErr = ""; render();
-  const cat = Q.filter(q => q.l <= st.level && !q.quiz && !q.dyn && q.opts.length && q.id !== "core" || q.id === "core")
+  const cat = visible().filter(q => !q.aiq && !q.quiz && !q.dyn && q.opts.length && q.id !== "kind")
     .map(q => `${q.id}${q.t === "m" ? " (mehrere)" : ""}: ${q.title} = ${q.opts.map(o => o.v).filter(v => v !== QUIZ_OPT).join(" | ")}`).join("\n");
   const input = `Hier sind die freien Gedanken eines Laien zu einem Spiel, das er bauen möchte. Ordne seine Gedanken den Fragen unten zu.
 Regeln: Nimm NUR Antworten, die klar aus dem Text hervorgehen oder sehr naheliegend sind. Verwende die Antworttexte exakt wie angegeben. Lass Fragen weg, zu denen der Text nichts sagt.
@@ -2332,7 +2465,7 @@ ${val("thoughts")}
 FRAGEN (id: Frage = Antwort | Antwort | ...):
 ${cat}`;
   try {
-    const out = await CAPS.sample.json(input, { modelTier: "default", cache: false, onText: ({ text }) => { const s = document.getElementById("thinkStatus"); if (s) s.textContent = `Claude liest deine Gedanken … ${text.length} Zeichen`; } });
+    const out = await aiCall("thoughts", input);
     const res = (out && out.antworten) || {}, sugg = Object.assign({}, st.sugg);
     Object.entries(res).forEach(([id, v]) => {
       const q = qOf(id); if (!q || !q.opts.length) return;
@@ -2361,9 +2494,342 @@ document.addEventListener("click", e => {
   }
 });
 const STARTERS = ["Das Spiel handelt von …", "Der Spieler muss …", "Die Spielfigur ist …", "Es spielt in …", "Das Ziel ist …", "Schwierig wird es, weil …", "Besonders cool wäre …", "Spielen sollen es …", "Es soll laufen auf …", "Auf keinen Fall soll …"];
-function starterChips() { return `<div class="starters" aria-label="Satzanfänge">${STARTERS.map(s => `<button class="chip" data-act="starter" data-s="${esc(s.replace(" …", ""))}">${esc(s)}</button>`).join("")}</div>`; }
+const STARTERS_GEN = ["Es soll …", "Benutzen sollen es …", "Man soll damit …", "Das Wichtigste ist …", "Es nervt mich gerade, dass …", "Ähnlich wie …", "Es soll laufen auf …", "Besonders cool wäre …", "Auf keinen Fall soll …"];
+function starterChips() { return `<div class="starters" aria-label="Satzanfänge">${(isGame(st.a) ? STARTERS : STARTERS_GEN).map(s => `<button class="chip" data-act="starter" data-s="${esc(s.replace(" …", ""))}">${esc(s)}</button>`).join("")}</div>`; }
 
-/* Game-Bauplan – Online speichern & teilen (Supabase) */
+/* Nordlicht – Konzept, Bauauftrag und Checkliste für alles außer Spielen.
+   Die Spiel-Varianten (gameConcept, buildGamePrompt, …) bleiben unverändert; hier wird je nach Projektart verteilt. */
+const kindText = () => val("kind") || "Software-Projekt";
+const concept = () => isGame(st.a) ? gameConcept() : genConcept();
+const buildPrompt = () => isGame(st.a) ? buildGamePrompt() : buildGenPrompt();
+const launchItems = () => isGame(st.a) ? gameLaunchItems() : genLaunchItems();
+const conflicts = () => isGame(st.a) ? gameConflicts() : [];
+function buildSummaryText() {
+  if (isGame(st.a)) return gameSummaryText();
+  const doc = genConcept();
+  return [`ZUSAMMENFASSUNG: ${doc.title}`, ""].concat(conceptMD(doc, []), ["", "— Launch-Checkliste —"], genLaunchItems().map(i => `☐ ${i.t}: ${i.d}`)).join("\n");
+}
+/* Beantwortete Fragen eines Bereichs (ohne Gedanken/Schluss) */
+const answeredIn = secId => visible().filter(q => q.sec === secId && answered(q) && q.id !== "thoughts" && q.id !== "finalNotes");
+
+function genConcept() {
+  const ai = st.ai && st.ai.funktionen ? st.ai : null;
+  const B = [];
+  const H = x => B.push({ t: "h2", x }), P = x => x && B.push({ t: "p", x }), UL = x => x && x.length && B.push({ t: "ul", x }), OL = x => x && x.length && B.push({ t: "ol", x }), KV = x => B.push({ t: "kv", x: x.filter(r => r[1]) });
+  if (val("thoughts")) { H("Deine Ausgangsidee"); P(`„${val("thoughts")}“`); }
+  H("Überblick");
+  if (ai && ai.pitch) P(ai.pitch);
+  KV([["Projektart", kindText()], ["Hauptaufgabe", val("gGoal")], ["Für wen", val("gAudience")], ["Nutzer", val("gUsers")], ["Vorbild", val("gRef")],
+    ["Läuft auf", val("gPlatforms")], ["Aussehen", val("gLook")], ["Sprachen", val("gLang")]]);
+  if (ai && ai.titel && ai.titel.length > 1) { H("Namensideen"); UL(ai.titel); }
+  if (ai) {
+    H("Funktionen"); UL(ai.funktionen.map(f => `${f.name}: ${f.beschreibung}`));
+    if (ai.bildschirme) { H("Bildschirme & Seiten"); UL(ai.bildschirme.map(b => `${b.name}: ${b.inhalt}`)); }
+    if (ai.ablaeufe) { H("Typische Abläufe"); OL(ai.ablaeufe); }
+    if (ai.daten) { H("Daten"); UL(ai.daten.map(d => `${d.name}: ${d.felder}`)); }
+    if (ai.rollen && ai.rollen.length) { H("Wer darf was"); UL(ai.rollen); }
+    if (ai.verbindungen && ai.verbindungen.length) { H("Verbindungen zu anderen Diensten"); UL(ai.verbindungen); }
+    if (ai.technik) { H("Empfohlene Technik"); UL(ai.technik); }
+  } else {
+    const det = answeredIn("ai");
+    if (det.length) { H("Details aus den KI-Fragen"); UL(det.map(q => `${q.label}: ${fmt(q)}`)); }
+    H("Technik & Daten");
+    KV([["Anmeldung", val("gAccounts")], ["Gespeicherte Daten", val("gData")], ["Verbindungen", val("gConnect")], ["Ohne Internet", val("gOffline")], ["Datenschutz", val("gPrivacy")]]);
+  }
+  H("Umsetzung");
+  KV([["Geld verdienen", val("gMoney")], ["Erste Version", val("gTimeline")], ["Laufende Kosten", val("gBudget")], ["Veröffentlichung", val("gLaunch")], ["Deine Erfahrung", val("gSkill")]]);
+  OL(ai && ai.erste_schritte ? ai.erste_schritte : genMilestones().map(m => `${m[0]}: ${m[1]}`));
+  const notes = visible().filter(q => noteOf(q.id));
+  if (val("finalNotes") || notes.length) { H("Deine Notizen"); UL((val("finalNotes") ? [`Zum Schluss: ${val("finalNotes")}`] : []).concat(notes.map(q => `${q.label}: ${noteOf(q.id)}`))); }
+  return { title: ai && ai.titel && ai.titel[0] || projTitle(), blocks: B };
+}
+
+function genTech() {
+  const a = st.a, out = [];
+  const app = has(a, "gPlatforms", "iPhone/iPad (iOS)", "Android"), web = has(a, "gPlatforms", "Im Browser"), desk = has(a, "gPlatforms", "Als Programm auf PC/Mac");
+  const server = has(a, "gPlatforms", "Im Hintergrund auf einem Server", "In einem Messenger") || has(a, "kind", "Automatisierung", "KI-Assistent / Chatbot");
+  const beginner = has(a, "gSkill", "Gar keine", "Ein bisschen");
+  if (app) out.push(`App: React Native mit Expo${web ? " (ein Code für iPhone, Android und Browser)" : ""}.`);
+  else if (web || !desk) out.push(beginner ? "Oberfläche: eine Web-App mit HTML, CSS und JavaScript bzw. React, die ohne Installation im Browser läuft." : "Oberfläche: React mit TypeScript (z. B. Vite oder Next.js).");
+  if (desk) out.push("PC/Mac: Web-App als Desktop-Programm verpacken (z. B. Tauri oder Electron).");
+  if (has(a, "gAccounts", "Mit E-Mail und Passwort", "Mit Google oder Apple", "Verschiedene Rollen", "Einfacher PIN oder Code") || (Array.isArray(a.gData) ? a.gData.some(x => x !== "Nichts" && x !== AI) : val("gData") && val("gData") !== "Nichts"))
+    out.push(`Daten & Anmeldung: ein gehosteter Dienst wie Supabase (Datenbank, Login, Dateien)${has(a, "gPrivacy", "Server müssen in der EU stehen", "Sehr sensibel") ? " mit Servern in der EU" : ""}.`);
+  if (server) out.push("Hintergrund-Aufgaben: serverlose Funktionen oder ein kleiner Server, der zeitgesteuert läuft.");
+  if (has(a, "gConnect", "Künstliche Intelligenz") || has(a, "kind", "KI-Assistent / Chatbot")) out.push("KI: die Claude API von Anthropic, der Schlüssel liegt nur auf dem Server.");
+  if (has(a, "gConnect", "Bezahlen") || has(a, "kind", "Online-Shop")) out.push("Bezahlen: Stripe oder PayPal, keine Kartendaten selbst speichern.");
+  return out;
+}
+function genMilestones() {
+  const a = st.a, m = [];
+  m.push(["Grundgerüst", "Projekt aufsetzen, Hauptbildschirm und Navigation, Platzhalter-Daten, läuft auf dem Zielgerät."]);
+  m.push(["Kernfunktionen", "Die wichtigsten Funktionen vollständig und benutzbar, mit echten Daten."]);
+  if (!has(a, "gAccounts", "Nein, ohne Anmeldung") && val("gAccounts")) m.push(["Konten & Rechte", "Anmeldung, Rollen und wer welche Daten sehen und ändern darf."]);
+  if (val("gConnect") && !has(a, "gConnect", "Mit nichts")) m.push(["Verbindungen", `Anbindung an: ${val("gConnect")}.`]);
+  m.push(["Aussehen & Komfort", "Design wie gewünscht, verständliche Texte, Fehlermeldungen, leere Zustände, Handy-Ansicht."]);
+  m.push(["Testen & Feinschliff", "Alle Abläufe durchspielen, Sonderfälle, Geschwindigkeit, Datenschutz prüfen."]);
+  if (val("gLaunch") && !has(a, "gLaunch", "Nur privat / intern")) m.push(["Veröffentlichung", `Bereitstellen auf: ${val("gLaunch")}.`]);
+  return m;
+}
+
+function buildGenPrompt() {
+  const v = visible(), L = [], P = (...x) => L.push(...x), blank = () => L.push("");
+  const doc = genConcept(), lvl = LEVELS.find(l => l.n === st.level), ai = st.ai && st.ai.funktionen ? st.ai : null;
+  P(`# Bauauftrag: „${doc.title}“ (Arbeitstitel)`, "");
+  P(`Dieses Dokument ist der vollständige Bauauftrag für ein Software-Projekt (${kindText()}). Ich (der Auftraggeber) habe es mit einem Fragebogen erstellt; eine KI hat dabei gezielt nach offenen Stellen gefragt. Lies es komplett, bevor du irgendetwas tust.`, "");
+  P("**Aufbau:** Teil A – So arbeitest du · Teil B – Idee und Überblick · Teil C – Alle Vorgaben · Teil D – Umsetzung, Abnahme und deine erste Antwort", "");
+  P("---", "", "## Teil A – So arbeitest du", "");
+  P("Du bist ein komplettes kleines Software-Team in einer Person: Produktplaner, Designer, Entwickler und Tester. Du baust dieses Projekt so, dass es fertig, benutzbar und fehlerfrei ist.", "");
+  [
+    "Setze jede Vorgabe exakt um. Weiche nur ab, wenn etwas technisch unmöglich ist, und sag das dann ausdrücklich mit einer Alternative.",
+    "Erfinde keine Funktionen, die hier nicht stehen. Ausnahme: Dinge, die zwingend nötig sind, damit es vollständig funktioniert. Liste jede solche Ergänzung auf.",
+    "Steht bei einem Punkt „KI entscheidet“, triff die beste Entscheidung passend zu Zielgruppe und Zweck und trage sie in die Tabelle „Meine Entscheidungen“ ein (Punkt | Entscheidung | abgeleitet aus).",
+    `Gewünschte Genauigkeit: „${lvl.name}“. Was hier nicht genannt ist, entscheidest du selbst, passend zu allen Vorgaben, und trägst es in „Meine Entscheidungen“ ein.`,
+    "Rangfolge bei Widersprüchen: 1. Notizen (📝) und meine eigenen Worte, 2. ausgewählte Antworten, 3. deine Entscheidungen.",
+    "Ich bin " + ({ "Gar keine": "kein Programmierer. Erkläre jeden Schritt so, dass ich ihn ohne Vorwissen ausführen kann.", "Ein bisschen": "Einsteiger. Erkläre Schritte kurz und verständlich." }[val("gSkill")] || "erfahren genug für normale Fachsprache.")
+  ].forEach((r, i) => P(`${i + 1}. ${r}`));
+  blank();
+  P("---", "", "## Teil B – Idee und Überblick", "");
+  if (val("thoughts")) { P("### B0. Meine Idee in meinen eigenen Worten", ""); val("thoughts").split(/\n+/).forEach(l => l.trim() && P(`> ${l.trim()}`)); blank(); }
+  if (val("finalNotes")) P(`**Besonders wichtig (Zum Schluss):** „${val("finalNotes")}“`, "");
+  P("### B1. Überblick", "");
+  conceptMD({ blocks: doc.blocks.filter(b => b.x !== "Deine Ausgangsidee") }, ["Deine Ausgangsidee", "Deine Notizen", "Umsetzung"]).forEach(l => P(l));
+  blank();
+  P("---", "", "## Teil C – Alle Vorgaben", "", "Alle Antworten nach Bereichen. Der Text nach „–“ erklärt jeweils verbindlich, was gemeint ist.", "");
+  S.forEach(s => {
+    const qs = v.filter(q => q.sec === s.id && (answered(q) || noteOf(q.id)) && !["thoughts", "finalNotes"].includes(q.id));
+    if (!qs.length) return;
+    P(`### ${s.name}`, "");
+    qs.forEach(q => { const l = answerLines(q); if (l) P(...l); });
+    blank();
+  });
+  if (st.aiGaps && st.aiGaps.length && !st.aiDone) { P("### Noch offen", "", "Diese Punkte waren beim Erstellen noch nicht geklärt. Kläre sie mit mir, bevor du sie baust:", ""); st.aiGaps.forEach(g => P(`- ${g}`)); blank(); }
+  P("---", "", "## Teil D – Umsetzung", "", "### D1. Technik", "");
+  (ai && ai.technik ? ai.technik : genTech()).forEach(t => P(`- ${t}`));
+  P("- Wenn du eine bessere Technik für meine Vorgaben kennst, schlag sie in deiner ersten Antwort mit Begründung vor.", "");
+  P("### D2. Meilensteine", "", "Arbeite in diesen Schritten. Nach jedem Schritt muss etwas Lauffähiges da sein, das ich ausprobieren kann.", "");
+  genMilestones().forEach((m, i) => P(`${i + 1}. **${m[0]}:** ${m[1]}`));
+  blank();
+  P("### D3. Abnahme", "", "Fertig ist es erst, wenn:", "");
+  [
+    "Jede Vorgabe aus Teil C sichtbar umgesetzt ist.",
+    "Alle Abläufe von Anfang bis Ende funktionieren, auch bei falschen Eingaben, leeren Listen und ohne Internet (Fehlermeldung statt Absturz).",
+    "Es auf allen genannten Geräten gut bedienbar ist, auch auf kleinen Handy-Bildschirmen.",
+    "Keine Fehler in Konsole oder Log auftauchen.",
+    has(st.a, "gData", "Nichts") || !val("gData") ? "" : "Daten sicher gespeichert werden und jeder nur sieht, was er sehen darf.",
+    has(st.a, "gPrivacy", "Normale persönliche Daten", "Sehr sensibel") ? "Die DSGVO eingehalten wird: Datenschutzerklärung, nur nötige Daten, Löschen auf Wunsch möglich." : ""
+  ].filter(Boolean).forEach(x => P(`- ${x}`));
+  blank();
+  P("### D4. Lieferumfang", "", "- Vollständiger, lauffähiger Code", "- Anleitung: Wie starte, teste und veröffentliche ich es?", "- Tabelle „Meine Entscheidungen“", "- Liste aller Ergänzungen, die nicht im Auftrag standen", "");
+  P("### D5. Deine erste Antwort", "", "Beginne NICHT sofort mit Code. Antworte zuerst so:", "");
+  P("1. **Verständnischeck:** Beschreibe in 5–8 Sätzen, was das Projekt ist, für wen, was man damit macht und was auf keinen Fall passieren darf.",
+    "2. **Dein Plan:** Technik, Aufbau, Meilensteine.", "3. **Offene Fragen:** Alles, was unklar oder widersprüchlich ist.", "4. **Namen:** Drei Namensvorschläge.", "5. Dann wartest du auf mein OK und startest mit Meilenstein 1.");
+  return L.join("\n");
+}
+
+function genLaunchItems() {
+  const a = st.a, L = [], add = (k, t, d) => L.push({ k, t, d });
+  add("t1", "Mit echten Nutzern testen", "Lass 3–5 Leute aus der Zielgruppe die wichtigsten Abläufe ausprobieren und schau zu, ohne zu helfen.");
+  add("t2", "Backups einrichten", "Daten automatisch sichern und einmal testen, ob die Wiederherstellung klappt.");
+  if (has(a, "gPrivacy", "Normale persönliche Daten", "Sehr sensibel") || has(a, "gAccounts", "Mit E-Mail und Passwort", "Mit Google oder Apple", "Verschiedene Rollen")) {
+    add("d1", "Datenschutzerklärung", "Pflicht, sobald persönliche Daten verarbeitet werden. Nenne alle Dienste, die Daten erhalten.");
+    add("d2", "Auftragsverarbeitung (AVV)", "Mit jedem Dienst abschließen, der Daten für dich speichert (z. B. Hosting, Datenbank, E-Mail).");
+  }
+  if (has(a, "gPrivacy", "Sehr sensibel")) add("d3", "Sensible Daten absichern", "Verschlüsselung, strenge Rechte, Protokoll, wer was angesehen hat. Bei Gesundheitsdaten ggf. Fachberatung.");
+  if (has(a, "gLaunch", "Unter einer eigenen Internetadresse")) {
+    add("w1", "Domain & Hosting", "Domain registrieren, Hosting mit HTTPS (z. B. Vercel, Netlify, GitHub Pages).");
+    add("w2", "Impressum", "In Deutschland Pflicht bei geschäftsmäßigen Websites.");
+    add("w3", "Cookie-Hinweis prüfen", "Nur nötig, wenn Tracking, Werbung oder externe Inhalte genutzt werden.");
+  }
+  if (has(a, "gLaunch", "Apple App Store")) add("a1", "Apple Developer Program", "99 $ pro Jahr, App-Review dauert meist 1–2 Tage; Datenschutz-Angaben und Screenshots nötig.");
+  if (has(a, "gLaunch", "Google Play")) add("b1", "Google Play Console", "25 $ einmalig; neue private Konten brauchen einen geschlossenen Test mit 12 Testern über 14 Tage.");
+  if (has(a, "gLaunch", "Zum Herunterladen für PC/Mac")) add("p1", "Programm signieren", "Damit Windows und macOS keine Warnungen zeigen (Code-Signing-Zertifikat, auf dem Mac Notarisierung).");
+  if (has(a, "gMoney", "Einmal kaufen", "Abo", "Über verkaufte Produkte") || has(a, "kind", "Online-Shop")) {
+    add("m1", "Zahlungsanbieter einrichten", "Konto bei Stripe oder PayPal, Testzahlungen durchspielen.");
+    add("m2", "AGB & Widerrufsbelehrung", "Pflicht beim Verkauf an Verbraucher in der EU.");
+    add("m3", "Steuern klären", "Umsatzsteuer und ggf. Gewerbeanmeldung mit Steuerberater klären.");
+  }
+  if (has(a, "gMoney", "Werbung")) add("m4", "Werbung & Einwilligung", "Einwilligungsdialog nach DSGVO vor personalisierter Werbung.");
+  if (has(a, "gConnect", "Künstliche Intelligenz") || has(a, "kind", "KI-Assistent / Chatbot")) add("k1", "KI-Kosten begrenzen", "Ausgabenlimit beim KI-Anbieter setzen und Nutzung pro Person begrenzen.");
+  if (has(a, "gAudience", "Kinder")) add("c1", "Kinder schützen", "Keine personalisierte Werbung, Einwilligung der Eltern, so wenig Daten wie möglich.");
+  add("z1", "Erste Nutzer gewinnen", "Freunde, Kunden oder Kollegen gezielt ansprechen und um ehrliches Feedback bitten.");
+  return L;
+}
+
+/* Nordlicht – KI: findet offene Stellen im Bauplan und denkt sich passende Fragen aus.
+   In claude.ai läuft das über die Seite selbst (CAPS.sample), auf der Website über die Supabase-Funktion „ai“. */
+const AI_MAX_ROUNDS = 20;
+const DEPTH = {
+  1: "nur die entscheidenden Lücken; insgesamt höchstens etwa 10 KI-Fragen",
+  2: "alle wichtigen Punkte; insgesamt etwa 25 KI-Fragen",
+  3: "auch Details, Sonderfälle und Feinheiten; insgesamt etwa 50 KI-Fragen",
+  4: "jede Kleinigkeit, bis wirklich nichts mehr offen ist; so viele Fragen wie nötig"
+};
+const aiReady = () => !!CAPS.sample || (typeof sb !== "undefined" && !!sb && signedIn());
+const aiWant = () => aiReady() && !st.aiDone && (st.aiRounds || 0) < AI_MAX_ROUNDS;
+
+async function aiCall(task, prompt) {
+  if (CAPS.sample) return CAPS.sample.json(prompt, { modelTier: task === "elaborate" ? "complex" : "default", cache: false });
+  const { data, error } = await sb.functions.invoke("ai", { body: { task, prompt } });
+  if (error) {
+    let code = "";
+    try { code = (await error.context.json()).error; } catch (e) {}
+    throw Object.assign(new Error(code || error.message), { code });
+  }
+  return data.json;
+}
+function aiErrText(e, fallback) {
+  const c = e && e.code;
+  return c === "limit" ? "Du hast das Tageslimit für KI-Anfragen erreicht. Morgen geht es weiter."
+    : c === "rate_limited" ? "Gerade zu viele Anfragen. Versuch es in einer Minute noch einmal."
+    : c === "not_granted" ? "Die Nutzung von Claude wurde nicht erlaubt."
+    : c === "auth" ? "Bitte melde dich erneut an."
+    : c === "config" ? "Die KI ist auf dem Server noch nicht eingerichtet."
+    : fallback;
+}
+
+/* Die Fragen der KI als normale Fragen (Bereich „ai“) */
+let _aqSrc = null, _aqOut = [];
+function aiQs() {
+  if (st.aq === _aqSrc) return _aqOut;
+  _aqSrc = st.aq;
+  _aqOut = (st.aq || []).map(x => ({ id: x.id, label: x.label, title: x.title, h: x.h, sec: "ai", l: 1, t: "m", aiq: true, topic: x.topic, opts: x.opts }));
+  return _aqOut;
+}
+
+/* Der bisherige Bauplan als Text für die KI */
+function specText() {
+  const L = [];
+  if (val("thoughts")) L.push("GEDANKEN DES AUFTRAGGEBERS:", val("thoughts"), "");
+  S.forEach(s => {
+    const qs = visible().filter(q => q.sec === s.id && !q.quiz && q.id !== "thoughts" && (answered(q) || noteOf(q.id)));
+    if (!qs.length) return;
+    L.push(`[${s.name}]`);
+    qs.forEach(q => L.push(`- ${q.title} → ${answered(q) ? fmt(q) : "(keine Auswahl)"}${noteOf(q.id) ? ` (Notiz: ${noteOf(q.id)})` : ""}`));
+    L.push("");
+  });
+  const open = aiQs().filter(q => !answered(q));
+  if (open.length) L.push("SCHON GESTELLT, NOCH OFFEN:", ...open.map(q => `- ${q.title}`), "");
+  return L.join("\n");
+}
+
+async function aiRound() {
+  if (aiRound.busy) return;
+  aiRound.busy = true; st.aiErr2 = ""; st.view = "thinking"; render(); window.scrollTo(0, 0);
+  const tok = aiRound.tok = (aiRound.tok || 0) + 1;
+  const asked = aiQs().length;
+  const prompt = `Du hilfst Laien, ein Projekt so genau zu planen, dass eine KI es danach ohne Rückfragen exakt bauen kann.
+
+Projektart: ${val("kind") || "unbekannt"}
+Gewünschte Genauigkeit: ${DEPTH[st.level]}
+Bisher gestellte KI-Fragen: ${asked}
+
+BISHERIGER BAUPLAN:
+${specText()}
+
+AUFGABE: Finde die Stellen, die für den Bau noch offen, unklar oder widersprüchlich sind, und stelle dazu die nächsten 4–7 Multiple-Choice-Fragen.
+Regeln:
+- Frag nur, was für genau dieses Projekt gebraucht wird. Nichts doppelt und nichts, was oben schon beantwortet ist, auch nicht in anderen Worten.
+- Vom Groben ins Feine: erst Funktionen und Abläufe, dann Details.
+- Laiensprache in Du-Form, keine Fachbegriffe (oder kurz in Klammern erklärt).
+- Jede Frage hat 3–8 konkrete, auf das Projekt zugeschnittene Antworten: passendes Emoji, Antworttext höchstens 6 Wörter, dazu ein kurzer Erklärsatz. Mehrfachauswahl ist immer erlaubt. Markiere Antworten wie „Keine“ oder „Gar nicht“ als exklusiv. Keine Antwort „Weiß nicht“, die gibt es automatisch.
+- "kurz" ist ein Stichwort aus 1–3 Wörtern für die Übersicht, "thema" der Bereich (z. B. „Bezahlung“).
+- "abdeckung": wie vollständig der Bauplan für die gewünschte Genauigkeit schon ist (0–100).
+- "fertig": true, wenn bei dieser Genauigkeit keine wichtigen Lücken mehr bleiben; dann bleibt "fragen" leer.
+- "luecken": die noch offenen Punkte in je einem kurzen Satz.
+Antworte NUR mit JSON in dieser Form:
+{"abdeckung": 0, "fertig": false, "luecken": [""], "fragen": [{"thema": "", "kurz": "", "frage": "", "hilfe": "", "optionen": [{"emoji": "", "text": "", "info": "", "exklusiv": false}]}]}`;
+  try {
+    const out = await aiCall("questions", prompt) || {};
+    if (tok !== aiRound.tok) return; /* inzwischen abgebrochen */
+    const r = (st.aiRounds || 0) + 1, seen = new Set(aiQs().map(q => q.title.toLowerCase()));
+    const qs = (Array.isArray(out.fragen) ? out.fragen : []).filter(f => f && f.frage && Array.isArray(f.optionen) && f.optionen.length >= 2 && !seen.has(String(f.frage).toLowerCase()))
+      .slice(0, 8).map((f, i) => ({
+        id: `k${r}_${i + 1}`, label: String(f.kurz || f.thema || "Detail").slice(0, 40), title: String(f.frage), h: f.hilfe ? String(f.hilfe) : "", topic: String(f.thema || ""),
+        opts: f.optionen.slice(0, 10).map(o => ({ i: String(o.emoji || "•").slice(0, 8), v: String(o.text || "").slice(0, 80), d: String(o.info || ""), x: !!o.exklusiv })).filter(o => o.v)
+      }));
+    st.aiRounds = r; st.aiLevel = st.level;
+    st.aiCov = Math.max(0, Math.min(100, +out.abdeckung || 0));
+    st.aiGaps = Array.isArray(out.luecken) ? out.luecken.filter(Boolean).map(String).slice(0, 12) : [];
+    if (out.fertig || !qs.length || r >= AI_MAX_ROUNDS) st.aiDone = true;
+    st.aq = (st.aq || []).concat(qs);
+    aiRound.busy = false;
+    if (qs.length) { st.view = "quiz"; st.cur = qs[0].id; render(); window.scrollTo(0, 0); }
+    else aiFinish();
+  } catch (e) {
+    if (tok !== aiRound.tok) return;
+    aiRound.busy = false;
+    st.aiErr2 = aiErrText(e, "Die KI konnte gerade keine Fragen erstellen. Versuch es noch einmal oder mach ohne KI weiter.");
+    render();
+  }
+}
+/* Nach der letzten KI-Runde: Schlussfrage oder Auswertung */
+function aiFinish() {
+  const f = qOf("finalNotes");
+  if (f && !answered(f)) { st.view = "quiz"; st.cur = f.id; }
+  else { st.view = "result"; st.tab = "sum"; }
+  render(); window.scrollTo(0, 0);
+}
+
+function viewThinking() {
+  const busy = aiRound.busy;
+  return `<section class="analysis thinking">
+    <p class="eyebrow">Feinschliff durch die KI${st.aiRounds ? ` · Runde ${st.aiRounds + (busy ? 1 : 0)}` : ""}</p>
+    <h1>${busy ? "Die KI sucht nach offenen Stellen …" : "Das hat nicht geklappt"}</h1>
+    ${busy ? `<div class="spin" aria-hidden="true"></div><p class="lead">Sie liest deinen ganzen Bauplan und überlegt, welche Fragen noch fehlen, damit beim Bauen nichts geraten werden muss. Das dauert meist 10–40 Sekunden.</p>` : ""}
+    ${st.aiCov ? `<p class="fine">Bisherige Abdeckung: <b>${st.aiCov} %</b></p>` : ""}
+    ${st.aiErr2 ? `<p class="alert warn">${esc(st.aiErr2)}</p>` : ""}
+    <div class="cta">
+      ${busy ? "" : `<button class="btn primary" data-act="airetry">Noch einmal versuchen</button>`}
+      <button class="btn${busy ? "" : " ghost"}" data-act="aistop">${busy ? "Abbrechen, zur Auswertung" : "Ohne KI weiter"}</button>
+    </div>
+  </section>`;
+}
+
+/* Kasten auf der Auswertung: Stand der Lücken */
+function aiBox() {
+  if (!aiReady()) {
+    if (typeof sb === "undefined" || !sb) return "";
+    return `<div class="cloud aibox"><div><b>🤖 Lücken mit KI schließen</b><small>Mit einem kostenlosen Konto liest die KI deinen Bauplan, findet offene Stellen und stellt dir genau die Fragen, die noch fehlen.</small></div>
+      <button class="btn sm primary" data-act="tostart">Konto erstellen oder anmelden</button></div>`;
+  }
+  const cov = st.aiCov ? `<span class="cov"><i style="width:${st.aiCov}%"></i></span><small>Abdeckung laut KI: ${st.aiCov} %</small>` : "";
+  if (st.aiDone) return `<div class="cloud aibox"><div><b>✓ Die KI findet keine wichtigen Lücken mehr</b>${cov}<small>Für die Stufe „${LEVELS[st.level - 1].name}“ ist alles geklärt.${st.level < 4 ? " Du kannst trotzdem noch genauer werden." : ""}</small></div>
+    ${st.level < 4 ? `<button class="btn sm" data-act="deeper">Noch genauer →</button>` : ""}</div>`;
+  return `<div class="cloud aibox"><div><b>🤖 Es gibt noch offene Stellen</b>${cov}${st.aiGaps && st.aiGaps.length ? `<small>${esc(st.aiGaps.slice(0, 4).join(" · "))}</small>` : "<small>Die KI stellt dir passende Zusatzfragen, bis nichts mehr offen ist.</small>"}</div>
+    <button class="btn sm primary" data-act="aimore">Lücken schließen →</button></div>`;
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act;
+  if (act === "airetry" || act === "aimore") {
+    const open = aiQs().find(q => !answered(q));
+    if (open) { st.view = "quiz"; st.cur = open.id; render(); window.scrollTo(0, 0); }
+    else aiRound();
+  }
+  if (act === "aistop") { aiRound.busy = false; aiRound.tok = (aiRound.tok || 0) + 1; st.aiDone = true; aiFinish(); }
+});
+
+/* Generisches Konzept von Claude ausarbeiten lassen */
+async function elaborateGen() {
+  elaborate.busy = true; st.aiErr = ""; render();
+  const schema = `{"titel":["3 Namensvorschläge"],"pitch":"3-4 Sätze: was es ist und warum man es will","funktionen":[{"name":"","beschreibung":"was genau passiert, konkret"}],"bildschirme":[{"name":"","inhalt":"was man dort sieht und tun kann"}],"ablaeufe":["5-8 typische Abläufe Schritt für Schritt"],"daten":[{"name":"z. B. Kunde","felder":"welche Angaben gespeichert werden"}],"rollen":["wer darf was"],"verbindungen":["andere Dienste und wofür"],"technik":["empfohlene Technik mit kurzer Begründung"],"erste_schritte":["6-8 Umsetzungsschritte"]}`;
+  const input = `Du bist ein erfahrener Produktplaner und Software-Architekt. Arbeite aus der folgenden Spezifikation ein konkretes Konzept für das Projekt aus. Bleib exakt bei den Vorgaben, triff bei „KI entscheidet“ passende Entscheidungen und erfinde keine Funktionen, die nicht dazu passen. Alles auf Deutsch, verständlich für Laien.
+
+Antworte NUR mit JSON exakt in dieser Form (bei Listen 5-10 Einträge, passend zum Umfang):
+${schema}
+
+SPEZIFIKATION:
+${buildGenPrompt()}`;
+  try {
+    const out = await aiCall("elaborate", input);
+    if (out && typeof out === "object" && Array.isArray(out.funktionen)) { st.ai = out; st.aiSig = JSON.stringify(st.a); }
+    else st.aiErr = "Die Ausarbeitung kam unvollständig zurück. Versuch es noch einmal.";
+  } catch (e) { st.aiErr = aiErrText(e, "Die Ausarbeitung hat nicht geklappt. Du kannst es noch einmal versuchen."); }
+  elaborate.busy = false; render();
+}
+
+/* Nordlicht – Online speichern & teilen (Supabase) */
 const SUPABASE_URL = "https://vzoggokzibymbwnmgbqk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_2ZjnZYQzM7Sw9x0d1M1sNA_2QGUI82b";
 let sb = null;
@@ -2373,7 +2839,9 @@ try { Object.assign(CLOUD, JSON.parse(localStorage.getItem("gamebauplan.cloud"))
 const cloudKeep = () => { try { localStorage.setItem("gamebauplan.cloud", JSON.stringify({ id: CLOUD.id, secret: CLOUD.secret })); } catch (e) {} };
 const rnd = n => { const c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789", b = crypto.getRandomValues(new Uint8Array(n)); return [...b].map(x => c[x % c.length]).join(""); };
 const shareURL = () => `${location.origin}${location.pathname}?b=${CLOUD.id}`;
-const payload = () => ({ a: st.a, notes: st.notes || {}, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null });
+const AI_KEYS = ["aq", "aiRounds", "aiCov", "aiGaps", "aiDone", "aiLevel"];
+const payload = () => Object.assign({ a: st.a, notes: st.notes || {}, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null }, ...AI_KEYS.map(k => ({ [k]: st[k] === undefined ? null : st[k] })));
+const aiRestore = d => AI_KEYS.forEach(k => { st[k] = d[k] === null ? undefined : d[k]; });
 /* Teil-Link vergessen, z. B. bei einem neuen Projekt */
 function cloudForget() { CLOUD.id = null; CLOUD.secret = null; CLOUD.msg = ""; CLOUD.lastSaved = ""; cloudKeep(); }
 
@@ -2394,6 +2862,7 @@ async function cloudLoad(id) {
   const { data, error } = await sb.rpc("gb_load", { p_id: id });
   if (error || !data) { CLOUD.msg = "Dieser Bauplan wurde nicht gefunden."; render(); return; }
   st.a = data.a || {}; st.notes = data.notes || {}; st.level = data.level || 2; st.ai = data.ai || null; st.aiSig = data.aiSig || null;
+  aiRestore(data);
   st.view = "result"; st.tab = "sum";
   if (CLOUD.id !== id) { CLOUD.id = null; CLOUD.secret = null; CLOUD.msg = "Geteilter Bauplan geladen. Wenn du speicherst, entsteht deine eigene Kopie."; cloudKeep(); }
   else CLOUD.lastSaved = JSON.stringify(payload());
@@ -2460,6 +2929,7 @@ async function projOpen(id) {
   if (error || !data) { AUTH.msg = "Das Projekt konnte nicht geladen werden."; return render(); }
   const d = data.data || {};
   st = Object.assign(blank(d.level), { a: d.a || {}, notes: d.notes || {}, ai: d.ai || null, aiSig: d.aiSig || null, done: d.done || {}, fromThoughts: d.fromThoughts || {}, cur: d.cur || null, pid: data.id });
+  aiRestore(d);
   if (data.title !== projTitle()) st.title = data.title;
   CLOUD.id = d.share ? d.share.id : null; CLOUD.secret = d.share ? d.share.secret : null; CLOUD.msg = ""; CLOUD.lastSaved = JSON.stringify(payload()); cloudKeep();
   AUTH.lastSig = projSig(); AUTH.msg = "";
@@ -2515,7 +2985,7 @@ function accountBox() {
   const cards = ps === null ? `<p class="fine">Lade deine Projekte …</p>` : `<div class="projs">
     <button class="proj new" data-act="newproj"><span>+</span>Neues Projekt</button>
     ${ps.map(p => `<div class="proj${p.id === st.pid ? " cur" : ""}">
-      <b>${esc(p.title || "Neues Spiel")}</b>
+      <b>${esc(p.title || "Neues Projekt")}</b>
       <div class="bar"><span style="width:${p.progress || 0}%"></span></div>
       <small>${p.progress || 0} % · ${p.id === st.pid ? "gerade geöffnet" : "geändert " + date(p.updated_at)}</small>
       <button class="btn sm${p.id === st.pid ? "" : " primary"}" data-act="openproj" data-id="${p.id}">${p.id === st.pid ? "Weitermachen" : "Öffnen"}</button>

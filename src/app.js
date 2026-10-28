@@ -1,24 +1,27 @@
-/* Game-Bauplan – App */
+/* Nordlicht – App */
 const KEY = "gamebauplan.v1";
 const LEVELS = [
-  { n: 1, name: "Schnell", tag: "Nur das Wichtigste", desc: "Die großen Entscheidungen. Den Rest übernimmt die KI." },
-  { n: 2, name: "Standard", tag: "Gute Balance", desc: "Alle Bereiche mit den wichtigsten Details." },
-  { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Mehr Feingefühl: Gegner, Effekte, Abwechslung und mehr." },
-  { n: 4, name: "Alles", tag: "Jedes kleinste Feature", desc: "Jedes kleinste Detail, ganz ohne Fachwissen." }
+  { n: 1, name: "Schnell", tag: "Nur das Wichtigste", desc: "Die großen Entscheidungen. Den Rest übernimmt die KI beim Bauen.", ai: "ca. 10 KI-Fragen" },
+  { n: 2, name: "Standard", tag: "Gute Balance", desc: "Alle wichtigen Punkte, ohne dich mit Kleinkram aufzuhalten.", ai: "ca. 25 KI-Fragen" },
+  { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Auch die Details: Sonderfälle, Abläufe, Feinheiten.", ai: "ca. 50 KI-Fragen" },
+  { n: 4, name: "Alles", tag: "Jede Kleinigkeit", desc: "Die KI fragt so lange, bis wirklich nichts mehr offen ist.", ai: "bis alles geklärt ist" }
 ];
 const blank = level => ({ view: "start", level: level || 2, off: {}, a: {}, notes: {}, noteOpen: {}, sugg: {}, fromThoughts: {}, skipKnown: false, cur: null, tab: "prompt", done: {}, resetArm: false, pid: null, title: "" });
 let st = blank();
-try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; st.sugg = st.sugg || {}; st.fromThoughts = st.fromThoughts || {}; } catch (e) {}
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.a) st = Object.assign(st, s, { resetArm: false, off: {} }); st.notes = st.notes || {}; st.noteOpen = st.noteOpen || {}; st.sugg = st.sugg || {}; st.fromThoughts = st.fromThoughts || {}; if (st.view === "thinking") st.view = "result"; } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.codePointAt(0)) % 360; return h; };
 const secOf = id => S.find(s => s.id === id);
-const qOf = id => Q.find(q => q.id === id);
+const qOf = id => Q.find(q => q.id === id) || aiQs().find(q => q.id === id);
 
+/* Feste Fragen (nur die nötigen, Stufe 1) + die Fragen der KI, vor „Zum Schluss“ */
 function visible() {
-  return Q.filter(q => q.l <= st.level && (!q.if || q.if(st.a)));
+  const fixed = Q.filter(q => q.l <= 1 && (!q.if || q.if(st.a)));
+  const fin = fixed.filter(q => q.sec === "final");
+  return fixed.filter(q => q.sec !== "final").concat(aiQs(), fin);
 }
 const answered = q => st.a[q.id] !== undefined && !(Array.isArray(st.a[q.id]) && !st.a[q.id].length);
 
@@ -66,18 +69,21 @@ function fmt(q) {
 
 /* ---------- Rendering ---------- */
 function render() {
+  /* Ältere Baupläne stammen aus der Spiele-Version */
+  if (st.a.kind === undefined && Object.keys(st.a).some(k => k !== "thoughts")) st.a.kind = ["Spiel"];
   save();
   renderTop();
   const app = $("#app");
   if (st.view === "quiz") app.innerHTML = viewQuiz();
   else if (st.view === "analysis") app.innerHTML = viewAnalysis();
   else if (st.view === "result") app.innerHTML = viewResult();
+  else if (st.view === "thinking") app.innerHTML = viewThinking();
   else app.innerHTML = viewStart();
   if (st.view === "quiz") { const t = $("#txt"); if (t) t.focus(); }
 }
 function renderTop() {
   const v = visible(), done = v.filter(answered).length, pct = v.length ? Math.round(done / v.length * 100) : 0;
-  $("#prog").hidden = st.view === "start";
+  $("#prog").hidden = st.view === "start" || st.view === "thinking";
   $("#progFill").style.width = pct + "%";
   $("#progTxt").textContent = `${done} / ${v.length} Fragen`;
   $("#btnResult").hidden = st.view !== "quiz" || done === 0;
@@ -88,6 +94,8 @@ function renderTop() {
 function projTitle() {
   if (st.title) return st.title;
   const first = id => { const v = val(id); return v && (Array.isArray(st.a[id]) ? st.a[id].find(x => x !== AI) : v); };
+  if (st.ai && st.ai.titel && st.ai.titel[0]) return st.ai.titel[0];
+  if (!isGame(st.a)) { const k = first("kind"), g = first("gGoal"); return k && g ? `${k} · ${g}` : k || "Neues Projekt"; }
   const core = first(st.a.core === QUIZ_OPT ? "coreQuiz" : "core"), set = first("setting");
   return core && set ? `${core} · ${set}` : core || set || "Neues Spiel";
 }
@@ -107,28 +115,27 @@ function newProject() {
 }
 
 function viewStart() {
-  const started = Object.keys(st.a).length > 0;
-  const lv = LEVELS.map(L => {
-    const n = Q.filter(q => q.l <= L.n && !q.quiz && !q.dyn && !q.if).length;
-    return `<button class="lvl${st.level === L.n ? " on" : ""}" data-act="level" data-n="${L.n}" aria-pressed="${st.level === L.n}">
+  const started = Object.keys(st.a).length > 0, kq = qOf("kind"), kinds = Array.isArray(st.a.kind) ? st.a.kind : [];
+  const lv = LEVELS.map(L => `<button class="lvl${st.level === L.n ? " on" : ""}" data-act="level" data-n="${L.n}" aria-pressed="${st.level === L.n}">
       <span class="lvl-bars">${[1, 2, 3, 4].map(i => `<i class="${i <= L.n ? "f" : ""}"></i>`).join("")}</span>
-      <b>${L.name}</b><span class="lvl-tag">${L.tag}</span><small>${L.desc}</small><span class="lvl-n">ab ${n} Fragen</span></button>`;
-  }).join("");
+      <b>${L.name}</b><span class="lvl-tag">${L.tag}</span><small>${L.desc}</small>${aiReady() ? `<span class="lvl-n">${L.ai}</span>` : ""}</button>`).join("");
+  const kc = kq.opts.map(o => `<button class="opt kind${kinds.includes(o.v) ? " on" : ""}" data-act="kindpick" data-v="${esc(o.v)}" aria-pressed="${kinds.includes(o.v)}">
+      <span class="pic" style="--h:${hue("kind" + o.v)}">${pic(o.i)}</span><span class="otx"><b>${esc(o.v)}</b><small>${esc(o.d)}</small></span><span class="tick" aria-hidden="true"></span></button>`).join("");
   return `<section class="start">
     <div class="hero">
-      <p class="eyebrow">Game-Bauplan</p>
+      <p class="eyebrow">Nordlicht</p>
       <h1>Von der Idee zum <span class="hl">exakten Bauplan</span> für die KI.</h1>
-      <p class="lead">Du klickst dich durch Multiple-Choice-Fragen mit Beispielbildern. Am Ende bekommst du einen Prompt, mit dem eine KI genau dein Spiel baut, und eine Zusammenfassung mit Launch-Checkliste für dich.</p>
+      <p class="lead">Spiel, App, Website, Shop oder Programm für die Arbeit: Du beantwortest ein paar Fragen mit Bildern, danach sucht die KI nach offenen Stellen und stellt dir genau die Fragen, die noch fehlen. Am Ende hast du einen lückenlosen Bauauftrag, mit dem eine KI dein Projekt baut.</p>
     </div>
     ${typeof accountBox === "function" ? accountBox() : ""}
-    <div class="step"><h2><span class="stepn">1</span> Wie detailliert willst du planen?</h2>
+    <div class="step"><h2><span class="stepn">1</span> Was willst du bauen?</h2>
+      <div class="opts kinds" role="group">${kc}</div>
+      <p class="fine">Mehrfachauswahl möglich, z. B. Spiel + Lern-App für ein Lernspiel.</p></div>
+    <div class="step"><h2><span class="stepn">2</span> Wie genau willst du planen?</h2>
       <div class="levels">${lv}</div>
-      <p class="fine">Die Zahl wächst je nach Antworten: Wählst du z. B. Multiplayer oder Werbung, kommen passende Folgefragen dazu.</p></div>
-    <div class="step"><h2><span class="stepn">2</span> Diese ${S.length} Bereiche werden immer abgedeckt</h2>
-      <div class="secpick">${S.map(s => `<span class="secchip on"><span>${s.icon}</span>${esc(s.name)}</span>`).join("")}</div>
-      <p class="fine">Die Detailstufe ändert nur, wie tief jeder Bereich abgefragt wird. Alle Fragen sind Multiple Choice.</p></div>
+      <p class="fine">${aiReady() ? "Nach den Grundfragen denkt sich die KI weitere Fragen aus. Die Stufe bestimmt, wie genau sie nachfragt. Du kannst jederzeit aufhören oder später noch genauer werden." : typeof sb !== "undefined" && sb ? "Mit einem kostenlosen Konto denkt sich die KI nach den Grundfragen passende Zusatzfragen aus, bis keine Lücken mehr offen sind." : "Die Stufe bestimmt, wie genau die KI nachfragt."}</p></div>
     <div class="cta">
-      <button class="btn primary big" data-act="go">${started ? "Weitermachen" : "Los geht's"} →</button>
+      <button class="btn primary big" data-act="go" ${kinds.length ? "" : "disabled"}>${started ? "Weitermachen" : "Los geht's"} →</button>${kinds.length ? "" : `<span class="fine">Wähle zuerst, was du bauen willst.</span>`}
       ${started ? `<button class="btn" data-act="toresult">Zur Auswertung</button>
       <button class="btn ghost${signedIn() ? "" : " danger"}" data-act="reset">${st.resetArm ? "Wirklich verwerfen?" : "+ Neues Projekt"}</button>` : ""}
     </div>
@@ -199,12 +206,14 @@ function pic(i) {
 /* ---------- Aktionen ---------- */
 function go(dir) {
   clearTimeout(pick.t);
-  if (dir > 0 && st.cur === "thoughts" && val("thoughts")) {
+  if (dir > 0 && st.cur === "thoughts" && val("thoughts") && isGame(st.a)) {
     st.sugg = analyzeThoughts(val("thoughts")); st.view = "analysis"; window.scrollTo(0, 0); return render();
   }
   const v = navList(), i = v.findIndex(x => x.id === st.cur);
   if (dir > 0) {
     const n = v[i + 1];
+    /* Am Ende der Fragen: die KI sucht die nächsten Lücken */
+    if ((!n || n.sec === "final") && (v[i] || {}).sec !== "final" && aiWant()) return aiRound();
     if (!n) { st.view = "result"; st.tab = "sum"; window.scrollTo(0, 0); return render(); }
     st.cur = n.id;
   } else {
@@ -237,7 +246,13 @@ document.addEventListener("click", e => {
   const act = b.dataset.act;
   if (act !== "reset" && act !== "newproj") st.resetArm = false;
   switch (act) {
-    case "level": st.level = +b.dataset.n; render(); break;
+    case "level": st.level = +b.dataset.n; if (st.aiDone && st.level > (st.aiLevel || 0)) st.aiDone = false; render(); break;
+    case "kindpick": {
+      const k = Array.isArray(st.a.kind) ? st.a.kind.slice() : [], v = b.dataset.v;
+      st.a.kind = k.includes(v) ? k.filter(x => x !== v) : k.concat(v);
+      if (!st.a.kind.length) delete st.a.kind;
+      render(); break;
+    }
     case "togsec": st.off[b.dataset.s] = !st.off[b.dataset.s]; render(); break;
     case "allsec": st.off = {}; render(); break;
     case "go": startQuiz(); break;
@@ -262,7 +277,9 @@ document.addEventListener("click", e => {
     case "edit": st.view = "quiz"; st.cur = b.dataset.q; render(); window.scrollTo(0, 0); break;
     case "tab": st.tab = b.dataset.t; render(); break;
     case "deeper": {
-      st.level = Math.min(4, st.level + 1); st.view = "quiz";
+      st.level = Math.min(4, st.level + 1); st.aiDone = false;
+      if (aiReady()) { aiRound(); break; }
+      st.view = "quiz";
       const f = navList().find(x => !answered(x)); st.cur = f && f.id;
       if (!f) st.view = "result";
       render(); window.scrollTo(0, 0); break;
@@ -303,7 +320,7 @@ function copy(btn, text) {
 }
 
 /* ---------- Analyse ---------- */
-function conflicts() {
+function gameConflicts() {
   const a = st.a, out = [];
   const W = t => out.push({ k: "warn", t }), I = t => out.push({ k: "info", t });
   if (kids(a) && has(a, "comms", "Text-Chat mit Filter", "Sprach-Chat")) W("Kinder-Zielgruppe mit freiem Chat: In der Kinder-Kategorie der Stores ist das kaum zulässig. Besser nur Emotes oder Schnellnachrichten.");
@@ -413,7 +430,7 @@ function milestones() {
 }
 
 /* ---------- Zusammenfassung & Checkliste ---------- */
-function launchItems() {
+function gameLaunchItems() {
   const a = st.a, L = [];
   const add = (k, t, d) => L.push({ k, t, d });
   if (!publicLaunch(a)) {
@@ -483,6 +500,7 @@ function ideaText() {
   return out.join(" ");
 }
 function ideaPanel() {
+  if (!isGame(st.a)) return "";
   const t = ideaText();
   const steps = ["ideaVerb", "ideaGoal", "hero", "setting", "ideaChallenge", "ideaTwist", "ideaEscalation"];
   const n = steps.filter(id => st.a[id] !== undefined).length;
@@ -501,7 +519,7 @@ function summarySentence() {
   if (g("feeling")) parts.push(`Im Kern soll es dieses Gefühl auslösen: ${g("feeling")}.`);
   return parts.join(" ");
 }
-function buildSummaryText() {
+function gameSummaryText() {
   const v = visible().filter(q => !q.quiz), L = [];
   L.push(`ZUSAMMENFASSUNG: Mein Spiel`, "", ideaText() || summarySentence(), "");
   S.forEach(s => {
@@ -517,7 +535,7 @@ function viewResult() {
   const v = visible().filter(q => !q.quiz);
   const ans = v.filter(answered), aiN = ans.filter(q => fmt(q) === "KI entscheidet").length, open = v.length - ans.length;
   const c = conflicts();
-  const tabs = [["sum", "Spielkonzept"], ["prompt", "KI-Prompt"], ["launch", "Launch-Checkliste"]];
+  const tabs = [["sum", isGame(st.a) ? "Spielkonzept" : "Konzept"], ["prompt", "KI-Prompt"], ["launch", "Launch-Checkliste"]];
   let panel = "";
   if (st.tab === "prompt") {
     const p = buildPrompt();
@@ -535,17 +553,17 @@ function viewResult() {
     }).join("");
     const doc = concept(), stale = st.ai && st.aiSig !== JSON.stringify(st.a);
     panel = `<div class="panel">
-      <div class="panelbar"><p>Dein erstes Spiel, fertig ausgedacht aus deinen Antworten.</p>
+      <div class="panelbar"><p>${isGame(st.a) ? "Dein erstes Spiel, fertig ausgedacht aus deinen Antworten." : "Dein Projekt, zusammengefasst aus deinen Antworten."}</p>
         <div class="rbtns">
-          ${CAPS.sample ? `<button class="btn" data-act="elaborate" ${elaborate.busy ? "disabled" : ""}>${elaborate.busy ? "Claude arbeitet …" : st.ai ? "Neu ausarbeiten lassen" : "✨ Von Claude ausführlich ausarbeiten"}</button>` : ""}
+          ${aiReady() ? `<button class="btn" data-act="elaborate" ${elaborate.busy ? "disabled" : ""}>${elaborate.busy ? "Claude arbeitet …" : st.ai ? "Neu ausarbeiten lassen" : "✨ Von Claude ausführlich ausarbeiten"}</button>` : ""}
           ${canPDF() ? `<button class="btn primary" data-act="pdf">Als PDF speichern</button>` : ""}
         </div></div>
-      ${elaborate.busy ? `<p class="aistatus" id="aiStatus">Claude denkt sich dein Spiel aus … das dauert etwa eine Minute.</p>` : ""}
+      ${elaborate.busy ? `<p class="aistatus" id="aiStatus">Claude arbeitet dein ${isGame(st.a) ? "Spiel" : "Projekt"} aus … das dauert etwa eine Minute.</p>` : ""}
       ${st.aiErr ? `<p class="alert warn">${esc(st.aiErr)}</p>` : ""}
       ${stale ? `<p class="alert info">Du hast Antworten geändert, seit Claude das Konzept ausgearbeitet hat. Lass es neu ausarbeiten, damit alles zusammenpasst.</p>` : ""}
       ${inClaude && !CAPS.downloads ? `<p class="fine">Der PDF-Download erscheint, sobald die Seite in claude.ai geöffnet ist.</p>` : ""}
       <article class="doc">
-        <p class="eyebrow">Spielkonzept${st.ai ? " · ausgearbeitet mit Claude" : ""}</p>
+        <p class="eyebrow">${isGame(st.a) ? "Spielkonzept" : "Konzept"}${st.ai ? " · ausgearbeitet mit Claude" : ""}</p>
         <h1>${esc(doc.title)}</h1>
         ${docHTML(doc)}
       </article>
@@ -560,10 +578,11 @@ function viewResult() {
   }
   return `<section class="result">
     <div class="rhead">
-      <div><p class="eyebrow">Dein Bauplan</p><h1>${esc(val("name") || "Dein Spiel")}</h1>
+      <div><p class="eyebrow">Dein Bauplan</p><h1>${esc(projTitle())}</h1>
       <p class="stats"><span><b>${ans.length}</b> beantwortet</span><span><b>${aiN}</b> entscheidet die KI</span>${open ? `<span><b>${open}</b> offen</span>` : ""}<span>Stufe „${LEVELS[st.level - 1].name}“</span></p></div>
       <div class="rbtns">${open ? `<button class="btn" data-act="go">Offene Fragen beantworten</button>` : ""}${st.level < 4 ? `<button class="btn primary" data-act="deeper">Noch detaillierter →</button>` : ""}</div>
     </div>
+    ${aiBox()}
     ${typeof cloudBox === "function" ? cloudBox() : ""}
     ${c.length ? `<div class="alerts">${c.map(x => `<p class="alert ${x.k}"><b>${x.k === "warn" ? "Achtung" : "Hinweis"}</b> ${esc(x.t)}</p>`).join("")}</div>` : ""}
     <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" class="tab${st.tab === k ? " on" : ""}" aria-selected="${st.tab === k}" data-act="tab" data-t="${k}">${l}</button>`).join("")}</div>

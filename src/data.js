@@ -1,4 +1,4 @@
-/* Game-Bauplan – Fragenkatalog */
+/* Nordlicht – Fragenkatalog */
 const AI = "__ai";
 const S = [], Q = [];
 let _sec;
@@ -721,9 +721,9 @@ q("ugc", "Spieler-Inhalte", "Können Spieler eigene Inhalte erstellen?", [
 q("push", "Push-Nachrichten", "Soll das Spiel Benachrichtigungen senden?", [
   ["➖", "Nie", ""], ["🔔", "Nur wichtige", "z. B. 'Deine Energie ist wieder voll'."], ["📣", "Regelmäßig", ""]], { l: 3, if: mobileApp });
 /* ======================================================= */
-sec("thoughts", "Deine Gedanken", "💭", "Erst einmal alles aufschreiben, was dir zu deinem Spiel einfällt.");
-q("thoughts", "Meine Gedanken", "Schreib erst einmal alles auf, was dir zu deinem Spiel einfällt.", [], { t: "t", area: 1, noAi: true,
-  ph: "Egal wie ungeordnet: Worum geht es? Wer spielt? Was macht man? Wo spielt es? Was wäre richtig cool? Was auf keinen Fall?",
+sec("thoughts", "Deine Gedanken", "💭", "Erst einmal alles aufschreiben, was dir zu deiner Idee einfällt.");
+q("thoughts", "Meine Gedanken", "Schreib erst einmal alles auf, was dir zu deiner Idee einfällt.", [], { t: "t", area: 1, noAi: true,
+  ph: "Egal wie ungeordnet: Worum geht es? Wer benutzt es? Was soll man damit machen? Was wäre richtig cool? Was auf keinen Fall?",
   h: "Das ist die Grundlage für alles Weitere. Daraus werden Antworten erkannt und vorausgefüllt, und deine Gedanken stehen ganz oben im KI-Bauauftrag." });
 
 /* ======================================================= */
@@ -731,6 +731,112 @@ sec("final", "Zum Schluss", "📝", "Alles, was dir sonst noch wichtig ist.");
 q("finalNotes", "Notizen zum Schluss", "Gibt es noch etwas Wichtiges, das die KI wissen muss?", [], { t: "t", area: 1,
   ph: "z. B. Der Chef des Restaurants soll als Endgegner vorkommen. Die Musik soll italienisch klingen. Bitte keine Anmeldung.",
   h: "Optional. Alles, was du hier schreibst, steht ganz oben im KI-Bauauftrag und hat Vorrang." });
+
+/* ---------- Projektart: Spiel oder alles andere ---------- */
+/* Alle bisherigen Fragen sind Spiel-Fragen und erscheinen nur, wenn „Spiel“ gewählt ist. */
+const isGame = a => has(a, "kind", "Spiel");
+const notGame = a => a.kind !== undefined && !isGame(a);
+Q.forEach(q => {
+  if (q.id === "thoughts" || q.id === "finalNotes") return;
+  const f = q.if; q.game = true; q.if = f ? a => isGame(a) && f(a) : isGame;
+});
+sec("kind", "Projektart", "🧭", "Was willst du bauen?");
+q("kind", "Projektart", "Was willst du bauen?", [
+  ["🎮", "Spiel", "Ein Spiel für Handy, Computer, Browser oder Konsole."],
+  ["📱", "Handy-App", "Eine App fürs iPhone oder Android, z. B. Planer, Tracker, Vereins-App."],
+  ["🌐", "Website", "Eine Homepage, Landingpage, Blog oder Portfolio."],
+  ["💼", "Programm zum Arbeiten", "Werkzeug für Büro und Betrieb: Kunden, Aufträge, Termine, Lager, Rechnungen."],
+  ["🛒", "Online-Shop", "Produkte oder Dienstleistungen im Internet verkaufen."],
+  ["🤖", "KI-Assistent / Chatbot", "Ein Helfer, der Fragen beantwortet, Texte schreibt oder Aufgaben erledigt."],
+  ["⚙️", "Automatisierung", "Etwas, das wiederkehrende Aufgaben von allein erledigt."],
+  ["🎓", "Lern-App / Quiz", "Etwas zum Lernen, Üben oder Abfragen."],
+  ["📊", "Dashboard / Auswertung", "Zahlen und Daten übersichtlich anzeigen und auswerten."],
+  ["✨", "Etwas anderes", "Passt nirgends rein? Kein Problem, die KI fragt genau nach."]
+], { t: "m", noAi: true, h: "Du kannst auch mehreres wählen, z. B. Spiel + Lern-App für ein Lernspiel." });
+
+sec("gbasics", "Grundidee", "💡", "Wofür das Projekt da ist und für wen.");
+q("gGoal", "Hauptaufgabe", "Was soll dein Projekt hauptsächlich tun?", [
+  ["🗓️", "Organisieren & Planen", "Termine, Aufgaben, Listen, Abläufe."], ["🤝", "Kunden & Aufträge verwalten", "Wer will was, bis wann, zu welchem Preis."],
+  ["💶", "Verkaufen", "Produkte, Gutscheine oder Dienstleistungen."], ["📣", "Informieren & Präsentieren", "Über dich, deine Firma oder ein Thema."],
+  ["💬", "Kommunizieren & Vernetzen", "Nachrichten, Gruppen, Community."], ["📚", "Lernen & Üben", "Wissen vermitteln und abfragen."],
+  ["📈", "Zahlen auswerten", "Umsätze, Statistiken, Berichte."], ["⚡", "Aufgaben automatisieren", "Lästiges von allein erledigen lassen."],
+  ["🎨", "Kreativ gestalten", "Bilder, Texte, Musik, Designs erstellen."], ["📅", "Buchen & Reservieren", "Tische, Termine, Kurse, Räume."],
+  ["❤️", "Gesundheit & Fitness", "Training, Ernährung, Gewohnheiten."], ["😄", "Unterhalten", "Spaß, Zeitvertreib, Neugier."]
+], { if: notGame });
+q("gAudience", "Zielgruppe", "Wer soll es benutzen?", [
+  ["🙋", "Nur ich", "Ein Werkzeug für mich selbst."], ["👨‍👩‍👧", "Familie & Freunde", ""], ["👥", "Mein Team / meine Firma", "Mitarbeiter und Kollegen."],
+  ["🛍️", "Meine Kunden", "Leute, die bei mir kaufen oder buchen."], ["🌍", "Alle im Internet", "Öffentlich für jeden."],
+  ["🧒", "Kinder", ""], ["🧑", "Jugendliche", ""], ["👵", "Ältere Menschen", "Große Schrift, einfache Bedienung."], ["🧑‍🔬", "Fachleute", "z. B. Handwerker, Ärzte, Lehrer."]
+], { if: notGame });
+q("gUsers", "Anzahl Nutzer", "Wie viele Leute benutzen es ungefähr?", [
+  ["1️⃣", "Nur eine Person", ""], ["👥", "Bis 10", "Kleines Team oder Familie."], ["🏢", "Bis 100", "Verein, Firma, Stammkunden."],
+  ["🏟️", "Hunderte bis Tausende", ""], ["🌐", "So viele wie möglich", "Soll mitwachsen können."]
+], { if: notGame });
+q("gRef", "Vorbild", "Gibt es etwas Ähnliches, an dem man sich orientieren kann?", [
+  ["📋", "Wie eine Excel-Liste, nur schöner", ""], ["✅", "Wie eine To-do-App", "z. B. Todoist, Trello."], ["🛒", "Wie ein bekannter Shop", "z. B. Shopify-Shops, Etsy."],
+  ["💬", "Wie ein Messenger", "z. B. WhatsApp."], ["📸", "Wie Social Media", "z. B. Instagram."], ["📅", "Wie ein Buchungssystem", "z. B. Doctolib, OpenTable."],
+  ["🤖", "Wie ChatGPT oder Claude", ""], ["🆕", "Nein, etwas ganz Neues", "", "x"]
+], { if: notGame, h: "Hilft der KI, schnell zu verstehen, was du meinst. Mehrere Vorbilder sind okay." });
+
+sec("gplatform", "Geräte & Aussehen", "📱", "Wo es läuft und wie es aussieht.");
+q("gPlatforms", "Läuft auf", "Wo soll es laufen?", [
+  ["🌐", "Im Browser", "Am PC und am Handy über eine Internetadresse, ohne Installation."], ["🍎", "iPhone/iPad (iOS)", "Als App aus dem App Store."],
+  ["🤖", "Android", "Als App aus Google Play."], ["💻", "Als Programm auf PC/Mac", "Wird installiert."], ["⌚", "Smartwatch", ""],
+  ["💬", "In einem Messenger", "z. B. als WhatsApp- oder Telegram-Bot."], ["🗄️", "Im Hintergrund auf einem Server", "Läuft ohne Bildschirm, z. B. jede Nacht."]
+], { if: notGame });
+q("gLook", "Aussehen", "Wie soll es aussehen?", [
+  ["⬜", "Schlicht & seriös", "Klar, ruhig, professionell."], ["🌈", "Modern & farbenfroh", ""], ["🧸", "Verspielt & freundlich", ""],
+  ["💎", "Edel & hochwertig", ""], ["🖥️", "Technisch, wie ein Cockpit", "Viele Zahlen, Tabellen, Diagramme."], ["🏷️", "Passend zu meiner Marke", "Logo und Farben gibt es schon."],
+  ["🌙", "Mit dunklem Modus", "Hell und dunkel umschaltbar."]
+], { if: notGame });
+q("gLang", "Sprachen", "In welchen Sprachen?", [
+  ["🇩🇪", "Deutsch", ""], ["🇬🇧", "Englisch", ""], ["🇪🇸", "Spanisch", ""], ["🇫🇷", "Französisch", ""], ["🇹🇷", "Türkisch", ""], ["🌍", "Viele Sprachen", "Umschaltbar."]
+], { if: notGame });
+
+sec("gdata", "Daten & Konten", "🗂️", "Was gespeichert wird und wer worauf zugreift.");
+q("gAccounts", "Konten", "Müssen sich Nutzer anmelden?", [
+  ["🚪", "Nein, ohne Anmeldung", "", "x"], ["📧", "Mit E-Mail und Passwort", ""], ["🔑", "Mit Google oder Apple", "Ein Klick, kein neues Passwort."],
+  ["👑", "Verschiedene Rollen", "z. B. Chef sieht alles, Mitarbeiter nur ihres, Kunden nur ihre Bestellungen."], ["🔢", "Einfacher PIN oder Code", ""]
+], { if: notGame });
+q("gData", "Gespeicherte Daten", "Was soll gespeichert werden?", [
+  ["➖", "Nichts", "", "x"], ["👤", "Kontakte & Kunden", ""], ["📅", "Termine & Aufgaben", ""], ["📝", "Texte & Notizen", ""],
+  ["🖼️", "Bilder & Dateien", ""], ["📦", "Produkte & Lager", ""], ["🧾", "Bestellungen & Rechnungen", ""], ["💳", "Zahlungen", ""],
+  ["📍", "Standorte", ""], ["❤️‍🩹", "Gesundheitsdaten", "Besonders geschützt."], ["📊", "Messwerte & Zahlen", ""]
+], { if: notGame });
+q("gConnect", "Verbindungen", "Womit soll es zusammenarbeiten?", [
+  ["➖", "Mit nichts", "", "x"], ["📅", "Kalender", "z. B. Google- oder Outlook-Kalender."], ["📧", "E-Mail", "Automatisch Mails verschicken."],
+  ["💳", "Bezahlen", "z. B. PayPal, Stripe, Kreditkarte."], ["📗", "Excel / Google Sheets", ""], ["💬", "WhatsApp / SMS", ""],
+  ["📸", "Social Media", ""], ["🧾", "Buchhaltung", "z. B. lexoffice, sevDesk, DATEV."], ["🗺️", "Karten", "z. B. Google Maps."], ["🧠", "Künstliche Intelligenz", "z. B. Claude für Texte oder Antworten."]
+], { if: notGame });
+q("gOffline", "Ohne Internet", "Muss es auch ohne Internet funktionieren?", [
+  ["📶", "Nein, Internet ist immer da", "", "x"], ["✈️", "Ja, komplett offline", ""], ["🔄", "Offline arbeiten, später abgleichen", ""]
+], { if: notGame });
+q("gPrivacy", "Datenschutz", "Wie sensibel sind die Daten?", [
+  ["🙂", "Unkritisch", "Nichts Persönliches."], ["👤", "Normale persönliche Daten", "Namen, E-Mails, Adressen."],
+  ["🔒", "Sehr sensibel", "Gesundheit, Finanzen, Kinder."], ["🇪🇺", "Server müssen in der EU stehen", ""]
+], { if: notGame });
+
+sec("gbiz", "Umsetzung & Start", "🚀", "Geld, Zeitplan und wie es an den Start geht.");
+q("gMoney", "Geld verdienen", "Soll es Geld einbringen?", [
+  ["🎁", "Nein, kostenlos", "", "x"], ["🏷️", "Einmal kaufen", ""], ["🔁", "Abo", "Monatlich oder jährlich."], ["📢", "Werbung", ""],
+  ["🛍️", "Über verkaufte Produkte", ""], ["🏢", "Intern, spart Zeit und Geld", "Kein Verkauf, aber nützlich für den Betrieb."]
+], { if: notGame });
+q("gSkill", "Deine Erfahrung", "Wie viel Erfahrung hast du mit dem Bauen von Software?", [
+  ["🌱", "Gar keine", "Die KI soll alles erklären."], ["🙂", "Ein bisschen", "Schon mal etwas mit KI gebaut."], ["💪", "Fortgeschritten", ""], ["🧑‍💻", "Profi", ""]
+], { if: notGame });
+q("gTimeline", "Zeitplan", "Bis wann soll eine erste Version stehen?", [
+  ["⚡", "In ein paar Tagen", "Ein schneller Prototyp."], ["📆", "In ein paar Wochen", ""], ["🗓️", "In ein paar Monaten", ""], ["🧘", "Kein Zeitdruck", ""]
+], { if: notGame });
+q("gBudget", "Laufende Kosten", "Was darf es im Monat kosten (Server, Dienste)?", [
+  ["0️⃣", "Nichts", "Nur kostenlose Dienste.", "x"], ["💶", "Bis 10 €", ""], ["💶💶", "Bis 50 €", ""], ["💰", "Mehr ist okay", "Wenn es sich lohnt."]
+], { if: notGame });
+q("gLaunch", "Veröffentlichung", "Wo soll es am Ende zu finden sein?", [
+  ["🔒", "Nur privat / intern", "", "x"], ["🌐", "Unter einer eigenen Internetadresse", ""], ["🍎", "Apple App Store", ""],
+  ["▶️", "Google Play", ""], ["💻", "Zum Herunterladen für PC/Mac", ""], ["🏢", "Im Firmennetz", ""]
+], { if: notGame });
+
+/* Fragen, die die KI sich selbst ausdenkt, landen in diesem Bereich (siehe ai.js) */
+sec("ai", "Feinschliff durch die KI", "🤖", "Fragen, die die KI passend zu deinem Projekt stellt, bis keine Lücken mehr offen sind.");
 
 /* ---------- Reihenfolge: vom Groben ins Feine ---------- */
 S.push({ id: "rules", name: "Jugendschutz & Sprachen", icon: "🛡️", desc: "Was tabu ist, Altersfreigabe und Sprachen." });
@@ -742,8 +848,8 @@ Object.entries(MOVE).forEach(([id, s]) => { Q.find(q => q.id === id).sec = s; })
 Q.find(q => q.id === "nameStyle").sec = "launch";
 Q.find(q => q.id === "perspective").sec = "graphics";
 S.splice(S.findIndex(s => s.id === "camera"), 1);
-const ORDER = ["thoughts", "audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
-  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "final"];
+const ORDER = ["kind", "thoughts", "gbasics", "gplatform", "gdata", "gbiz", "audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
+  "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "ai", "final"];
 const SEQ = {
   audience: ["age", "skill", "whereplay", "reading"],
   platform: ["platforms", "primaryPlat", "orientation"],

@@ -1,4 +1,4 @@
-/* Game-Bauplan – Gedanken sammeln und daraus Antworten erkennen */
+/* Nordlicht – Gedanken sammeln und daraus Antworten erkennen */
 /* Schlüsselwörter je Antwort. Jedes Wort passt auch auf Verlängerungen („spring“ → springt, springen). */
 const KW = {
   age: { "3–6 Jahre": "kleinkind|kita|kindergarten|vorschul|3 jahr|4 jahr|5 jahr", "6–10 Jahre": "grundschul|kinder|kids|6 jahr|7 jahr|8 jahr|9 jahr", "10–13 Jahre": "10 jahr|11 jahr|12 jahr", "13–17 Jahre": "jugendlich|teenager|teens|schüler|13 jahr|14 jahr|15 jahr|16 jahr", "Erwachsene 18+": "erwachsen", "Alle Altersgruppen": "familie|jung und alt|alle alter|jeden alters" },
@@ -74,7 +74,8 @@ function analyzeThoughts(raw) {
 }
 
 function suggList() {
-  return Object.entries(st.sugg || {}).map(([id, vs]) => ({ q: qOf(id), vs })).filter(x => x.q && x.vs.length)
+  const vis = new Set(visible().map(q => q.id));
+  return Object.entries(st.sugg || {}).map(([id, vs]) => ({ q: qOf(id), vs })).filter(x => x.q && vis.has(x.q.id) && x.vs.length)
     .sort((a, b) => Q.indexOf(a.q) - Q.indexOf(b.q));
 }
 function applySugg(skip) {
@@ -101,7 +102,7 @@ function viewAnalysis() {
     <div class="cta">
       ${list.length ? `<button class="btn primary big" data-act="adopt" data-skip="1">Übernehmen & diese Fragen überspringen →</button>
       <button class="btn" data-act="adopt">Übernehmen, aber alle Fragen zeigen</button>` : `<button class="btn primary big" data-act="adopt">Weiter zu den Fragen →</button>`}
-      ${CAPS.sample ? `<button class="btn" data-act="thinkAI" ${analyzeThoughts.busy ? "disabled" : ""}>✨ Von Claude genauer auswerten lassen</button>` : ""}
+      ${aiReady() ? `<button class="btn" data-act="thinkAI" ${analyzeThoughts.busy ? "disabled" : ""}>✨ Von Claude genauer auswerten lassen</button>` : ""}
       <button class="btn ghost" data-act="rethink">Gedanken ändern</button>
     </div>
     <p class="fine">Alles bleibt änderbar. Übernommene Antworten sind bei den Fragen markiert.</p>
@@ -109,9 +110,9 @@ function viewAnalysis() {
 }
 
 async function thinkWithClaude() {
-  if (!CAPS.sample || analyzeThoughts.busy) return;
+  if (!aiReady() || analyzeThoughts.busy) return;
   analyzeThoughts.busy = true; st.thinkErr = ""; render();
-  const cat = Q.filter(q => q.l <= st.level && !q.quiz && !q.dyn && q.opts.length && q.id !== "core" || q.id === "core")
+  const cat = visible().filter(q => !q.aiq && !q.quiz && !q.dyn && q.opts.length && q.id !== "kind")
     .map(q => `${q.id}${q.t === "m" ? " (mehrere)" : ""}: ${q.title} = ${q.opts.map(o => o.v).filter(v => v !== QUIZ_OPT).join(" | ")}`).join("\n");
   const input = `Hier sind die freien Gedanken eines Laien zu einem Spiel, das er bauen möchte. Ordne seine Gedanken den Fragen unten zu.
 Regeln: Nimm NUR Antworten, die klar aus dem Text hervorgehen oder sehr naheliegend sind. Verwende die Antworttexte exakt wie angegeben. Lass Fragen weg, zu denen der Text nichts sagt.
@@ -123,7 +124,7 @@ ${val("thoughts")}
 FRAGEN (id: Frage = Antwort | Antwort | ...):
 ${cat}`;
   try {
-    const out = await CAPS.sample.json(input, { modelTier: "default", cache: false, onText: ({ text }) => { const s = document.getElementById("thinkStatus"); if (s) s.textContent = `Claude liest deine Gedanken … ${text.length} Zeichen`; } });
+    const out = await aiCall("thoughts", input);
     const res = (out && out.antworten) || {}, sugg = Object.assign({}, st.sugg);
     Object.entries(res).forEach(([id, v]) => {
       const q = qOf(id); if (!q || !q.opts.length) return;
@@ -152,4 +153,5 @@ document.addEventListener("click", e => {
   }
 });
 const STARTERS = ["Das Spiel handelt von …", "Der Spieler muss …", "Die Spielfigur ist …", "Es spielt in …", "Das Ziel ist …", "Schwierig wird es, weil …", "Besonders cool wäre …", "Spielen sollen es …", "Es soll laufen auf …", "Auf keinen Fall soll …"];
-function starterChips() { return `<div class="starters" aria-label="Satzanfänge">${STARTERS.map(s => `<button class="chip" data-act="starter" data-s="${esc(s.replace(" …", ""))}">${esc(s)}</button>`).join("")}</div>`; }
+const STARTERS_GEN = ["Es soll …", "Benutzen sollen es …", "Man soll damit …", "Das Wichtigste ist …", "Es nervt mich gerade, dass …", "Ähnlich wie …", "Es soll laufen auf …", "Besonders cool wäre …", "Auf keinen Fall soll …"];
+function starterChips() { return `<div class="starters" aria-label="Satzanfänge">${(isGame(st.a) ? STARTERS : STARTERS_GEN).map(s => `<button class="chip" data-act="starter" data-s="${esc(s.replace(" …", ""))}">${esc(s)}</button>`).join("")}</div>`; }

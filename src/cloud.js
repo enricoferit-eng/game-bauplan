@@ -1,4 +1,4 @@
-/* Game-Bauplan – Online speichern & teilen (Supabase) */
+/* Nordlicht – Online speichern & teilen (Supabase) */
 const SUPABASE_URL = "https://vzoggokzibymbwnmgbqk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_2ZjnZYQzM7Sw9x0d1M1sNA_2QGUI82b";
 let sb = null;
@@ -8,7 +8,9 @@ try { Object.assign(CLOUD, JSON.parse(localStorage.getItem("gamebauplan.cloud"))
 const cloudKeep = () => { try { localStorage.setItem("gamebauplan.cloud", JSON.stringify({ id: CLOUD.id, secret: CLOUD.secret })); } catch (e) {} };
 const rnd = n => { const c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789", b = crypto.getRandomValues(new Uint8Array(n)); return [...b].map(x => c[x % c.length]).join(""); };
 const shareURL = () => `${location.origin}${location.pathname}?b=${CLOUD.id}`;
-const payload = () => ({ a: st.a, notes: st.notes || {}, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null });
+const AI_KEYS = ["aq", "aiRounds", "aiCov", "aiGaps", "aiDone", "aiLevel"];
+const payload = () => Object.assign({ a: st.a, notes: st.notes || {}, level: st.level, ai: st.ai || null, aiSig: st.aiSig || null }, ...AI_KEYS.map(k => ({ [k]: st[k] === undefined ? null : st[k] })));
+const aiRestore = d => AI_KEYS.forEach(k => { st[k] = d[k] === null ? undefined : d[k]; });
 /* Teil-Link vergessen, z. B. bei einem neuen Projekt */
 function cloudForget() { CLOUD.id = null; CLOUD.secret = null; CLOUD.msg = ""; CLOUD.lastSaved = ""; cloudKeep(); }
 
@@ -29,6 +31,7 @@ async function cloudLoad(id) {
   const { data, error } = await sb.rpc("gb_load", { p_id: id });
   if (error || !data) { CLOUD.msg = "Dieser Bauplan wurde nicht gefunden."; render(); return; }
   st.a = data.a || {}; st.notes = data.notes || {}; st.level = data.level || 2; st.ai = data.ai || null; st.aiSig = data.aiSig || null;
+  aiRestore(data);
   st.view = "result"; st.tab = "sum";
   if (CLOUD.id !== id) { CLOUD.id = null; CLOUD.secret = null; CLOUD.msg = "Geteilter Bauplan geladen. Wenn du speicherst, entsteht deine eigene Kopie."; cloudKeep(); }
   else CLOUD.lastSaved = JSON.stringify(payload());
@@ -95,6 +98,7 @@ async function projOpen(id) {
   if (error || !data) { AUTH.msg = "Das Projekt konnte nicht geladen werden."; return render(); }
   const d = data.data || {};
   st = Object.assign(blank(d.level), { a: d.a || {}, notes: d.notes || {}, ai: d.ai || null, aiSig: d.aiSig || null, done: d.done || {}, fromThoughts: d.fromThoughts || {}, cur: d.cur || null, pid: data.id });
+  aiRestore(d);
   if (data.title !== projTitle()) st.title = data.title;
   CLOUD.id = d.share ? d.share.id : null; CLOUD.secret = d.share ? d.share.secret : null; CLOUD.msg = ""; CLOUD.lastSaved = JSON.stringify(payload()); cloudKeep();
   AUTH.lastSig = projSig(); AUTH.msg = "";
@@ -150,7 +154,7 @@ function accountBox() {
   const cards = ps === null ? `<p class="fine">Lade deine Projekte …</p>` : `<div class="projs">
     <button class="proj new" data-act="newproj"><span>+</span>Neues Projekt</button>
     ${ps.map(p => `<div class="proj${p.id === st.pid ? " cur" : ""}">
-      <b>${esc(p.title || "Neues Spiel")}</b>
+      <b>${esc(p.title || "Neues Projekt")}</b>
       <div class="bar"><span style="width:${p.progress || 0}%"></span></div>
       <small>${p.progress || 0} % · ${p.id === st.pid ? "gerade geöffnet" : "geändert " + date(p.updated_at)}</small>
       <button class="btn sm${p.id === st.pid ? "" : " primary"}" data-act="openproj" data-id="${p.id}">${p.id === st.pid ? "Weitermachen" : "Öffnen"}</button>

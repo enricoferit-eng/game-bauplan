@@ -1,4 +1,4 @@
-/* Game-Bauplan – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
+/* Nordlicht – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
 const CAPS = { downloads: null, sample: null };
 const inClaude = !!(window.claude && window.claude.use);
 const canPDF = () => !!(window.jspdf && (CAPS.downloads || !inClaude));
@@ -61,7 +61,7 @@ function sizePlan() {
   }[val("scope")] || (has(st.a, "structure", "Endloser Lauf", "Zufällig generierte Runs") ? { worlds: 3, levels: 0, effort: "2–6 Wochen" } : { worlds: 3, levels: 5, effort: "2–6 Wochen" });
 }
 
-function concept() {
+function gameConcept() {
   const a = st.a, w = WORLD[val("setting")] || DEF_WORLD, s = seedOf();
   const verbs = arrOf("ideaVerb"), chall = arrOf("ideaChallenge"), esc2 = arrOf("ideaEscalation");
   const core = val(st.a.core === QUIZ_OPT ? "coreQuiz" : "core");
@@ -220,7 +220,8 @@ function docHTML(doc) {
 
 /* ---------- KI-Ausarbeitung ---------- */
 async function elaborate(btn) {
-  if (!CAPS.sample || elaborate.busy) return;
+  if (!aiReady() || elaborate.busy) return;
+  if (!isGame(st.a)) return elaborateGen();
   elaborate.busy = true; st.aiErr = ""; render();
   const status = () => document.getElementById("aiStatus");
   const schema = `{"titel":["3 Namensvorschläge"],"pitch":"3-4 Sätze, die Lust aufs Spiel machen","spielablauf":["8-12 konkrete Schritte einer typischen Runde, Moment für Moment"],"steuerung":[{"eingabe":"z. B. Tippen","aktion":"was passiert"}],"regeln":["6-10 klare Regeln mit konkreten Zahlen"],"level1":[{"abschnitt":"Name + Zeitangabe","beschreibung":"was genau passiert, was der Spieler lernt"}],"welten":[{"name":"","neu":"neue Mechanik","gegner":"","finale":""}],"gegner":[{"name":"","verhalten":"konkretes Verhalten mit Werten"}],"gegenstaende":[{"name":"","wirkung":""}],"fortschritt":["5-8 Punkte"],"look_und_sound":["5-8 konkrete Punkte"],"erste_schritte":["6-8 Umsetzungsschritte"]}`;
@@ -232,10 +233,10 @@ ${schema}
 SPEZIFIKATION:
 ${buildPrompt()}`;
   try {
-    const out = await CAPS.sample.json(input, { modelTier: "complex", cache: false, onText: ({ text }) => { const s = status(); if (s) s.textContent = `Claude schreibt … ${text.length.toLocaleString("de-DE")} Zeichen`; } });
+    const out = await aiCall("elaborate", input);
     if (out && typeof out === "object") { st.ai = out; st.aiSig = JSON.stringify(st.a); }
   } catch (e) {
-    st.aiErr = e && e.code === "rate_limited" ? "Gerade zu viele Anfragen. Versuch es in einer Minute noch einmal." : e && e.code === "not_granted" ? "Claude-Ausarbeitung wurde nicht erlaubt." : "Die Ausarbeitung hat nicht geklappt. Du kannst es noch einmal versuchen.";
+    st.aiErr = aiErrText(e, "Die Ausarbeitung hat nicht geklappt. Du kannst es noch einmal versuchen.");
   }
   elaborate.busy = false; render();
 }
@@ -260,10 +261,10 @@ async function savePDF(btn) {
   // Titelseite
   pdf.setFillColor(...acc); pdf.rect(0, 0, W, 95, "F");
   pdf.setFillColor(255, 197, 61); pdf.rect(0, 95, W, 4, "F");
-  pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.text("SPIELKONZEPT", M, 30);
+  pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.text(isGame(st.a) ? "SPIELKONZEPT" : "KONZEPT", M, 30);
   pdf.setFontSize(30); pdf.splitTextToSize(pdfTxt(doc.title), CW).forEach((l, i) => pdf.text(l, M, 48 + i * 12));
   pdf.setFont("helvetica", "normal"); pdf.setFontSize(11);
-  pdf.text(pdfTxt(`Erstellt mit dem Game-Bauplan am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
+  pdf.text(pdfTxt(`Erstellt mit Nordlicht am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
   y = 104;
   doc.blocks.forEach(b => {
     if (b.t === "h2") { need(18); y += 6; pdf.setDrawColor(...acc); pdf.setLineWidth(0.6); pdf.line(M, y, M + 14, y); y += 3; text(b.x, 15, "bold", acc); y += 1.5; }
@@ -293,8 +294,8 @@ async function savePDF(btn) {
     qs.forEach(q => { const y0 = y; text(q.label, 9, "normal", mut, M, 55); const y1 = y; y = y0; text(fmt(q) + (noteOf(q.id) ? `  |  Notiz: ${noteOf(q.id)}` : ""), 9.5, "normal", ink, M + 58, CW - 58); y = Math.max(y, y1) + 0.8; });
   });
   const n = pdf.getNumberOfPages();
-  for (let i = 2; i <= n; i++) { pdf.setPage(i); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(...mut); pdf.text(pdfTxt(`${doc.title} - Spielkonzept`), M, 290); pdf.text(`${i} / ${n}`, W - M, 290, { align: "right" }); }
-  const file = (pdfTxt(doc.title).replace(/[^A-Za-z0-9ÄÖÜäöüß -]/g, "").trim() || "Spielkonzept") + " - Spielkonzept.pdf";
+  for (let i = 2; i <= n; i++) { pdf.setPage(i); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(...mut); pdf.text(pdfTxt(`${doc.title} - ${isGame(st.a) ? "Spielkonzept" : "Konzept"}`), M, 290); pdf.text(`${i} / ${n}`, W - M, 290, { align: "right" }); }
+  const file = (pdfTxt(doc.title).replace(/[^A-Za-z0-9ÄÖÜäöüß -]/g, "").trim() || "Konzept") + (isGame(st.a) ? " - Spielkonzept.pdf" : " - Konzept.pdf");
   try {
     btn.textContent = "Speichern bestätigen …";
     await deliverPDF(pdf, file);

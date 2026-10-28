@@ -1,17 +1,23 @@
-# Game-Bauplan
+# Nordlicht
 
-Ein Fragebogen mit Bildern, der eine Spielidee Schritt für Schritt aufbaut. Am Ende gibt es:
+Von der Idee zum exakten Bauplan für die KI – für Spiele, Apps, Websites, Shops, Arbeitsprogramme und alles andere.
 
-- ein fertiges **Spielkonzept** (Spielablauf, Steuerung, Regeln, Level 1, Welten, Gegner) als PDF
-- einen ausführlichen **KI-Bauauftrag**, den man in Claude oder eine andere KI kopiert, als Text oder PDF
-- eine **Launch-Checkliste** für App Store, Google Play, Steam und itch.io
+1. Man wählt, was gebaut werden soll, und beantwortet ein paar feste Grundfragen mit Bildern (bei Spielen die wichtigsten Game-Fragen).
+2. Danach liest Claude den Bauplan, findet offene Stellen und denkt sich Runde für Runde passende Multiple-Choice-Fragen aus, bis keine Lücken mehr bleiben. Die Detailstufe bestimmt, wie genau.
+3. Am Ende gibt es ein Konzept, einen ausführlichen KI-Bauauftrag und eine Launch-Checkliste, jeweils auch als PDF.
 
-Baupläne lassen sich online speichern und per Link teilen (Supabase).
+Mit einem Konto (E-Mail-Bestätigung) werden Projekte gespeichert; Baupläne lassen sich per Link teilen.
 
-## Online-Speichern einrichten
+## Einrichten (Supabase-Projekt vzoggokzibymbwnmgbqk)
 
-`supabase-setup.sql` einmal im Supabase-Dashboard unter **SQL Editor** ausführen.
+Im Dashboard unter **SQL Editor** ausführen: `supabase-setup.sql`, `supabase-accounts.sql`, `supabase-ai.sql`.
+
+KI-Funktion: `supabase/functions/ai/index.ts`. Secret `ANTHROPIC_API_KEY` setzen, optional `AI_DAILY_LIMIT` (Standard 40 Anfragen pro Konto und Tag), dann deployen:
+
+```
+npx supabase functions deploy ai --project-ref vzoggokzibymbwnmgbqk --use-api
+```
 
 ## Bearbeiten
 
-Die Quelltexte liegen in `src/`. Nach Änderungen `src/build.sh` ausführen; das erzeugt `index.html` neu.
+Quelltexte in `src/`, danach `src/build.sh` ausführen. Das erzeugt `index.html` (Website) und `artifact.html` (claude.ai).

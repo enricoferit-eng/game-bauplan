@@ -1,4 +1,4 @@
-/* Game-Bauplan – ausführlicher KI-Bauauftrag + PDF */
+/* Nordlicht – ausführlicher KI-Bauauftrag + PDF */
 function conceptMD(doc, skip) {
   const L = [];
   let skipping = false;
@@ -56,7 +56,7 @@ const DOD = {
   "Veröffentlichung": "Alle Builds und Store-Texte sind fertig; die Launch-Checkliste ist abgearbeitet."
 };
 
-function buildPrompt() {
+function buildGamePrompt() {
   const a = st.a, v = visible().filter(q => !q.quiz), L = [];
   const doc = concept(), lvl = LEVELS.find(l => l.n === st.level);
   const P = (...x) => L.push(...x), blank = () => L.push("");

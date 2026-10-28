@@ -1,4 +1,4 @@
-<title>Game-Bauplan</title>
+<title>Nordlicht</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -179,6 +179,12 @@ main { padding-block: 28px 64px; }
 .cloud small { color: var(--muted); }
 .cloud .fine { flex-basis: 100%; margin: 0; }
 .sharelink { flex: 1 1 240px; min-width: 0; font: 14px var(--f-mono); padding: 8px 10px; border: 2px solid var(--line2); border-radius: 8px; background: var(--surface); color: var(--ink); }
+/* Projektart & KI */
+.opts.kinds { grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.thinking .spin { width: 46px; height: 46px; border-radius: 50%; border: 5px solid var(--line); border-top-color: var(--accent); animation: spin 0.9s linear infinite; margin: 18px 0 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.aibox .cov { display: block; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 6px 0 2px; max-width: 320px; }
+.aibox .cov i { display: block; height: 100%; background: var(--ok); }
 /* Konto & Projekte */
 .acct { display: grid; gap: 14px; background: var(--surface); border: 2px solid var(--ink); border-radius: var(--r); padding: 18px; box-shadow: 0 4px 0 var(--ink); }
 .acct-h { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
@@ -268,7 +274,7 @@ pre.code { margin: 0; background: var(--code-bg); color: var(--code-ink); font: 
 </style>
 
 <header class="top"><div class="wrap">
-  <button class="logo" data-act="tostart" aria-label="Zum Start"><i>GB</i><span>Game-Bauplan</span></button>
+  <button class="logo" data-act="tostart" aria-label="Zum Start"><i>NL</i><span>Nordlicht</span></button>
   <div class="prog" id="prog" hidden><div class="bar"><span id="progFill"></span></div><small id="progTxt"></small></div>
   <div class="topbtns">
     <button class="btn sm" id="btnResult" data-act="toresult" hidden>Auswertung</button>
