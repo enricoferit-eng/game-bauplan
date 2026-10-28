@@ -1153,6 +1153,278 @@ q("opStats", "Nutzungsstatistik", "Willst du sehen, wie es genutzt wird?", [
 q("opLater", "Später", "Was könnte später dazukommen?", [
   ["👥", "Viel mehr Nutzer", ""], ["🧩", "Weitere Funktionen", ""], ["📱", "App-Version", ""], ["🌍", "Weitere Sprachen", ""], ["➖", "Nichts geplant", "", "x"]], { l: 4, if: NG() });
 
+/* ---------- Erweiterung: mehr Tiefe je Stufe (Ziel ca. 25 / 50 / 75 / 100 Fragen) ---------- */
+const at = id => { _sec = id; }; /* weitere Fragen an einen bestehenden Bereich anhängen */
+const yesNo = (yes, no) => [["✅", yes || "Ja", ""], ["➖", no || "Nein", "", "x"]];
+
+/* Gemeinsam für alle Nicht-Spiele */
+at("gbasics");
+q("gPriority", "Wichtigstes", "Was ist dir am wichtigsten?", [
+  ["👌", "Kinderleicht zu bedienen", ""], ["⚡", "Schnell", ""], ["✨", "Schön", ""], ["🔒", "Sicher", ""], ["💶", "Günstig im Betrieb", ""], ["🧰", "Viele Funktionen", ""]], { l: 2, if: NG() });
+at("gplatform");
+q("gScreens", "Bildschirmgrößen", "Auf welchen Bildschirmen muss es gut aussehen?", [
+  ["📱", "Handy", ""], ["📲", "Tablet", ""], ["💻", "Laptop", ""], ["🖥️", "Großer Monitor", ""], ["📺", "Fernseher / Wandbildschirm", ""]], { l: 2, if: NG() });
+q("gFormats", "Formate", "Wie sollen Datum, Uhrzeit und Geld angezeigt werden?", [
+  ["🇩🇪", "Deutsch (28.10.2026, 12,50 €)", ""], ["🌍", "International", ""], ["🔀", "Je nach Sprache des Nutzers", ""]], { l: 4, if: NG() });
+q("gTimezone", "Zeitzonen", "Gibt es Nutzer in anderen Zeitzonen?", [["🇩🇪", "Nein, nur Deutschland", "", "x"], ["🌐", "Ja, mehrere Zeitzonen", ""]], { l: 4, if: NG() });
+at("gbiz");
+q("gMvp", "Erste Version", "Wie umfangreich soll die erste Version sein?", [
+  ["🌱", "Nur das Nötigste", "Schnell ausprobieren, später erweitern."], ["🧱", "Solide Grundversion", ""], ["🏰", "Gleich komplett", ""]], { l: 2, if: NG() });
+q("gTest", "Testen", "Wie soll vor dem Start getestet werden?", [
+  ["🙋", "Ich teste selbst", ""], ["👥", "Mit ein paar echten Nutzern", ""], ["🤖", "Automatische Tests", "Die KI schreibt Tests mit."]], { l: 3, if: NG() });
+at("design");
+q("deTone", "Ansprache", "Wie sollen Texte die Nutzer ansprechen?", [["🙂", "Per Du", ""], ["🎩", "Per Sie", ""], ["⚪", "Neutral, ohne Anrede", ""]], { l: 2, if: NG() });
+q("deDensity", "Platz", "Wie viel soll auf einen Bildschirm passen?", [["🌬️", "Luftig, wenig auf einmal", ""], ["⚖️", "Ausgewogen", ""], ["📋", "Kompakt, viel Info", ""]], { l: 3, if: NG() });
+q("deIcons", "Symbole", "Welcher Symbol-Stil?", [["◻️", "Umrisse", ""], ["◼️", "Gefüllt", ""], ["🌈", "Bunt", ""], ["😀", "Emojis", ""]], { l: 4, if: NG() });
+q("deCorners", "Ecken", "Wie sollen Knöpfe und Kästen aussehen?", [["⬜", "Eckig", ""], ["🔲", "Leicht abgerundet", ""], ["⚪", "Sehr rund", ""]], { l: 4, if: NG() });
+q("deLoading", "Laden", "Was sieht man, während etwas lädt?", [["🔄", "Drehender Kreis", ""], ["▭", "Graue Platzhalter", "Wie bei YouTube."], ["📶", "Fortschrittsbalken", ""]], { l: 4, if: NG() });
+q("deSound", "Töne", "Soll es Töne geben?", [["🔇", "Keine", "", "x"], ["🔈", "Dezent bei wichtigen Aktionen", ""]], { l: 4, if: NG() });
+q("deErrors", "Fehlermeldungen", "Wie sollen Fehlermeldungen klingen?", [["💬", "Freundlich mit Lösungsvorschlag", ""], ["📏", "Kurz und sachlich", ""]], { l: 4, if: NG() });
+at("dmod");
+q("dmEmpty", "Leerer Start", "Wie sieht es aus, solange noch nichts eingetragen ist?", [["🧪", "Mit Beispieldaten", ""], ["💡", "Leer mit Hilfetext", ""]], { l: 3, if: NG() });
+q("dmUndo", "Rückgängig", "Wie werden Versehen verhindert?", [["↩️", "Rückgängig-Knopf", ""], ["❓", "Nachfragen vor dem Löschen", ""], ["🗑️", "Papierkorb", ""]], { l: 3, if: NG() });
+q("dmLimit", "Speicherplatz", "Gibt es eine Grenze, wie viel jemand speichern darf?", [["♾️", "Nein", "", "x"], ["📏", "Ja, pro Nutzer begrenzt", ""]], { l: 4, if: NG(hasAcc) });
+at("acc");
+q("accDevices", "Mehrere Geräte", "Darf man auf mehreren Geräten gleichzeitig angemeldet sein?", yesNo(), { l: 4, if: NG(hasAcc) });
+at("a11y");
+q("axMotion", "Weniger Bewegung", "Sollen Animationen für Menschen abschaltbar sein, denen davon schwindelig wird?", yesNo(), { l: 4, if: NG() });
+at("legal");
+q("lgAge", "Mindestalter", "Gibt es ein Mindestalter?", [["➖", "Nein", "", "x"], ["1️⃣3️⃣", "Ab 13", ""], ["1️⃣6️⃣", "Ab 16", ""], ["🔞", "Ab 18", ""]], { l: 4, if: NG() });
+at("ops");
+q("opUpdates", "Updates", "Wie erfahren Nutzer von neuen Versionen?", [["🔔", "Hinweis „Neu in dieser Version“", ""], ["📜", "Liste aller Änderungen", ""], ["🤫", "Gar nicht, läuft still", "", "x"]], { l: 4, if: NG() });
+q("opFeedback", "Rückmeldung", "Wie können Nutzer Feedback geben?", [["💬", "Feedback-Knopf", ""], ["⭐", "Um Bewertung bitten", ""], ["📊", "Kurze Umfrage", ""], ["➖", "Gar nicht", "", "x"]], { l: 4, if: NG() });
+q("opMonitor", "Fehler bemerken", "Wie merkst du, wenn etwas kaputt ist?", [["📧", "Automatische Fehlerberichte", ""], ["🟢", "Statusseite", ""], ["👂", "Nutzer melden sich", "", "x"]], { l: 4, if: NG() });
+
+/* Handy-App */
+at("app");
+const app = (l, f) => ({ l, if: f ? and(K("Handy-App"), f) : K("Handy-App") });
+q("aUse", "Nutzungshäufigkeit", "Wie oft wird die App benutzt?", [["🔁", "Mehrmals täglich", ""], ["📅", "Täglich", ""], ["🗓️", "Ein paar Mal pro Woche", ""], ["🕐", "Nur bei Bedarf", ""]], app(1));
+q("aHome", "Startbildschirm", "Was sieht man direkt beim Öffnen?", [["🕘", "Zuletzt Genutztes", ""], ["📊", "Übersicht mit Zahlen", ""], ["📋", "Liste", ""], ["🔍", "Suche", ""], ["➕", "Großer Plus-Knopf", ""]], app(2));
+q("aCreate", "Neu anlegen", "Wie legt man etwas Neues an?", [["➕", "Plus-Knopf unten", ""], ["↗️", "Knopf oben rechts", ""], ["⚡", "Schnelleingabe in einer Zeile", ""], ["🎤", "Per Sprache", ""], ["📷", "Per Foto", ""]], app(2));
+q("aList", "Listen", "Wie sollen Listen aussehen?", [["🃏", "Karten", ""], ["📏", "Kompakte Zeilen", ""], ["▦", "Raster mit Bildern", ""], ["📅", "Nach Datum gruppiert", ""]], app(2));
+q("aDetail", "Details", "Wie öffnet man einen Eintrag?", [["📄", "Eigene Seite", ""], ["🔽", "Aufklappen", ""], ["⬆️", "Fenster von unten", ""]], app(2));
+q("aSync", "Geräte", "Wo sind die Daten verfügbar?", [["📱", "Nur auf diesem Handy", ""], ["🔄", "Auf allen Geräten mit Konto", ""], ["👥", "Mit anderen geteilt", ""]], app(2));
+q("aShare", "Teilen", "Was kann man mit anderen teilen?", [["🔗", "Link", ""], ["🖼️", "Bild", ""], ["📄", "PDF", ""], ["✍️", "Gemeinsam bearbeiten", ""], ["➖", "Nichts", "", "x"]], app(2));
+q("aLocation", "Standort", "Wofür wird der Standort genutzt?", [["📍", "Dinge in der Nähe finden", ""], ["🛤️", "Strecken aufzeichnen", ""], ["📌", "Orte speichern", ""], ["🛰️", "Auch im Hintergrund", ""]], app(2, iff("aDevice", "Standort")));
+q("aCamera", "Kamera", "Wofür wird die Kamera genutzt?", [["📸", "Fotos speichern", ""], ["🔳", "QR- oder Barcode scannen", ""], ["📄", "Dokumente scannen", ""], ["🔤", "Text erkennen", ""], ["🎥", "Video", ""]], app(2, iff("aDevice", "Kamera")));
+q("aSettings", "Einstellungen", "Was kann man einstellen?", [["🔔", "Benachrichtigungen", ""], ["🌗", "Hell / Dunkel", ""], ["🌍", "Sprache", ""], ["👤", "Konto", ""], ["📤", "Daten exportieren", ""], ["❓", "Hilfe", ""]], app(3));
+q("aSearch", "Suche", "Wo ist die Suche?", [["🔝", "Immer oben sichtbar", ""], ["🔍", "Eigener Bereich", ""], ["➖", "Nicht nötig", "", "x"]], app(3));
+q("aLock", "App sperren", "Soll man die App extra sperren können?", [["🔢", "Mit PIN", ""], ["🔐", "Mit Face ID / Fingerabdruck", ""], ["➖", "Nein", "", "x"]], app(3));
+q("aBadge", "Zahl am Symbol", "Soll am App-Symbol eine Zahl stehen (z. B. offene Aufgaben)?", yesNo(), app(3));
+q("aStats", "Rückblick", "Sollen Nutzer ihren Verlauf sehen?", [["📅", "Wochenübersicht", ""], ["📈", "Diagramme", ""], ["🎉", "Monats- oder Jahresrückblick", ""], ["➖", "Nein", "", "x"]], app(3));
+q("aRate", "Bewertung", "Soll die App um eine Store-Bewertung bitten?", [["⭐", "Ja, nach ein paar Nutzungen", ""], ["➖", "Nie", "", "x"]], app(3));
+q("aLinks", "Links", "Sollen Links (z. B. aus E-Mails) direkt in der App öffnen?", yesNo(), app(3));
+q("aIcon", "App-Symbol", "Wie soll das App-Symbol aussehen?", [["🏷️", "Mein Logo", ""], ["🔤", "Ein Buchstabe", ""], ["🖼️", "Ein Bild", ""], ["🎨", "Mehrere zur Auswahl", ""]], app(4));
+q("aSplash", "Startbild", "Was erscheint beim Laden?", [["🏷️", "Logo auf Farbe", ""], ["🎬", "Kurze Animation", ""], ["➖", "Nichts", "", "x"]], app(4));
+q("aOrient", "Querformat", "Soll die App auch im Querformat gehen?", [["📱", "Nur Hochformat", ""], ["🔄", "Auch quer", ""]], app(4));
+q("aFontScale", "Schriftgröße", "Soll die Schriftgröße des Handys übernommen werden?", yesNo("Ja", "Nein, feste Größe"), app(4));
+q("aBackup", "Sicherung", "Wie sichert man seine Daten?", [["☁️", "iCloud / Google automatisch", ""], ["📤", "Export als Datei", ""], ["➖", "Gar nicht", "", "x"]], app(4));
+q("aStore", "Store-Eintrag", "Was soll für den App-Store vorbereitet werden?", [["🖼️", "Screenshots", ""], ["🎥", "Vorschau-Video", ""], ["🇩🇪", "Beschreibung Deutsch", ""], ["🇬🇧", "Beschreibung Englisch", ""]], app(4));
+q("aBeta", "Vorab-Test", "Wie wird vor dem Start getestet?", [["✈️", "TestFlight / Testkanal", ""], ["👫", "Mit Freunden", ""], ["➖", "Gar nicht", "", "x"]], app(4));
+q("aOldPhones", "Ältere Handys", "Muss es auf älteren Handys laufen?", [["🆕", "Nur neuere", ""], ["📱", "Auch 5 Jahre alte", ""]], app(4));
+
+/* Website */
+at("wsite");
+const ws = (l, f) => ({ l, if: f ? and(K("Website"), f) : K("Website") });
+q("wSize", "Umfang", "Wie groß wird die Website?", [["1️⃣", "Eine einzige Seite", ""], ["🔢", "3–5 Seiten", ""], ["📚", "6–15 Seiten", ""], ["🏛️", "Mehr", ""]], ws(1));
+q("wNav", "Menü", "Wie soll das Menü aussehen?", [["⬆️", "Oben als Leiste", ""], ["☰", "Aufklappmenü", ""], ["◀️", "Seitlich", ""], ["⬇️", "Am Handy unten fixiert", ""]], ws(2));
+q("wHero", "Kopfbereich", "Was steht ganz oben auf der Startseite?", [["💬", "Slogan mit Knopf", ""], ["🖼️", "Großes Bild", ""], ["🎥", "Video", ""], ["🎞️", "Wechselnde Bilder", ""], ["📝", "Direkt ein Formular", ""]], ws(2));
+q("wFooter", "Fußzeile", "Was gehört in die Fußzeile?", [["📞", "Kontakt", ""], ["🕒", "Öffnungszeiten", ""], ["📱", "Social Media", ""], ["📬", "Newsletter", ""], ["🗺️", "Mini-Karte", ""], ["⚖️", "Impressum & Datenschutz", ""]], ws(3));
+q("wTrust", "Vertrauen", "Was soll Vertrauen schaffen?", [["💬", "Kundenstimmen", ""], ["🏢", "Logos von Kunden", ""], ["🔢", "Zahlen & Erfolge", ""], ["🏅", "Siegel & Zertifikate", ""], ["🔀", "Vorher / Nachher", ""]], ws(3));
+q("wButtons", "Knöpfe", "Wie auffällig sollen Aktions-Knöpfe sein?", [["🚨", "Sehr auffällig", ""], ["🙂", "Dezent", ""]], ws(3));
+q("wPopup", "Einblendungen", "Soll es Einblendungen geben?", [["➖", "Keine", "", "x"], ["📬", "Newsletter-Hinweis", ""], ["🏷️", "Aktion oder Rabatt", ""]], ws(3));
+q("wSpeed", "Ladezeit", "Wie wichtig ist blitzschnelles Laden?", [["⚡", "Sehr wichtig", ""], ["🙂", "Normal", ""]], ws(3));
+q("wBooking", "Terminbuchung", "Wie werden Termine gebucht?", [["🧩", "Fertiges Buchungstool einbinden", ""], ["📝", "Eigenes Formular", ""], ["📞", "Anruf-Knopf", ""]], ws(3, iff("wGoal", "Termin buchen")));
+q("wFavicon", "Tab-Symbol", "Welches Symbol im Browser-Tab?", [["🏷️", "Mein Logo", ""], ["🔤", "Anfangsbuchstabe", ""]], ws(4));
+q("wSharePrev", "Vorschau beim Teilen", "Soll beim Teilen in WhatsApp & Co. ein schönes Vorschaubild erscheinen?", yesNo(), ws(4));
+q("w404", "Fehlerseite", "Wie sieht die Seite „Nicht gefunden“ aus?", [["😄", "Witzig mit Link zur Startseite", ""], ["📏", "Schlicht", ""]], ws(4));
+q("wTop", "Nach oben", "Soll es einen „Nach oben“-Knopf geben?", yesNo(), ws(4));
+q("wSticky", "Fixes Menü", "Soll das Menü beim Scrollen sichtbar bleiben?", yesNo(), ws(4));
+q("wSitemap", "Für Suchmaschinen", "Was soll für Google vorbereitet werden?", [["🗺️", "Sitemap", ""], ["⭐", "Sterne & Infos in Suchergebnissen", ""], ["🏷️", "Seitentitel & Beschreibungen", ""]], ws(4));
+q("wMove", "Umzug", "Gibt es eine alte Website, deren Links weiter funktionieren sollen?", yesNo(), ws(4));
+q("wBanner", "Hinweisleiste", "Soll man oben kurz Hinweise einblenden können (z. B. „Betriebsurlaub“)?", yesNo(), ws(4));
+
+/* Programm zum Arbeiten */
+at("work");
+const wkq = (l, f) => ({ l, if: f ? and(K("Programm zum Arbeiten"), f) : K("Programm zum Arbeiten") });
+q("wkGoal", "Ziel", "Was soll durch das Programm besser werden?", [["⏳", "Zeit sparen", ""], ["🎯", "Weniger Fehler", ""], ["👀", "Besserer Überblick", ""], ["📄", "Weg vom Papier", ""], ["😊", "Zufriedenere Kunden", ""]], wkq(1));
+q("wkMobile", "Unterwegs", "Was muss unterwegs funktionieren?", [["📶", "Ohne Internet beim Kunden", ""], ["📸", "Fotos zur Dokumentation", ""], ["✍️", "Unterschrift auf dem Tablet", ""], ["🧭", "Navigation zum Kunden", ""]], wkq(3, iff("wkWhere", "Unterwegs beim Kunden", "Überall")));
+q("wkTemplates", "Vorlagen", "Welche Vorlagen soll es geben?", [["✉️", "Briefe", ""], ["📧", "E-Mails", ""], ["☑️", "Checklisten", ""], ["📄", "Formulare", ""]], wkq(3));
+q("wkStart", "Startseite", "Was steht auf der Startseite?", [["📌", "Heute fällig", ""], ["🔢", "Wichtige Zahlen", ""], ["📅", "Kalender", ""], ["✅", "Meine Aufgaben", ""]], wkq(3));
+q("wkNumbers", "Nummern", "Wie sollen Nummern aufgebaut sein (z. B. Rechnungsnummer)?", [["🔢", "Einfach fortlaufend", ""], ["📅", "Mit Jahr (2026-0001)", ""], ["🏷️", "Mit Kürzel (RE-0001)", ""]], wkq(4));
+q("wkFields", "Eigene Felder", "Sollen eigene Felder ergänzt werden können?", yesNo(), wkq(4));
+q("wkTags", "Schlagwörter", "Sollen Einträge mit Schlagwörtern markiert werden können?", yesNo(), wkq(4));
+q("wkSites", "Standorte", "Gibt es mehrere Firmen oder Standorte?", [["1️⃣", "Nein, einer", "", "x"], ["🏬", "Mehrere Standorte", ""], ["🏢", "Mehrere Firmen", ""]], wkq(4));
+q("wkBulk", "Massenbearbeitung", "Sollen viele Einträge auf einmal geändert werden können?", yesNo(), wkq(4));
+q("wkHolidays", "Feiertage", "Sollen Feiertage und Betriebsurlaub berücksichtigt werden?", yesNo(), wkq(4));
+q("wkCurrency", "Währungen", "Welche Währungen?", [["💶", "Nur Euro", ""], ["💱", "Mehrere", ""]], wkq(4));
+q("wkArchive", "Archiv", "Was passiert mit alten Einträgen?", [["📦", "Archivieren", ""], ["🗑️", "Nach Frist löschen", ""], ["📌", "Alles bleibt", ""]], wkq(4));
+q("wkKeys", "Tastenkürzel", "Soll man schnell per Tastatur arbeiten können?", yesNo(), wkq(4));
+
+/* Online-Shop */
+at("shop");
+const sh = (l, f) => ({ l, if: f ? and(K("Online-Shop"), f) : K("Online-Shop") });
+q("sHome", "Shop-Startseite", "Was steht auf der Startseite des Shops?", [["🏆", "Bestseller", ""], ["🆕", "Neuheiten", ""], ["🗂️", "Kategorien", ""], ["🖼️", "Großes Aktionsbanner", ""]], sh(2));
+q("sProduct", "Produktseite", "Was gehört auf jede Produktseite?", [["🖼️", "Mehrere Bilder", ""], ["🎥", "Video", ""], ["🔍", "Zoom", ""], ["📏", "Größentabelle", ""], ["🔗", "Ähnliche Produkte", ""], ["🚚", "Lieferzeit", ""]], sh(3));
+q("sCart", "Warenkorb", "Wie soll der Warenkorb funktionieren?", [["➡️", "Klappt seitlich auf", ""], ["📄", "Eigene Seite", ""], ["🎁", "Zeigt „noch X € bis Gratisversand“", ""]], sh(3));
+q("sCheckout", "Kasse", "Wie läuft die Kasse ab?", [["1️⃣", "Alles auf einer Seite", ""], ["🪜", "Schritt für Schritt", ""], ["⚡", "Express-Kauf mit einem Klick", ""]], sh(3));
+q("sNews", "Newsletter", "Soll es einen Newsletter geben?", [["🏷️", "Ja, mit Rabatt bei Anmeldung", ""], ["📬", "Ja, ohne Rabatt", ""], ["➖", "Nein", "", "x"]], sh(3));
+q("sAdmin", "Bestellungen verwalten", "Was brauchst du zum Abarbeiten der Bestellungen?", [["📋", "Bestellliste", ""], ["🚦", "Status setzen", ""], ["🏷️", "Versandetiketten drucken", ""], ["🧾", "Rechnung erzeugen", ""]], sh(3));
+q("sMinOrder", "Mindestbestellwert", "Gibt es einen Mindestbestellwert?", yesNo(), sh(3));
+q("sCross", "Dazu passend", "Sollen passende Produkte vorgeschlagen werden?", yesNo(), sh(4));
+q("sGift", "Geschenk", "Soll es Geschenkverpackung oder Grußkarte geben?", yesNo(), sh(4, shopPhys));
+q("sAgeCheck", "Altersprüfung", "Braucht es eine Altersprüfung (z. B. Alkohol)?", yesNo(), sh(4));
+q("sB2B", "Geschäftskunden", "Gibt es eigene Preise für Firmenkunden?", yesNo(), sh(4));
+q("sCurrencies", "Währungen", "In welchen Währungen?", [["💶", "Nur Euro", ""], ["💱", "Mehrere", ""]], sh(4));
+q("sMaxQty", "Höchstmenge", "Gibt es eine Höchstmenge pro Kunde?", yesNo(), sh(4));
+q("sPriceShow", "Preisanzeige", "Wie werden Preise angezeigt?", [["💶", "Mit MwSt. (Privatkunden)", ""], ["🧾", "Ohne MwSt. (Firmenkunden)", ""], ["🔀", "Umschaltbar", ""]], sh(4));
+q("sWishDate", "Wunschtermin", "Können Kunden einen Liefertermin wählen?", yesNo(), sh(4, shopPhys));
+/* KI-Assistent */
+at("bot");
+const bt = (l, f) => ({ l, if: f ? and(K("KI-Assistent / Chatbot"), f) : K("KI-Assistent / Chatbot") });
+q("bStart", "Begrüßung", "Wie beginnt ein Gespräch?", [["👋", "Begrüßt von sich aus", ""], ["⌛", "Wartet auf eine Frage", ""], ["🔘", "Mit Vorschlags-Knöpfen", "z. B. „Öffnungszeiten“, „Termin buchen“."]], bt(1));
+q("bLength", "Antwortlänge", "Wie lang sollen Antworten sein?", [["✂️", "Kurz", ""], ["⚖️", "Mittel", ""], ["📜", "Ausführlich", ""]], bt(2));
+q("bSources", "Quellen", "Soll er sagen, woher eine Antwort stammt?", [["🔗", "Ja, mit Link", ""], ["➖", "Nein", "", "x"]], bt(2));
+q("bLang", "Sprachen", "In welcher Sprache antwortet er?", [["🌍", "In der Sprache des Nutzers", ""], ["🇩🇪", "Immer Deutsch", ""]], bt(2));
+q("bLook", "Chatfenster", "Wie sieht das Chatfenster aus?", [["💬", "Blase unten rechts", ""], ["🖥️", "Ganze Seite", ""], ["🧩", "In eine Seite eingebettet", ""]], bt(2, iff("bWhere", "Auf meiner Website", "In einer eigenen App")));
+q("bAvatar", "Gesicht", "Hat der Assistent ein Gesicht?", [["🏷️", "Logo", ""], ["🧸", "Eine Figur", ""], ["🙂", "Foto einer Person", ""], ["➖", "Keins", "", "x"]], bt(2));
+q("bFiles", "Dateien", "Darf man ihm Dateien schicken?", [["🖼️", "Bilder", ""], ["📄", "PDFs", ""], ["➖", "Nein", "", "x"]], bt(2));
+q("bLeads", "Kontaktdaten", "Soll er nach Kontaktdaten fragen?", [["📝", "Ja, vor dem Gespräch", ""], ["🤝", "Ja, wenn es nötig wird", ""], ["➖", "Nein", "", "x"]], bt(3));
+q("bActions", "Darf handeln", "Darf er selbst Dinge erledigen?", [["📅", "Termine eintragen", ""], ["🛒", "Bestellungen anlegen", ""], ["📧", "E-Mails senden", ""], ["💬", "Nur antworten", "", "x"]], bt(3));
+q("bConfirm", "Bestätigen", "Muss der Nutzer Aktionen vorher bestätigen?", [["✅", "Immer", ""], ["🚀", "Nie", ""]], bt(3, a => has(a, "bActions", "Termine eintragen", "Bestellungen anlegen", "E-Mails senden")));
+q("bRefresh", "Wissen aktuell halten", "Wie bleibt sein Wissen aktuell?", [["🔄", "Automatisch täglich", ""], ["✋", "Ich aktualisiere von Hand", ""]], bt(3));
+q("bRate", "Bewerten", "Sollen Nutzer Antworten bewerten können (Daumen hoch/runter)?", yesNo(), bt(3));
+q("bKeep", "Gespräche speichern", "Wie lange werden Gespräche aufbewahrt?", [["🚫", "Gar nicht", ""], ["📅", "30 Tage", ""], ["♾️", "Unbegrenzt", ""]], bt(3));
+q("bAbuse", "Missbrauch", "Was passiert bei Beleidigungen oder Spam?", [["⚠️", "Warnen", ""], ["🛑", "Gespräch beenden", ""], ["🔢", "Nachrichten pro Person begrenzen", ""]], bt(3));
+q("bTyping", "Schreibanzeige", "Soll „schreibt …“ angezeigt werden, während er antwortet?", yesNo(), bt(4));
+q("bFollow", "Folgefragen", "Soll er passende Folgefragen vorschlagen?", yesNo(), bt(4));
+q("bSpeak", "Vorlesen", "Soll man sich Antworten vorlesen lassen können?", yesNo(), bt(4));
+q("bEmoji", "Emojis", "Darf er Emojis benutzen?", yesNo(), bt(4));
+q("bAiNote", "KI-Hinweis", "Soll klar dastehen, dass es eine KI ist?", [["🤖", "Ja, deutlich", ""], ["🔹", "Klein im Fenster", ""]], bt(4));
+q("bTestQs", "Testfragen", "Soll es eine Liste mit Testfragen geben, um die Qualität zu prüfen?", yesNo(), bt(4));
+q("bMaxMsgs", "Nachrichtenlimit", "Wie viele Nachrichten pro Person und Tag?", [["♾️", "Unbegrenzt", ""], ["🔢", "Begrenzt", "Schützt vor hohen Kosten."]], bt(4));
+q("bOffHours", "Außerhalb der Zeiten", "Was passiert, wenn kein Mensch erreichbar ist?", [["📝", "Nachricht hinterlassen", ""], ["🕒", "Zeiten nennen", ""]], bt(4, iff("bHuman", "Leitet an einen Menschen weiter")));
+
+/* Automatisierung */
+at("auto");
+const au = (l, f) => ({ l, if: f ? and(K("Automatisierung"), f) : K("Automatisierung") });
+q("auFilter", "Nur bestimmte Fälle", "Soll sie nur bei bestimmten Fällen laufen?", [["👤", "Bestimmter Absender", ""], ["🔤", "Stichwort im Text", ""], ["💶", "Ab einem Betrag", ""], ["♾️", "Immer", "", "x"]], au(2));
+q("auTransform", "Verarbeiten", "Was soll mit den Daten unterwegs passieren?", [["🔎", "Felder herauslesen", ""], ["🧮", "Rechnen", ""], ["🌍", "Übersetzen", ""], ["🧠", "Zusammenfassen", ""], ["➖", "Nichts", "", "x"]], au(2));
+q("auAttach", "Anhänge", "Was passiert mit Anhängen?", [["💾", "Speichern", ""], ["➡️", "Weiterleiten", ""], ["🙈", "Ignorieren", ""]], au(2, iff("auTrigger", "Bei neuer E-Mail")));
+q("auDone", "Erfolgsmeldung", "Willst du Bescheid bekommen, wenn alles geklappt hat?", yesNo(), au(2));
+q("auAccess", "Zugänge", "Welche Zugänge hast du schon?", [["🟦", "Google-Konto", ""], ["🟧", "Microsoft-Konto", ""], ["🛒", "Shop-Zugang", ""], ["🔑", "API-Schlüssel", ""], ["🤷", "Weiß nicht", "", "x"]], au(2));
+q("auWhere", "Läuft auf", "Wo soll sie laufen?", [["☁️", "In der Cloud", "Läuft auch, wenn dein PC aus ist."], ["💻", "Auf meinem Computer", ""], ["🗄️", "Auf einem eigenen Server", ""]], au(2));
+q("auTexts", "Texte", "Wie entstehen Texte (z. B. E-Mails)?", [["📋", "Feste Vorlage", ""], ["🔤", "Vorlage mit Platzhaltern", "z. B. „Hallo {Name}“."], ["🧠", "KI formuliert", ""]], au(2, iff("auAction", "E-Mail senden", "Nachricht schicken")));
+q("auDup", "Doppelte", "Sollen doppelte Einträge erkannt und übersprungen werden?", yesNo(), au(3));
+q("auPause", "Pausen", "Soll sie an bestimmten Tagen pausieren?", [["🎄", "An Feiertagen", ""], ["🛌", "Am Wochenende", ""], ["➖", "Nie", "", "x"]], au(3));
+q("auTest", "Testlauf", "Soll es einen Testmodus geben, der nichts wirklich verschickt?", yesNo(), au(3));
+q("auCost", "Kosten", "Was darf das Werkzeug im Monat kosten?", [["0️⃣", "Nichts", "", "x"], ["💶", "Bis 20 €", ""], ["💰", "Mehr ist okay", ""]], au(3));
+q("auSecret", "Passwörter", "Wie werden Passwörter und Schlüssel aufbewahrt?", [["🔐", "Sicher im Tresor des Dienstes", ""], ["🤷", "Weiß nicht, bitte sicher lösen", ""]], au(3));
+q("auSteps", "Mehrere Schritte", "Gibt es mehrere Schritte nacheinander, die voneinander abhängen?", yesNo(), au(3));
+q("auManual", "Nacharbeit", "Sollen Ergebnisse vor dem Weitergeben von Hand geprüft werden können?", yesNo(), au(3));
+q("auTz", "Zeitzone", "In welcher Zeitzone laufen die Zeitpläne?", [["🇩🇪", "Deutschland", ""], ["🌍", "Andere", ""]], au(4, iff("auTrigger", "Zu festen Zeiten")));
+q("auKeep", "Aufbewahren", "Wie lange sollen verarbeitete Daten aufbewahrt werden?", [["🚫", "Gar nicht", ""], ["📅", "30 Tage", ""], ["♾️", "Unbegrenzt", ""]], au(4));
+q("auPanel", "Steuerung", "Willst du sie selbst an- und ausschalten können?", yesNo(), au(4));
+q("auAlertTo", "Fehler an", "Wer bekommt Fehlermeldungen?", [["🙋", "Nur ich", ""], ["👥", "Mehrere Personen", ""]], au(4));
+q("auDocs", "Anleitung", "Soll es eine Anleitung geben, wie alles funktioniert?", yesNo(), au(4));
+q("auBatch", "Sammeln", "Sollen Dinge gesammelt und gebündelt verarbeitet werden?", [["⚡", "Einzeln sofort", ""], ["📦", "Gesammelt, z. B. einmal am Tag", ""]], au(4));
+q("auLang", "Sprache der Texte", "In welcher Sprache sind die erzeugten Texte?", [["🇩🇪", "Deutsch", ""], ["🇬🇧", "Englisch", ""], ["🔀", "Je nach Empfänger", ""]], au(4));
+q("auLimit", "Grenze", "Soll es eine Obergrenze pro Tag geben (Schutz vor Fehlern)?", yesNo(), au(4));
+q("auHandover", "Übergabe", "Muss jemand anderes das später übernehmen können?", yesNo(), au(4));
+
+/* Lern-App */
+at("learn");
+const ln = (l, f) => ({ l, if: f ? and(K("Lern-App / Quiz"), f) : K("Lern-App / Quiz") });
+q("lStructure", "Aufbau", "Wie ist der Lernstoff aufgebaut?", [["📚", "Kapitel", ""], ["🧩", "Kurze Lektionen", ""], ["🎯", "Freie Auswahl", ""], ["🛤️", "Fester Lernpfad", ""]], ln(2));
+q("lDuration", "Dauer", "Wie lange dauert eine Lerneinheit?", [["⚡", "2 Minuten", ""], ["☕", "5–10 Minuten", ""], ["📖", "20 Minuten und mehr", ""]], ln(2));
+q("lMedia", "Medien", "Womit wird erklärt?", [["📝", "Texte", ""], ["🖼️", "Bilder", ""], ["🎥", "Videos", ""], ["🔊", "Audio", ""], ["🎞️", "Animationen", ""]], ln(2));
+q("lHints", "Hilfen", "Welche Hilfen gibt es bei schweren Fragen?", [["💡", "Tipp", ""], ["✂️", "Zwei falsche Antworten streichen", ""], ["⏭️", "Überspringen", ""], ["➖", "Keine", "", "x"]], ln(2));
+q("lRepeat", "Fehler wiederholen", "Sollen falsch beantwortete Fragen wiederkommen?", yesNo(), ln(2));
+q("lRemind", "Erinnerung", "Soll an das Lernen erinnert werden?", [["⏰", "Täglich", ""], ["🗓️", "Ein paar Mal pro Woche", ""], ["➖", "Nein", "", "x"]], ln(2));
+q("lMascot", "Maskottchen", "Soll eine Figur durch die App begleiten?", yesNo(), ln(2));
+q("lStats", "Lernstatistik", "Was sieht der Lernende über sich?", [["📈", "Fortschritt pro Thema", ""], ["🎯", "Trefferquote", ""], ["⏱️", "Lernzeit", ""], ["💪", "Stärken & Schwächen", ""]], ln(3));
+q("lBoard", "Rangliste", "Soll es eine Rangliste geben?", [["🏆", "Ja, mit allen", ""], ["👫", "Nur mit Freunden / Klasse", ""], ["➖", "Nein", "", "x"]], ln(3));
+q("lAdapt", "Anpassung", "Soll sich die Schwierigkeit anpassen?", yesNo(), ln(3));
+q("lTimer", "Zeitlimit", "Gibt es ein Zeitlimit pro Frage?", [["⏱️", "Ja", ""], ["🔀", "Nur im Prüfungsmodus", ""], ["➖", "Nein", "", "x"]], ln(3));
+q("lShuffle", "Reihenfolge", "Sollen Fragen und Antworten gemischt werden?", yesNo(), ln(3));
+q("lPass", "Bestehen", "Ab wann gilt ein Test als bestanden?", [["5️⃣0️⃣", "50 %", ""], ["7️⃣5️⃣", "75 %", ""], ["9️⃣0️⃣", "90 %", ""], ["➖", "Kein Bestehen nötig", "", "x"]], ln(3));
+q("lOffline", "Offline lernen", "Soll man ohne Internet lernen können?", yesNo(), ln(3));
+q("lParents", "Eltern", "Sollen Eltern den Fortschritt sehen?", yesNo(), ln(3, iff("gAudience", "Kinder", "Jugendliche")));
+q("lSound", "Töne", "Soll es Töne für richtig und falsch geben?", yesNo(), ln(4));
+q("lCelebrate", "Feiern", "Wie wird ein Erfolg gefeiert?", [["🎉", "Konfetti", ""], ["🏅", "Medaille", ""], ["🙂", "Kurzes Lob", ""]], ln(4));
+q("lExport", "Lernstand exportieren", "Soll man seinen Lernstand exportieren können?", yesNo(), ln(4));
+q("lCert", "Zertifikat-Design", "Wie sieht ein Zertifikat aus?", [["🏷️", "Mit meinem Logo", ""], ["📜", "Schlicht", ""], ["➖", "Kein Zertifikat", "", "x"]], ln(4));
+q("lImport", "Fragen importieren", "In welchem Format kommen neue Fragen rein?", [["📗", "Excel / CSV", ""], ["✍️", "Formular in der App", ""], ["📄", "Aus Texten oder PDFs", ""]], ln(4));
+q("lReport", "Bericht", "Soll es Berichte für Lehrer oder Chefs geben?", yesNo(), ln(4));
+q("lRead", "Vorlesen", "Sollen Fragen vorgelesen werden können?", yesNo(), ln(4));
+q("lFlag", "Fehler melden", "Sollen Lernende fehlerhafte Fragen melden können?", yesNo(), ln(4));
+q("lOwn", "Eigene Karten", "Sollen Lernende eigene Karteikarten erstellen können?", yesNo(), ln(4));
+
+/* Dashboard */
+at("dash");
+const da = (l, f) => ({ l, if: f ? and(K("Dashboard / Auswertung"), f) : K("Dashboard / Auswertung") });
+q("dViewers", "Wer schaut", "Wer schaut sich das Dashboard an?", [["🙋", "Nur ich", ""], ["👥", "Mein Team", ""], ["👑", "Geschäftsführung", ""], ["🛍️", "Kunden", ""]], da(1));
+q("dWhere", "Wo", "Wo wird es angeschaut?", [["💻", "Am PC", ""], ["📱", "Am Handy", ""], ["📺", "Auf einem Bildschirm an der Wand", ""]], da(1));
+q("dCompare", "Vergleiche", "Womit sollen Zahlen verglichen werden?", [["📅", "Vorjahr", ""], ["🗓️", "Vormonat", ""], ["🎯", "Ziel", ""], ["📍", "Andere Standorte", ""], ["➖", "Nicht nötig", "", "x"]], da(2));
+q("dPeriod", "Standardzeitraum", "Welcher Zeitraum ist voreingestellt?", [["📅", "Heute", ""], ["🗓️", "Diese Woche", ""], ["📆", "Dieser Monat", ""], ["📈", "Dieses Jahr", ""]], da(2));
+q("dTargets", "Ziele", "Sollen Ziele eingetragen werden können?", yesNo(), da(2));
+q("dDrill", "Details", "Soll man auf eine Zahl klicken und die Details dahinter sehen?", yesNo(), da(2));
+q("dLayout", "Aufbau", "Wie ist das Dashboard aufgebaut?", [["1️⃣", "Alles auf einer Seite", ""], ["🗂️", "Mehrere Reiter", ""]], da(2));
+q("dTraffic", "Ampelfarben", "Sollen gute und schlechte Werte farbig markiert werden?", yesNo(), da(2));
+q("dInput", "Eingabe", "Wie werden Zahlen von Hand eingetragen?", [["📝", "Formular", ""], ["📗", "Tabelle hochladen", ""]], da(2, iff("dSrc", "Von Hand eingeben")));
+q("dForecast", "Prognose", "Soll eine Prognose gezeigt werden?", yesNo(), da(3));
+q("dNotes", "Kommentare", "Sollen Zahlen kommentiert werden können?", yesNo(), da(3));
+q("dRights", "Sichtbarkeit", "Sehen alle dasselbe?", [["👀", "Ja", ""], ["🔒", "Jeder nur seinen Bereich", ""]], da(3));
+q("dScheduled", "Geplante Berichte", "Sollen Berichte automatisch verschickt werden?", [["📅", "Täglich", ""], ["🗓️", "Wöchentlich", ""], ["📆", "Monatlich", ""], ["➖", "Nein", "", "x"]], da(3));
+q("dAnomaly", "Auffälligkeiten", "Soll es ungewöhnliche Ausschläge automatisch markieren?", yesNo(), da(3));
+q("dMobile", "Handy-Ansicht", "Wie sieht es am Handy aus?", [["📱", "Eigene vereinfachte Ansicht", ""], ["🔍", "Gleich wie am PC", ""]], da(3));
+q("dHistory", "Zeitraum zurück", "Wie weit zurück sollen Daten reichen?", [["🗓️", "1 Jahr", ""], ["📆", "3 Jahre", ""], ["♾️", "Alles", ""]], da(3));
+q("dDecimals", "Nachkommastellen", "Wie genau werden Zahlen angezeigt?", [["🔢", "Gerundet", ""], ["🧮", "Mit Nachkommastellen", ""]], da(4));
+q("dFiscal", "Geschäftsjahr", "Wann beginnt das Geschäftsjahr?", [["📅", "1. Januar", ""], ["🗓️", "Anders", ""]], da(4));
+q("dTv", "Präsentationsmodus", "Sollen Ansichten automatisch durchwechseln (für Wandbildschirme)?", yesNo(), da(4));
+q("dPrint", "Drucklayout", "Soll es eine schöne Druckansicht geben?", yesNo(), da(4));
+q("dGrain", "Feinheit", "Wie fein wird über die Zeit aufgeteilt?", [["🕐", "Stunden", ""], ["📅", "Tage", ""], ["🗓️", "Wochen", ""], ["📆", "Monate", ""]], da(4));
+q("dLog", "Zugriffe", "Soll protokolliert werden, wer was angesehen hat?", yesNo(), da(4));
+q("dEmbed", "Einbetten", "Soll das Dashboard in andere Seiten eingebettet werden können?", yesNo(), da(4));
+q("dUnits", "Einheiten", "Welche Einheiten kommen vor?", [["💶", "Euro", ""], ["🔢", "Stück", ""], ["⏱️", "Stunden", ""], ["％", "Prozent", ""]], da(4));
+q("dDark", "Dunkel", "Soll es eine dunkle Ansicht geben (gut für Wandbildschirme)?", yesNo(), da(4));
+
+/* Etwas anderes */
+sec("other", "Dein Projekt", "🧩", "Damit auch ungewöhnliche Ideen genau beschrieben sind.");
+const ot = l => ({ l, if: K("Etwas anderes") });
+q("oType", "Am ehesten", "Was ist dein Projekt am ehesten?", [["🔧", "Ein Werkzeug", ""], ["🏪", "Ein Marktplatz", "Anbieter und Kunden treffen sich."], ["👥", "Eine Community", ""], ["🎨", "Kunst / Spielerei", ""], ["🔌", "Etwas mit Hardware", "z. B. Sensoren, Raspberry Pi."], ["🧩", "Browser-Erweiterung", ""]], ot(1));
+q("oAction", "Hauptsache", "Was tut man hauptsächlich damit?", [["✏️", "Etwas erstellen", ""], ["🔍", "Etwas finden", ""], ["📤", "Etwas teilen", ""], ["🗂️", "Etwas verwalten", ""], ["📏", "Etwas messen", ""], ["💬", "Sich austauschen", ""], ["💱", "Kaufen & verkaufen", ""]], ot(1));
+q("oInput", "Eingabe", "Wie kommt etwas hinein?", [["⌨️", "Eintippen", ""], ["📷", "Foto", ""], ["🎤", "Sprache", ""], ["📁", "Datei", ""], ["🤖", "Automatisch", ""]], ot(1));
+q("oOutput", "Ergebnis", "Was kommt am Ende heraus?", [["📋", "Eine Liste", ""], ["📄", "Ein Dokument / PDF", ""], ["🖼️", "Ein Bild", ""], ["💬", "Eine Nachricht", ""], ["🔢", "Eine Zahl oder Bewertung", ""]], ot(1));
+q("oScreens", "Bildschirme", "Welche Bildschirme braucht es?", [["🏠", "Start", ""], ["📋", "Liste", ""], ["📄", "Detailansicht", ""], ["✏️", "Bearbeiten", ""], ["👤", "Profil", ""], ["⚙️", "Einstellungen", ""]], ot(2));
+q("oPeople", "Nutzer untereinander", "Haben Nutzer miteinander zu tun?", [["➖", "Nein", "", "x"], ["👀", "Sehen sich gegenseitig", ""], ["💬", "Schreiben sich", ""], ["👥", "Arbeiten zusammen", ""]], ot(2));
+q("oUgc", "Inhalte von Nutzern", "Laden Nutzer eigene Inhalte hoch?", [["📝", "Texte", ""], ["🖼️", "Bilder", ""], ["🎥", "Videos", ""], ["➖", "Nein", "", "x"]], ot(2));
+q("oModerate", "Moderation", "Wer prüft Inhalte von Nutzern?", [["🙋", "Ich von Hand", ""], ["🚩", "Melden-Knopf", ""], ["🤖", "Automatischer Filter", ""]], { l: 2, if: and(K("Etwas anderes"), a => has(a, "oUgc", "Texte", "Bilder", "Videos")) });
+q("oFind", "Finden", "Wie findet man Dinge?", [["🔍", "Suche", ""], ["🎚️", "Filter", ""], ["🗂️", "Kategorien", ""], ["🗺️", "Auf einer Karte", ""]], ot(2));
+q("oFav", "Merken", "Kann man sich Dinge merken?", yesNo(), ot(2));
+q("oShare", "Teilen", "Kann man Dinge nach außen teilen?", [["🔗", "Link", ""], ["📱", "Social Media", ""], ["📧", "E-Mail", ""], ["➖", "Nein", "", "x"]], ot(2));
+q("oHist", "Verlauf", "Soll ein Verlauf gespeichert werden?", yesNo(), ot(2));
+q("oPrefs", "Einstellungen", "Was kann man einstellen?", [["🌗", "Hell / Dunkel", ""], ["🌍", "Sprache", ""], ["🔔", "Benachrichtigungen", ""], ["👤", "Profil", ""]], ot(2));
+q("oFirst", "Erster Start", "Was passiert beim ersten Öffnen?", [["🚀", "Direkt loslegen", ""], ["📖", "Kurze Einführung", ""], ["👤", "Konto anlegen", ""]], ot(2));
+q("oTemplates", "Vorlagen", "Soll es Vorlagen zum Starten geben?", yesNo(), ot(3));
+q("oCollab", "Zusammenarbeiten", "Können mehrere gleichzeitig an etwas arbeiten?", yesNo(), ot(3));
+q("oComments", "Kommentare", "Kann man Dinge kommentieren?", yesNo(), ot(3));
+q("oVersions", "Versionen", "Sollen ältere Versionen wiederherstellbar sein?", yesNo(), ot(3));
+q("oMap", "Karte", "Spielt ein Ort oder eine Karte eine Rolle?", yesNo(), ot(3));
+q("oCal", "Kalender", "Spielen Termine eine Rolle?", yesNo(), ot(3));
+q("oCharts", "Diagramme", "Sollen Zahlen als Diagramm gezeigt werden?", yesNo(), ot(3));
+q("oAuto", "Automatik", "Soll etwas automatisch passieren (z. B. jeden Morgen)?", yesNo(), ot(3));
+q("oAi", "KI-Funktionen", "Soll KI im Projekt mithelfen?", [["✍️", "Texte schreiben", ""], ["🔎", "Zusammenfassen", ""], ["💡", "Vorschläge machen", ""], ["🖼️", "Bilder erkennen", ""], ["➖", "Nein", "", "x"]], ot(3));
+q("oKeys", "Tastenkürzel", "Soll es Tastenkürzel geben?", yesNo(), ot(4));
+q("oThemes", "Designs", "Sollen Nutzer zwischen Farbthemen wählen können?", yesNo(), ot(4));
+q("oEmbed", "Einbetten", "Soll man es in andere Websites einbauen können?", yesNo(), ot(4));
+q("oApi", "Schnittstelle", "Sollen andere Programme darauf zugreifen können (API)?", yesNo(), ot(4));
+q("oPlugins", "Erweiterungen", "Sollen andere Erweiterungen dafür bauen können?", yesNo(), ot(4));
+q("oWidgets", "Widgets", "Soll es kleine Ansichten für den Startbildschirm geben?", yesNo(), ot(4));
+q("oPrintIt", "Drucken", "Soll man Ergebnisse drucken können?", yesNo(), ot(4));
+q("oGame", "Spielerisch", "Sollen Punkte oder Abzeichen motivieren?", yesNo(), ot(4));
+q("oLimits", "Grenzen", "Gibt es Grenzen pro Nutzer (z. B. 10 Einträge gratis)?", yesNo(), ot(4));
+
 /* Fragen, die die KI sich selbst ausdenkt, landen in diesem Bereich (siehe ai.js) */
 sec("ai", "Feinschliff durch die KI", "🤖", "Fragen, die die KI passend zu deinem Projekt stellt, bis keine Lücken mehr offen sind.");
 
@@ -1166,7 +1438,7 @@ Object.entries(MOVE).forEach(([id, s]) => { Q.find(q => q.id === id).sec = s; })
 Q.find(q => q.id === "nameStyle").sec = "launch";
 Q.find(q => q.id === "perspective").sec = "graphics";
 S.splice(S.findIndex(s => s.id === "camera"), 1);
-const ORDER = ["kind", "thoughts", "gbasics", "gplatform", "wsite", "app", "work", "shop", "bot", "auto", "learn", "dash",
+const ORDER = ["kind", "thoughts", "gbasics", "gplatform", "wsite", "app", "work", "shop", "bot", "auto", "learn", "dash", "other",
   "gdata", "acc", "dmod", "notify", "design", "a11y", "legal", "gbiz", "ops", "audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
   "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "ai", "final"];
 const SEQ = {
