@@ -835,6 +835,324 @@ q("gLaunch", "Veröffentlichung", "Wo soll es am Ende zu finden sein?", [
   ["▶️", "Google Play", ""], ["💻", "Zum Herunterladen für PC/Mac", ""], ["🏢", "Im Firmennetz", ""]
 ], { if: notGame });
 
+/* ---------- Feste Fragenkataloge je Projektart (ohne KI) ---------- */
+/* Verzweigungen: jede Frage erscheint nur, wenn ihr Auslöser passt. */
+const K = (...k) => iff("kind", ...k);
+const NG = f => a => notGame(a) && (!f || f(a));
+const shopPhys = iff("sWhat", "Physische Produkte", "Lebensmittel", "Abos & Boxen");
+const hasAcc = iff("gAccounts", "Mit E-Mail und Passwort", "Mit Google oder Apple", "Verschiedene Rollen", "Einfacher PIN oder Code");
+const wk = (...v) => and(K("Programm zum Arbeiten"), iff("wkArea", ...v));
+const notifyOn = a => Array.isArray(a.nWhen) ? a.nWhen.some(x => x !== "Keine" && x !== AI) : !!a.nWhen && a.nWhen !== "Keine" && a.nWhen !== AI;
+
+sec("wsite", "Website", "🌐", "Aufbau, Seiten und Inhalte deiner Website.");
+q("wType", "Art der Website", "Was für eine Website soll es werden?", [
+  ["🏢", "Firmen-Homepage", "Wer ihr seid, was ihr anbietet, wie man euch erreicht."], ["🎯", "Landingpage", "Eine Seite für ein Produkt oder eine Aktion."],
+  ["📰", "Blog / Magazin", "Regelmäßig neue Beiträge."], ["🖼️", "Portfolio", "Arbeiten und Projekte zeigen."], ["⚽", "Verein / Gruppe", ""],
+  ["🍝", "Restaurant / Laden", "Speisekarte, Öffnungszeiten, Anfahrt."], ["💍", "Event / Hochzeit", ""], ["🙋", "Persönliche Seite", ""]], { if: K("Website") });
+q("wPages", "Seiten", "Welche Seiten oder Bereiche soll es geben?", [
+  ["🏠", "Startseite", ""], ["👋", "Über uns", ""], ["🧰", "Angebot / Leistungen", ""], ["💶", "Preise", ""], ["🖼️", "Galerie", ""], ["📰", "Blog / News", ""],
+  ["👥", "Team", ""], ["📅", "Termine / Events", ""], ["⭐", "Bewertungen", ""], ["❓", "FAQ", ""], ["💼", "Jobs", ""], ["✉️", "Kontakt", ""]], { if: K("Website") });
+q("wGoal", "Ziel der Besucher", "Was sollen Besucher am Ende tun?", [
+  ["📞", "Anrufen", ""], ["✉️", "Kontaktformular ausfüllen", ""], ["📅", "Termin buchen", ""], ["🛒", "Etwas kaufen", ""], ["📬", "Newsletter abonnieren", ""],
+  ["🚶", "Vorbeikommen", ""], ["📖", "Einfach nur informieren", ""], ["📝", "Sich bewerben", ""]], { if: K("Website") });
+q("wStyle", "Startseite", "Wie soll die Startseite wirken?", [
+  ["🖼️", "Großes Bild oder Video oben", ""], ["🧾", "Klar und erklärend", "Viel Info auf einen Blick."], ["⬜", "Minimalistisch", "Wenig Text, viel Raum."],
+  ["📜", "Scroll-Geschichte", "Inhalte erscheinen beim Scrollen mit Animationen."], ["📰", "Wie ein Magazin", "Viele Beiträge in Kacheln."]], { l: 2, if: K("Website") });
+q("wContent", "Vorhandene Inhalte", "Was hast du schon?", [
+  ["📝", "Fertige Texte", ""], ["📸", "Eigene Fotos", ""], ["🏷️", "Logo", ""], ["🎥", "Videos", ""], ["➖", "Noch nichts", "Die KI soll Platzhalter und Textvorschläge schreiben.", "x"]], { l: 2, if: K("Website") });
+q("wEdit", "Inhalte pflegen", "Wer ändert später Texte und Bilder?", [
+  ["🔒", "Ändert sich kaum", "Änderungen macht dann die KI im Code."], ["✍️", "Ich selbst, ohne Programmieren", "Mit einem einfachen Bearbeitungsbereich."],
+  ["👥", "Mehrere Leute", "Mit eigenen Zugängen."]], { l: 2, if: K("Website") });
+q("wForm", "Kontaktformular", "Was soll im Kontaktformular abgefragt werden?", [
+  ["👤", "Name", ""], ["📧", "E-Mail", ""], ["📞", "Telefon", ""], ["💬", "Nachricht", ""], ["📎", "Datei-Upload", ""], ["📅", "Wunschtermin", ""], ["🔁", "Rückrufbitte", ""]],
+  { l: 2, if: and(K("Website"), or(iff("wPages", "Kontakt"), iff("wGoal", "Kontaktformular ausfüllen"))) });
+q("wBlog", "Blog", "Was soll der Blog können?", [
+  ["🗂️", "Kategorien", ""], ["💬", "Kommentare", ""], ["🔍", "Suche", ""], ["✍️", "Autorenprofile", ""], ["📬", "Newsletter bei neuem Beitrag", ""], ["📡", "RSS-Feed", ""]],
+  { l: 2, if: and(K("Website"), or(iff("wPages", "Blog / News"), iff("wType", "Blog / Magazin"))) });
+q("wGallery", "Galerie", "Wie soll die Galerie aussehen?", [
+  ["▦", "Bilderraster", ""], ["🎞️", "Diashow", ""], ["🗂️", "Nach Kategorien", ""], ["🔍", "Groß ansehen per Klick", ""], ["🎥", "Mit Videos", ""]],
+  { l: 3, if: and(K("Website"), iff("wPages", "Galerie")) });
+q("wEvents", "Termine", "Wie sollen Termine und Events erscheinen?", [
+  ["📋", "Als Liste", ""], ["📅", "Als Kalender", ""], ["✅", "Mit Anmeldung", ""], ["🎟️", "Mit Ticketverkauf", ""]],
+  { l: 3, if: and(K("Website"), iff("wPages", "Termine / Events")) });
+q("wSeo", "Bei Google gefunden werden", "Wie wichtig ist es, bei Google gefunden zu werden?", [
+  ["📍", "Sehr wichtig, in meiner Stadt", "Mit Google-Unternehmensprofil und Karte."], ["🌍", "Wichtig, überregional", ""], ["🤷", "Nicht so wichtig", "Leute kommen über Links.", "x"]], { l: 2, if: K("Website") });
+q("wExtras", "Extras", "Welche Extras soll die Website haben?", [
+  ["🗺️", "Karte mit Anfahrt", ""], ["🕒", "Öffnungszeiten", ""], ["💬", "WhatsApp-Button", ""], ["📱", "Social-Media-Links", ""], ["📸", "Instagram-Beiträge", ""],
+  ["⭐", "Google-Bewertungen", ""], ["📬", "Newsletter-Anmeldung", ""], ["🤖", "Chat-Assistent", ""]], { l: 2, if: K("Website") });
+q("wDomain", "Internetadresse", "Hast du schon eine eigene Internetadresse?", [
+  ["✅", "Ja, schon vorhanden", ""], ["🆕", "Nein, brauche eine neue", "z. B. deinname.de für ca. 1 € im Monat."], ["🆓", "Kostenlose Adresse reicht", "z. B. name.github.io"]], { l: 2, if: K("Website") });
+q("wAnalytics", "Besucherzahlen", "Willst du sehen, wie viele Besucher kommen?", [
+  ["➖", "Nein", "", "x"], ["🛡️", "Ja, datenschutzfreundlich", "Ohne Cookie-Banner, z. B. Plausible."], ["📊", "Ja, ausführlich", "z. B. Google Analytics, braucht Cookie-Einwilligung."]], { l: 3, if: K("Website") });
+q("wPrint", "Druckversion", "Sollen Seiten gut ausdruckbar sein (z. B. Speisekarte)?", [["🖨️", "Ja", ""], ["➖", "Nein", "", "x"]], { l: 4, if: K("Website") });
+
+sec("app", "Handy-App", "📱", "Aufbau und Funktionen deiner App.");
+q("aNav", "Aufbau", "Wie soll man sich durch die App bewegen?", [
+  ["⬇️", "Leiste unten mit Symbolen", "Wie bei Instagram oder WhatsApp."], ["☰", "Seitenmenü", ""], ["1️⃣", "Ein einziger Bildschirm", "Alles auf einen Blick."],
+  ["🃏", "Karten zum Wischen", ""], ["📜", "Endloser Feed", ""]], { if: K("Handy-App") });
+q("aScreens", "Hauptbereiche", "Welche Hauptbereiche braucht die App?", [
+  ["🏠", "Übersicht / Start", ""], ["📋", "Liste", ""], ["📅", "Kalender", ""], ["🗺️", "Karte", ""], ["💬", "Chat", ""], ["📈", "Statistik", ""],
+  ["⭐", "Favoriten", ""], ["🔍", "Suche", ""], ["👤", "Profil", ""], ["⚙️", "Einstellungen", ""]], { if: K("Handy-App") });
+q("aDevice", "Handy-Funktionen", "Welche Funktionen des Handys soll die App nutzen?", [
+  ["📷", "Kamera", ""], ["🖼️", "Fotos auswählen", ""], ["📍", "Standort", ""], ["🎤", "Mikrofon", ""], ["👥", "Kontakte", ""], ["📅", "Kalender", ""],
+  ["🔵", "Bluetooth", ""], ["📶", "NFC", "Kontaktlos scannen."], ["🏃", "Schritte & Gesundheit", ""], ["🔐", "Face ID / Fingerabdruck", ""], ["➖", "Keine", "", "x"]], { if: K("Handy-App") });
+q("aOnboard", "Erster Start", "Was passiert beim allerersten Öffnen?", [
+  ["🚀", "Direkt loslegen", ""], ["📖", "Kurze Einführung", "2–3 Seiten zum Durchwischen."], ["👤", "Erst Konto anlegen", ""], ["👆", "Geführte Tour", "Tipps direkt in der App."]], { l: 2, if: K("Handy-App") });
+q("aIap", "Kaufen in der App", "Wie wird in der App bezahlt?", [
+  ["📆", "Abo monatlich", ""], ["🗓️", "Abo jährlich", ""], ["🎁", "Gratis testen", "z. B. 7 Tage."], ["🔓", "Einmal freischalten", ""], ["🧩", "Einzelne Extras kaufen", ""]],
+  { l: 2, if: and(K("Handy-App"), iff("gMoney", "Einmal kaufen", "Abo")) });
+q("aExtras", "Extras", "Welche Extras soll die App haben?", [
+  ["🔲", "Widget für den Homescreen", ""], ["⌚", "Smartwatch", ""], ["📤", "Teilen mit anderen", ""], ["📲", "Tablet-Ansicht", ""], ["🗣️", "Siri / Sprachbefehle", ""], ["➖", "Keine", "", "x"]],
+  { l: 3, if: K("Handy-App") });
+q("aGestures", "Bedienung", "Welche Gesten soll es geben?", [
+  ["👆", "Nur Tippen", ""], ["👈", "Wischen zum Löschen", ""], ["✋", "Ziehen zum Sortieren", ""], ["⬇️", "Runterziehen zum Aktualisieren", ""], ["🤏", "Zoomen", ""]], { l: 3, if: K("Handy-App") });
+q("aHaptic", "Vibration", "Soll das Handy bei Aktionen leicht vibrieren?", [["📳", "Ja, dezent", ""], ["➖", "Nein", "", "x"]], { l: 4, if: K("Handy-App") });
+
+sec("work", "Programm für die Arbeit", "💼", "Welche Abläufe im Betrieb das Programm übernimmt.");
+q("wkBranche", "Branche", "In welcher Branche wird es genutzt?", [
+  ["🔨", "Handwerk", ""], ["🍽️", "Gastronomie", ""], ["🛍️", "Einzelhandel", ""], ["💇", "Friseur / Beauty", ""], ["🩺", "Praxis / Gesundheit", ""], ["🖥️", "Büro / Agentur", ""],
+  ["🏗️", "Bau", ""], ["🚚", "Logistik", ""], ["⚽", "Verein", ""], ["🏫", "Schule / Bildung", ""], ["🧩", "Andere Branche", ""]], { if: K("Programm zum Arbeiten") });
+q("wkArea", "Bereiche", "Welche Bereiche soll das Programm abdecken?", [
+  ["🤝", "Kunden", "Kontakte und Verlauf (CRM)."], ["📄", "Aufträge & Angebote", ""], ["📅", "Termine & Kalender", ""], ["✅", "Projekte & Aufgaben", ""],
+  ["📦", "Lager & Material", ""], ["🧾", "Rechnungen", ""], ["⏱️", "Zeiterfassung", ""], ["👷", "Mitarbeiter & Schichten", ""], ["📁", "Dokumente", ""],
+  ["🚐", "Fahrzeuge & Geräte", ""], ["🚚", "Bestellungen bei Lieferanten", ""]], { if: K("Programm zum Arbeiten") });
+q("wkWhere", "Arbeitsort", "Wo wird damit gearbeitet?", [
+  ["🖥️", "Am Schreibtisch", ""], ["📱", "Unterwegs beim Kunden", "Am Handy."], ["🏭", "In Werkstatt oder Lager", "Am Tablet, oft mit Handschuhen."], ["🌍", "Überall", ""]], { if: K("Programm zum Arbeiten") });
+q("wkNow", "Bisher", "Wie wird das heute erledigt?", [
+  ["📄", "Auf Papier", ""], ["📗", "Mit Excel", ""], ["💬", "Über WhatsApp", ""], ["💽", "Mit einem alten Programm", ""], ["🧠", "Alles im Kopf", ""]], { l: 2, if: K("Programm zum Arbeiten") });
+q("wkImport", "Alte Daten", "Sollen bestehende Daten übernommen werden?", [
+  ["📥", "Ja, alles", ""], ["👤", "Nur Kunden und Kontakte", ""], ["🆕", "Nein, neu anfangen", "", "x"]], { l: 2, if: and(K("Programm zum Arbeiten"), iff("wkNow", "Mit Excel", "Mit einem alten Programm")) });
+q("crmFields", "Kundendaten", "Was soll zu jedem Kunden gespeichert werden?", [
+  ["👤", "Name", ""], ["🏢", "Firma", ""], ["🏠", "Adresse", ""], ["📞", "Telefon", ""], ["📧", "E-Mail", ""], ["🎂", "Geburtstag", ""], ["🔢", "Kundennummer", ""],
+  ["🚦", "Status", "z. B. Interessent, Kunde, inaktiv."], ["📝", "Notizen", ""], ["📸", "Fotos", ""], ["💶", "Umsatz", ""]], { l: 2, if: wk("Kunden") });
+q("crmHistory", "Kundenverlauf", "Was soll im Verlauf eines Kunden stehen?", [
+  ["📝", "Notizen mit Datum", ""], ["📞", "Anrufe", ""], ["📧", "E-Mails", ""], ["📄", "Aufträge", ""], ["📎", "Dateien", ""], ["⏰", "Wiedervorlagen", "Erinnerung, sich zu melden."]], { l: 3, if: wk("Kunden") });
+q("ordFlow", "Auftragsablauf", "Welche Schritte durchläuft ein Auftrag?", [
+  ["📩", "Anfrage", ""], ["📄", "Angebot", ""], ["✅", "Auftrag", ""], ["🔧", "In Arbeit", ""], ["🏁", "Fertig", ""], ["🧾", "Rechnung", ""], ["💶", "Bezahlt", ""]], { l: 2, if: wk("Aufträge & Angebote") });
+q("ordQuote", "Angebote", "Was sollen Angebote können?", [
+  ["📋", "Aus Vorlagen erstellen", ""], ["🧮", "Positionen mit Preisen", ""], ["🏷️", "Rabatte", ""], ["📄", "Als PDF", ""], ["✍️", "Online annehmen lassen", ""], ["🔁", "In Rechnung umwandeln", ""]],
+  { l: 3, if: wk("Aufträge & Angebote") });
+q("calKind", "Kalender", "Was soll der Kalender können?", [
+  ["🙋", "Eigene Termine", ""], ["👥", "Team-Kalender", ""], ["🌐", "Kunden buchen online", ""], ["🔁", "Wiederkehrende Termine", ""], ["⏰", "Erinnerung an Kunden", "Per SMS oder E-Mail."],
+  ["🚪", "Räume oder Geräte buchen", ""], ["🔄", "Mit Google/Outlook abgleichen", ""]], { l: 2, if: wk("Termine & Kalender") });
+q("prjTasks", "Aufgaben", "Wie sollen Projekte und Aufgaben organisiert werden?", [
+  ["☑️", "Aufgabenlisten", ""], ["🗂️", "Board mit Spalten", "Wie Trello: Offen, In Arbeit, Fertig."], ["⏰", "Fristen", ""], ["🙋", "Zuständige Person", ""], ["✔️", "Checklisten", ""],
+  ["⏱️", "Zeit pro Aufgabe", ""], ["📎", "Dateien anhängen", ""], ["💬", "Kommentare", ""]], { l: 2, if: wk("Projekte & Aufgaben") });
+q("stockOps", "Lager", "Was soll die Lagerverwaltung können?", [
+  ["👀", "Bestand sehen", ""], ["➕", "Ein- und Ausbuchen", ""], ["⚠️", "Warnung bei Mindestbestand", ""], ["📷", "Barcode scannen", ""], ["📋", "Inventur", ""],
+  ["🏬", "Mehrere Lagerorte", ""], ["🚚", "Lieferanten zuordnen", ""]], { l: 2, if: wk("Lager & Material") });
+q("invOps", "Rechnungen", "Was müssen Rechnungen können?", [
+  ["📄", "Als PDF", ""], ["🔢", "Fortlaufende Nummern", ""], ["💶", "Mit Mehrwertsteuer", ""], ["🧑‍💼", "Kleinunternehmer ohne MwSt", ""], ["⏰", "Mahnungen", ""],
+  ["🧾", "E-Rechnung", "XRechnung oder ZUGFeRD, ab 2025 im B2B schrittweise Pflicht."], ["✅", "Zahlungseingang abhaken", ""], ["📤", "An Buchhaltung übergeben", ""]], { l: 2, if: wk("Rechnungen") });
+q("timeOps", "Zeiterfassung", "Was soll erfasst werden?", [
+  ["🚪", "Kommen und Gehen", ""], ["☕", "Pausen", ""], ["📁", "Pro Projekt oder Kunde", ""], ["🏖️", "Urlaub & Krankheit", ""], ["➕", "Überstunden", ""], ["📤", "Export für die Lohnabrechnung", ""]],
+  { l: 2, if: wk("Zeiterfassung") });
+q("staffOps", "Mitarbeiter", "Was soll es für Mitarbeiter geben?", [
+  ["🗓️", "Schichtplan", ""], ["🏖️", "Urlaubsanträge", ""], ["🗂️", "Stammdaten", ""], ["🎓", "Qualifikationen", ""], ["🔄", "Schichten tauschen", ""]], { l: 2, if: wk("Mitarbeiter & Schichten") });
+q("docOps", "Dokumente", "Was soll mit Dokumenten möglich sein?", [
+  ["⬆️", "Hochladen", ""], ["🗂️", "Ordner", ""], ["📋", "Vorlagen", ""], ["✍️", "Digital unterschreiben", ""], ["🕘", "Versionen", ""], ["🔍", "Text durchsuchen", ""]], { l: 2, if: wk("Dokumente") });
+q("fleetOps", "Fahrzeuge & Geräte", "Was soll zu Fahrzeugen und Geräten erfasst werden?", [
+  ["🔧", "Wartung & TÜV-Termine", ""], ["📘", "Fahrtenbuch", ""], ["🙋", "Wer hat was", ""], ["📸", "Schäden mit Foto", ""]], { l: 3, if: wk("Fahrzeuge & Geräte") });
+q("supOps", "Einkauf", "Was soll beim Bestellen helfen?", [
+  ["📝", "Bestellliste", ""], ["🏭", "Lieferanten", ""], ["📦", "Wareneingang prüfen", ""], ["💶", "Preise vergleichen", ""]], { l: 3, if: wk("Bestellungen bei Lieferanten") });
+q("wkReports", "Auswertungen", "Welche Auswertungen willst du sehen?", [
+  ["💶", "Umsatz", ""], ["⏳", "Offene Rechnungen", ""], ["📊", "Auslastung", ""], ["⏱️", "Arbeitszeiten", ""], ["🏆", "Beste Kunden", ""], ["📦", "Lagerwert", ""], ["➖", "Keine", "", "x"]],
+  { l: 2, if: K("Programm zum Arbeiten") });
+q("wkApproval", "Freigaben", "Muss etwas freigegeben werden, bevor es gilt?", [
+  ["➖", "Nein", "", "x"], ["👑", "Chef gibt frei", "z. B. Angebote, Urlaub, Bestellungen."], ["🪜", "Mehrstufig", ""]], { l: 3, if: K("Programm zum Arbeiten") });
+q("wkPrint", "Drucken", "Was muss gedruckt werden können?", [
+  ["📋", "Listen", ""], ["📄", "Lieferscheine", ""], ["🏷️", "Etiketten", ""], ["🧾", "Rechnungen", ""], ["➖", "Nichts", "", "x"]], { l: 3, if: K("Programm zum Arbeiten") });
+
+sec("shop", "Online-Shop", "🛒", "Was du verkaufst und wie Bestellung, Bezahlung und Versand laufen.");
+q("sWhat", "Was wird verkauft", "Was verkaufst du?", [
+  ["📦", "Physische Produkte", ""], ["💾", "Digitale Produkte", "Downloads, Kurse, Vorlagen."], ["🛎️", "Dienstleistungen & Termine", ""], ["🎁", "Gutscheine", ""],
+  ["🔁", "Abos & Boxen", ""], ["🥖", "Lebensmittel", ""]], { if: K("Online-Shop") });
+q("sCount", "Anzahl Produkte", "Wie viele Produkte ungefähr?", [
+  ["🔟", "Bis 10", ""], ["💯", "Bis 100", ""], ["🔢", "Bis 1.000", ""], ["🏬", "Mehr als 1.000", ""]], { if: K("Online-Shop") });
+q("sPlatform", "Shop-Grundlage", "Worauf soll der Shop aufbauen?", [
+  ["🧩", "Fertiges Shopsystem", "z. B. Shopify, schnell startklar, monatliche Gebühr."], ["🛠️", "Komplett selbst gebaut", "Volle Freiheit, mehr Aufwand."],
+  ["🔗", "In bestehende Website einbauen", ""]], { if: K("Online-Shop") });
+q("sPay", "Bezahlarten", "Wie sollen Kunden bezahlen können?", [
+  ["🅿️", "PayPal", ""], ["💳", "Kreditkarte", ""], ["📱", "Apple Pay / Google Pay", ""], ["🧾", "Kauf auf Rechnung", "z. B. über Klarna."], ["🏦", "Vorkasse", ""],
+  ["🔁", "Lastschrift", ""], ["💶", "Bar bei Abholung", ""]], { if: K("Online-Shop") });
+q("sShip", "Versand", "Wie kommen die Produkte zum Kunden?", [
+  ["📮", "DHL", ""], ["📦", "Hermes / DPD / GLS", ""], ["🏪", "Abholung", ""], ["🚲", "Eigene Lieferung", ""], ["🚛", "Spedition", ""], ["🌍", "Auch ins Ausland", ""]],
+  { if: and(K("Online-Shop"), shopPhys) });
+q("sShipCost", "Versandkosten", "Wie werden Versandkosten berechnet?", [
+  ["💶", "Pauschal", ""], ["⚖️", "Nach Gewicht", ""], ["🎁", "Kostenlos ab einem Betrag", ""], ["🆓", "Immer kostenlos", "", "x"]], { l: 2, if: and(K("Online-Shop"), shopPhys) });
+q("sVariants", "Varianten", "Gibt es Produkte in Varianten?", [
+  ["📏", "Größen", ""], ["🎨", "Farben", ""], ["✍️", "Personalisierung", "z. B. Gravur oder Name."], ["🧺", "Sets & Bundles", ""], ["➖", "Keine", "", "x"]], { l: 2, if: K("Online-Shop") });
+q("sStock", "Bestand", "Wie soll mit dem Lagerbestand umgegangen werden?", [
+  ["🔢", "Automatisch mitzählen", ""], ["🚫", "„Ausverkauft“ anzeigen", ""], ["⏳", "Vorbestellen erlauben", ""], ["➖", "Kein Bestand nötig", "", "x"]], { l: 2, if: and(K("Online-Shop"), shopPhys) });
+q("sDigital", "Auslieferung digital", "Wie bekommt der Kunde digitale Produkte?", [
+  ["⬇️", "Download-Link", ""], ["📧", "Per E-Mail", ""], ["🔑", "Lizenzschlüssel", ""], ["🎓", "Zugang zu einem Kurs", ""]], { l: 2, if: and(K("Online-Shop"), iff("sWhat", "Digitale Produkte")) });
+q("sService", "Buchung", "Wie werden Dienstleistungen gebucht?", [
+  ["📅", "Termin auswählen", ""], ["⏱️", "Dauer wählen", ""], ["🙋", "Mitarbeiter wählen", ""], ["💶", "Anzahlung", ""]], { l: 2, if: and(K("Online-Shop"), iff("sWhat", "Dienstleistungen & Termine")) });
+q("sCustomer", "Kundenkonto", "Wie sollen Kunden bestellen?", [
+  ["👤", "Kundenkonto Pflicht", ""], ["🙂", "Konto freiwillig", ""], ["🚪", "Als Gast", ""], ["❤️", "Wunschliste", ""], ["🧾", "Bestellverlauf", ""]], { l: 2, if: K("Online-Shop") });
+q("sPromo", "Rabatte", "Welche Rabatte und Aktionen soll es geben?", [
+  ["🏷️", "Rabattcodes", ""], ["🔥", "Sale-Preise", ""], ["📦", "Mengenrabatt", ""], ["🎁", "Gratis-Geschenk", ""], ["⭐", "Treuepunkte", ""], ["➖", "Keine", "", "x"]], { l: 2, if: K("Online-Shop") });
+q("sTax", "Steuern", "Wie wird die Steuer berechnet?", [
+  ["💶", "Mit Mehrwertsteuer (19 % / 7 %)", ""], ["🧑‍💼", "Kleinunternehmer", "Ohne Mehrwertsteuer."], ["🇪🇺", "Auch EU-Ausland", "OSS-Verfahren."]], { l: 2, if: K("Online-Shop") });
+q("sReturns", "Rückgabe", "Wie laufen Rücksendungen?", [
+  ["📅", "14 Tage (gesetzlich)", ""], ["🗓️", "30 Tage", ""], ["🏷️", "Retourenschein zum Ausdrucken", ""], ["➖", "Keine Rückgabe möglich", "z. B. bei Personalisiertem.", "x"]],
+  { l: 2, if: and(K("Online-Shop"), shopPhys) });
+q("sMail", "Shop-E-Mails", "Welche E-Mails soll der Shop automatisch verschicken?", [
+  ["✅", "Bestellbestätigung", ""], ["🚚", "Versand mit Sendungsverfolgung", ""], ["🧾", "Rechnung", ""], ["⭐", "Bitte um Bewertung", ""], ["🛒", "Erinnerung an vollen Warenkorb", ""]],
+  { l: 3, if: K("Online-Shop") });
+q("sFilters", "Suchen & Filtern", "Wie finden Kunden Produkte?", [
+  ["🗂️", "Kategorien", ""], ["🔍", "Suche", ""], ["💶", "Preisfilter", ""], ["📏", "Größen- und Farbfilter", ""], ["↕️", "Sortieren", ""]], { l: 3, if: K("Online-Shop") });
+q("sReviews", "Bewertungen", "Sollen Kunden Produkte bewerten können?", [
+  ["⭐", "Ja, mit Sternen und Text", ""], ["📸", "Ja, auch mit Fotos", ""], ["➖", "Nein", "", "x"]], { l: 3, if: K("Online-Shop") });
+q("sMarket", "Marktplätze", "Soll auch über Marktplätze verkauft werden?", [
+  ["🅰️", "Amazon", ""], ["🧶", "Etsy", ""], ["🔨", "eBay", ""], ["📸", "Instagram / Facebook Shop", ""], ["➖", "Nein", "", "x"]], { l: 4, if: K("Online-Shop") });
+
+sec("bot", "KI-Assistent", "🤖", "Wo dein Assistent arbeitet, was er weiß und was er darf.");
+q("bWhere", "Einsatzort", "Wo soll der Assistent erreichbar sein?", [
+  ["🌐", "Auf meiner Website", ""], ["💬", "In WhatsApp", ""], ["✈️", "In Telegram", ""], ["📱", "In einer eigenen App", ""], ["🏢", "Intern für mein Team", ""], ["📞", "Am Telefon", "Mit Sprache."]],
+  { if: K("KI-Assistent / Chatbot") });
+q("bTasks", "Aufgaben", "Was soll der Assistent erledigen?", [
+  ["❓", "Fragen beantworten", ""], ["📅", "Termine buchen", ""], ["🛒", "Bestellungen aufnehmen", ""], ["✍️", "Texte schreiben", ""], ["📧", "E-Mails beantworten", ""],
+  ["📄", "Dokumente zusammenfassen", ""], ["🔎", "Daten nachschlagen", "z. B. Lieferstatus."], ["💡", "Beraten & empfehlen", ""]], { if: K("KI-Assistent / Chatbot") });
+q("bKnow", "Wissen", "Woher bekommt der Assistent sein Wissen?", [
+  ["🌐", "Von meiner Website", ""], ["📄", "Aus PDFs und Dokumenten", ""], ["❓", "Aus einer FAQ-Liste", ""], ["📦", "Aus dem Produktkatalog", ""], ["🗄️", "Aus meinem Programm / Datenbank", ""],
+  ["🌍", "Allgemeinwissen reicht", "", "x"]], { if: K("KI-Assistent / Chatbot") });
+q("bTone", "Tonfall", "Wie soll er sprechen?", [
+  ["😊", "Locker, per Du", ""], ["🎩", "Höflich, per Sie", ""], ["😄", "Witzig", ""], ["📏", "Sachlich und kurz", ""], ["🎭", "Wie eine bestimmte Figur", "z. B. ein Maskottchen."]],
+  { l: 2, if: K("KI-Assistent / Chatbot") });
+q("bHuman", "Wenn er nicht weiterweiß", "Was passiert, wenn der Assistent nicht weiterweiß?", [
+  ["🙏", "Sagt es ehrlich", ""], ["🧑", "Leitet an einen Menschen weiter", ""], ["✉️", "Bietet Kontaktformular an", ""], ["📞", "Bietet Rückruf an", ""]], { l: 2, if: K("KI-Assistent / Chatbot") });
+q("bMemory", "Gedächtnis", "Woran soll er sich erinnern?", [
+  ["➖", "An nichts", "Jedes Gespräch startet neu.", "x"], ["💬", "Innerhalb eines Gesprächs", ""], ["🧠", "Über mehrere Gespräche", "Braucht ein Nutzerkonto."]], { l: 2, if: K("KI-Assistent / Chatbot") });
+q("bLimits", "Verboten", "Was darf der Assistent auf keinen Fall?", [
+  ["💶", "Preise oder Rabatte versprechen", ""], ["⚖️", "Rechts- oder Medizinrat geben", ""], ["🥊", "Über Konkurrenz reden", ""], ["🔒", "Persönliche Daten abfragen", ""], ["🗳️", "Über Politik reden", ""]],
+  { l: 2, if: K("KI-Assistent / Chatbot") });
+q("bCost", "Qualität vs. Kosten", "Was ist dir wichtiger?", [
+  ["💰", "Möglichst günstig", ""], ["⚖️", "Gute Mitte", ""], ["🏆", "Beste Antworten", ""]], { l: 3, if: K("KI-Assistent / Chatbot") });
+q("bAdmin", "Verwaltung", "Was willst du im Hintergrund sehen und steuern?", [
+  ["📜", "Gespräche nachlesen", ""], ["➕", "Wissen selbst ergänzen", ""], ["📊", "Häufigste Fragen", ""], ["⏸️", "Assistent pausieren", ""]], { l: 3, if: K("KI-Assistent / Chatbot") });
+q("bHours", "Erreichbarkeit", "Wann soll der Assistent antworten?", [["🕐", "Rund um die Uhr", ""], ["🏢", "Nur zu Geschäftszeiten", ""]], { l: 4, if: K("KI-Assistent / Chatbot") });
+
+sec("auto", "Automatisierung", "⚙️", "Was wann automatisch passieren soll.");
+q("auTrigger", "Auslöser", "Wann soll die Automatisierung loslaufen?", [
+  ["⏰", "Zu festen Zeiten", ""], ["📧", "Bei neuer E-Mail", ""], ["📝", "Bei neuem Formular-Eintrag", ""], ["📁", "Bei neuer Datei", ""], ["🛒", "Bei neuer Bestellung", ""],
+  ["📗", "Bei Änderung in einer Tabelle", ""], ["👆", "Per Knopfdruck", ""]], { if: K("Automatisierung") });
+q("auFreq", "Wie oft", "Wie oft soll sie laufen?", [
+  ["⏱️", "Alle paar Minuten", ""], ["🕐", "Stündlich", ""], ["📅", "Täglich", ""], ["🗓️", "Wöchentlich", ""], ["📆", "Monatlich", ""]], { if: and(K("Automatisierung"), iff("auTrigger", "Zu festen Zeiten")) });
+q("auSource", "Daten von", "Woher kommen die Daten?", [
+  ["📧", "E-Mail-Postfach", ""], ["📗", "Excel / Google Sheets", ""], ["📝", "Website-Formular", ""], ["🛒", "Shop", ""], ["📅", "Kalender", ""],
+  ["☁️", "Cloud-Ordner", "Google Drive, Dropbox, OneDrive."], ["🌐", "Andere Websites", ""], ["🗄️", "Datenbank / Programm", ""]], { if: K("Automatisierung") });
+q("auAction", "Aktion", "Was soll dann passieren?", [
+  ["📧", "E-Mail senden", ""], ["📗", "Tabelle füllen", ""], ["📄", "PDF erstellen", ""], ["💬", "Nachricht schicken", "WhatsApp, Slack, Teams."], ["📁", "Datei ablegen", ""],
+  ["📅", "Kalendereintrag", ""], ["🧾", "Rechnung erstellen", ""], ["🧠", "Mit KI zusammenfassen", ""]], { if: K("Automatisierung") });
+q("auVolume", "Menge", "Wie viel ist zu tun?", [["🙂", "Ein paar Dinge am Tag", ""], ["📈", "Dutzende am Tag", ""], ["🏭", "Hunderte oder mehr", ""]], { l: 2, if: K("Automatisierung") });
+q("auError", "Bei Fehlern", "Was soll bei einem Fehler passieren?", [
+  ["📧", "Mir Bescheid geben", ""], ["🔁", "Nochmal versuchen", ""], ["📜", "Protokollieren", ""], ["⏹️", "Anhalten", ""]], { l: 2, if: K("Automatisierung") });
+q("auTool", "Werkzeug", "Womit soll das umgesetzt werden?", [
+  ["🧩", "Mit fertigen Diensten", "z. B. Make, Zapier oder n8n, ohne viel Code."], ["💻", "Mit eigenem Code", ""], ["💰", "Was am günstigsten ist", ""]], { l: 2, if: K("Automatisierung") });
+q("auApprove", "Bestätigen", "Soll vor dem Ausführen nachgefragt werden?", [["🚀", "Nie, einfach machen", "", "x"], ["⚠️", "Nur bei wichtigen Dingen", ""], ["✋", "Immer", ""]], { l: 3, if: K("Automatisierung") });
+q("auLog", "Übersicht", "Willst du sehen, was gelaufen ist?", [["📜", "Protokoll aller Läufe", ""], ["📊", "Statistik", ""], ["➖", "Nicht nötig", "", "x"]], { l: 3, if: K("Automatisierung") });
+
+sec("learn", "Lernen & Quiz", "🎓", "Was gelernt wird und wie.");
+q("lTopic", "Thema", "Worum geht es beim Lernen?", [
+  ["📐", "Schulfach", ""], ["🗣️", "Sprache", ""], ["🚗", "Prüfung / Führerschein", ""], ["🏢", "Schulung in der Firma", ""], ["🎸", "Hobby", ""], ["🌍", "Allgemeinwissen", ""]], { if: K("Lern-App / Quiz") });
+q("lLevel", "Niveau", "Für welches Niveau?", [["🌱", "Anfänger", ""], ["📈", "Fortgeschrittene", ""], ["🔀", "Gemischt, passt sich an", ""]], { if: K("Lern-App / Quiz") });
+q("lTypes", "Aufgabenarten", "Welche Aufgabenarten soll es geben?", [
+  ["🔘", "Multiple Choice", ""], ["✅", "Richtig / Falsch", ""], ["✏️", "Lückentext", ""], ["🃏", "Karteikarten", ""], ["🔗", "Zuordnen", ""], ["⌨️", "Freie Antwort", ""],
+  ["🖼️", "Bilder erkennen", ""], ["🔊", "Hören & Sprechen", ""]], { if: K("Lern-App / Quiz") });
+q("lContent", "Inhalte", "Wer erstellt die Lerninhalte?", [
+  ["🙋", "Ich gebe sie vor", ""], ["👩‍🏫", "Lehrer oder Trainer in der App", ""], ["🧠", "KI erzeugt sie", ""], ["📗", "Import aus Excel", ""]], { if: K("Lern-App / Quiz") });
+q("lProgress", "Motivation", "Wie wird Fortschritt belohnt?", [
+  ["🆙", "Level", ""], ["⭐", "Punkte", ""], ["🏅", "Abzeichen", ""], ["🔥", "Lernserie", "Jeden Tag dranbleiben."], ["🔁", "Schlaue Wiederholung", "Schwieriges kommt öfter."], ["📜", "Zertifikat", ""]],
+  { l: 2, if: K("Lern-App / Quiz") });
+q("lModes", "Modi", "Welche Lernmodi soll es geben?", [
+  ["🏋️", "Üben", ""], ["⏱️", "Prüfung mit Zeit", ""], ["🆚", "Duell gegen andere", ""], ["📆", "Tagesquiz", ""]], { l: 2, if: K("Lern-App / Quiz") });
+q("lTeacher", "Lehrer-Bereich", "Braucht es einen Bereich für Lehrer oder Trainer?", [
+  ["🏫", "Klassen / Gruppen", ""], ["📤", "Aufgaben zuweisen", ""], ["📊", "Ergebnisse sehen", ""], ["➖", "Nein", "", "x"]], { l: 2, if: K("Lern-App / Quiz") });
+q("lFeedback", "Rückmeldung", "Wann erfährt man, ob die Antwort richtig war?", [
+  ["⚡", "Sofort", ""], ["💡", "Sofort mit Erklärung", ""], ["🏁", "Erst am Ende", ""]], { l: 3, if: K("Lern-App / Quiz") });
+
+sec("dash", "Dashboard", "📊", "Welche Zahlen woher kommen und wie sie aussehen.");
+q("dSrc", "Datenquellen", "Woher kommen die Zahlen?", [
+  ["📗", "Excel / Google Sheets", ""], ["🛒", "Shop", ""], ["🧾", "Buchhaltung", ""], ["🌐", "Website-Statistik", ""], ["🗄️", "Datenbank / Programm", ""], ["📸", "Social Media", ""],
+  ["✍️", "Von Hand eingeben", ""], ["📡", "Sensoren & Geräte", ""]], { if: K("Dashboard / Auswertung") });
+q("dKpi", "Kennzahlen", "Welche Zahlen sind wichtig?", [
+  ["💶", "Umsatz", ""], ["📉", "Kosten & Gewinn", ""], ["👥", "Kunden", ""], ["📦", "Bestellungen", ""], ["🏬", "Lagerbestand", ""], ["⏱️", "Arbeitszeit", ""], ["👀", "Besucher", ""], ["🎯", "Ziel vs. Ist", ""]],
+  { if: K("Dashboard / Auswertung") });
+q("dCharts", "Darstellung", "Wie sollen die Zahlen dargestellt werden?", [
+  ["🔢", "Große Zahlen-Kacheln", ""], ["📈", "Linien über die Zeit", ""], ["📊", "Balken", ""], ["🥧", "Tortendiagramme", ""], ["📋", "Tabellen", ""], ["🗺️", "Karten", ""]], { l: 2, if: K("Dashboard / Auswertung") });
+q("dRefresh", "Aktualität", "Wie aktuell müssen die Zahlen sein?", [["⚡", "Live", ""], ["🕐", "Stündlich", ""], ["📅", "Täglich", ""], ["👆", "Auf Knopfdruck", ""]], { l: 2, if: K("Dashboard / Auswertung") });
+q("dFilter", "Filter", "Wonach soll man filtern können?", [
+  ["📅", "Zeitraum", ""], ["📍", "Standort", ""], ["🙋", "Mitarbeiter", ""], ["📦", "Produkt", ""], ["🤝", "Kunde", ""]], { l: 2, if: K("Dashboard / Auswertung") });
+q("dAlert", "Warnungen", "Soll das Dashboard selbst Bescheid geben?", [
+  ["⚠️", "Bei Grenzwerten", "z. B. Umsatz unter Ziel."], ["📧", "Wochenbericht per E-Mail", ""], ["➖", "Nein", "", "x"]], { l: 3, if: K("Dashboard / Auswertung") });
+q("dExport", "Weitergeben", "Wie sollen Auswertungen weitergegeben werden?", [["📄", "Als PDF", ""], ["📗", "Als Excel", ""], ["🔗", "Per Link", ""], ["➖", "Gar nicht", "", "x"]], { l: 3, if: K("Dashboard / Auswertung") });
+
+sec("acc", "Konten & Rechte", "🔐", "Wer sich anmeldet und wer was darf.");
+q("accReg", "Registrierung", "Wer darf sich ein Konto anlegen?", [
+  ["🌍", "Jeder", ""], ["✉️", "Nur mit Einladung", ""], ["👑", "Nur ich lege Konten an", ""]], { l: 2, if: NG(hasAcc) });
+q("accRoles", "Rollen", "Welche Rollen gibt es?", [
+  ["👑", "Inhaber / Admin", ""], ["🧑‍💼", "Teamleiter", ""], ["👷", "Mitarbeiter", ""], ["🛍️", "Kunde", ""], ["👀", "Nur lesen", ""]], { if: NG(iff("gAccounts", "Verschiedene Rollen")) });
+q("accRights", "Rechte", "Was dürfen normale Mitarbeiter?", [
+  ["👀", "Alles sehen", ""], ["🙋", "Nur eigene Daten sehen", ""], ["✏️", "Bearbeiten", ""], ["🗑️", "Löschen", ""], ["💶", "Preise & Umsätze sehen", ""]],
+  { l: 2, if: NG(iff("gAccounts", "Verschiedene Rollen")) });
+q("accSec", "Sicherheit", "Welche Sicherheitsfunktionen?", [
+  ["🔁", "Passwort zurücksetzen", ""], ["📲", "Zwei-Faktor-Anmeldung", ""], ["⏲️", "Automatisch abmelden", ""], ["🗑️", "Konto selbst löschen", ""]], { l: 3, if: NG(hasAcc) });
+q("accProfile", "Profil", "Was gehört zum Nutzerprofil?", [
+  ["👤", "Name", ""], ["🖼️", "Foto", ""], ["📞", "Telefon", ""], ["🏠", "Adresse", ""], ["🎂", "Geburtstag", ""]], { l: 3, if: NG(hasAcc) });
+
+sec("dmod", "Daten im Detail", "🗃️", "Suchen, Import, Export und Sicherung.");
+q("dmSearch", "Suchen & Filtern", "Wie findet man Einträge wieder?", [
+  ["🔍", "Suche", ""], ["🎚️", "Filter", ""], ["↕️", "Sortieren", ""], ["💾", "Gespeicherte Ansichten", ""]], { l: 2, if: NG(a => a.gData !== undefined && !has(a, "gData", "Nichts")) });
+q("dmIO", "Import & Export", "Was soll rein und raus können?", [
+  ["📥", "Excel importieren", ""], ["📤", "Excel exportieren", ""], ["📄", "PDF erzeugen", ""], ["🖨️", "Drucken", ""], ["➖", "Nichts davon", "", "x"]], { l: 2, if: NG(a => a.gData !== undefined && !has(a, "gData", "Nichts")) });
+q("dmFiles", "Dateien", "Welche Dateien werden hochgeladen?", [
+  ["📸", "Fotos", ""], ["📄", "PDFs", ""], ["🎥", "Videos", ""], ["📊", "Office-Dateien", ""]], { l: 2, if: NG(iff("gData", "Bilder & Dateien")) });
+q("dmHistory", "Änderungen", "Soll nachvollziehbar sein, wer was geändert hat?", [
+  ["📜", "Ja, mit Verlauf", ""], ["🗑️", "Papierkorb zum Wiederherstellen", ""], ["➖", "Nicht nötig", "", "x"]], { l: 3, if: NG(a => a.gData !== undefined && !has(a, "gData", "Nichts")) });
+q("dmBackup", "Sicherung", "Wie oft sollen die Daten gesichert werden?", [["📅", "Täglich", ""], ["🗓️", "Wöchentlich", ""], ["🤷", "Egal, Hauptsache sicher", ""]], { l: 3, if: NG(a => a.gData !== undefined && !has(a, "gData", "Nichts")) });
+
+sec("notify", "Benachrichtigungen", "🔔", "Wann und wie es Bescheid gibt.");
+q("nWhen", "Anlass", "Wann soll es Bescheid geben?", [
+  ["➖", "Keine", "", "x"], ["⏰", "Erinnerungen an Termine & Fristen", ""], ["📩", "Neue Nachricht oder Anfrage", ""], ["🔄", "Wenn sich ein Status ändert", ""],
+  ["📰", "Tägliche Zusammenfassung", ""], ["📣", "Neuigkeiten & Angebote", ""]], { if: NG() });
+q("nHow", "Weg", "Auf welchem Weg?", [
+  ["📲", "Push aufs Handy", ""], ["📧", "E-Mail", ""], ["💬", "SMS", ""], ["🟢", "WhatsApp", ""], ["🔔", "Nur in der App", ""]], { l: 2, if: NG(notifyOn) });
+q("nWho", "Empfänger", "Wer bekommt die Benachrichtigungen?", [["🙋", "Ich", ""], ["👷", "Mitarbeiter", ""], ["🛍️", "Kunden", ""]], { l: 3, if: NG(notifyOn) });
+
+sec("design", "Design im Detail", "🎨", "Farben, Schrift, Logo und Bilder.");
+q("deColors", "Farben", "Welche Farben?", [
+  ["🔵", "Blau", ""], ["🟢", "Grün", ""], ["🔴", "Rot", ""], ["🟠", "Orange", ""], ["🟣", "Lila", ""], ["⚫", "Schwarz-Weiß", ""], ["🌸", "Pastell", ""], ["🏷️", "Meine Markenfarben", ""]],
+  { l: 2, if: NG() });
+q("deLogo", "Logo", "Wie sieht es mit einem Logo aus?", [["✅", "Habe eins", ""], ["🆕", "Soll mitentworfen werden", ""], ["🔤", "Nur der Name als Schriftzug", ""]], { l: 2, if: NG() });
+q("deFont", "Schrift", "Welche Art Schrift?", [["🔤", "Modern und schlicht", ""], ["📜", "Klassisch", ""], ["🎈", "Verspielt", ""], ["⌨️", "Technisch", ""]], { l: 3, if: NG() });
+q("deImages", "Bilder", "Welche Art von Bildern?", [["📸", "Eigene Fotos", ""], ["🖼️", "Lizenzfreie Fotos", ""], ["🎨", "Illustrationen", ""], ["🔣", "Nur Symbole", ""]], { l: 3, if: NG() });
+q("deAnim", "Bewegung", "Wie viel Bewegung und Animation?", [["➖", "Keine", "", "x"], ["✨", "Dezent", ""], ["🎢", "Viel und verspielt", ""]], { l: 3, if: NG() });
+
+sec("a11y", "Barrierefreiheit", "♿", "Damit es möglichst alle benutzen können.");
+q("axNeeds", "Barrierefreiheit", "Worauf soll besonders geachtet werden?", [
+  ["🔠", "Große Schrift", ""], ["🌗", "Starker Kontrast", ""], ["🔊", "Vorlesbar (Screenreader)", ""], ["💬", "Einfache Sprache", ""], ["⌨️", "Bedienung ohne Maus", ""],
+  ["➖", "Nichts Besonderes", "Normale gute Bedienbarkeit.", "x"]], { l: 3, if: NG() });
+
+sec("legal", "Recht & Datenschutz", "⚖️", "Pflichtangaben und Umgang mit Daten.");
+q("lgDocs", "Rechtstexte", "Welche Rechtstexte werden gebraucht?", [
+  ["📇", "Impressum", ""], ["🔒", "Datenschutzerklärung", ""], ["📜", "AGB", ""], ["🍪", "Cookie-Einwilligung", ""], ["📬", "Einwilligung für Newsletter", ""], ["🤷", "Weiß nicht, bitte prüfen", "", "x"]],
+  { l: 2, if: NG() });
+q("lgData", "Datenrechte", "Was sollen Nutzer mit ihren Daten tun können?", [
+  ["📤", "Daten herunterladen", ""], ["🗑️", "Alles löschen lassen", ""], ["⏳", "Automatisch löschen nach Zeit", ""]], { l: 3, if: NG(hasAcc) });
+q("lgKids", "Kinder", "Wie werden Kinder geschützt?", [
+  ["👪", "Eltern müssen zustimmen", ""], ["🚫", "Keine Werbung", ""], ["🔒", "Keine Chats mit Fremden", ""], ["📉", "So wenig Daten wie möglich", ""]], { l: 2, if: NG(iff("gAudience", "Kinder")) });
+
+sec("ops", "Betrieb & Pflege", "🛠️", "Was nach dem Start passiert.");
+q("opMaint", "Wartung", "Wer kümmert sich nach dem Start darum?", [
+  ["🙋", "Ich selbst", ""], ["🧑‍💻", "Jemand Technisches", ""], ["🧘", "Möglichst wartungsfrei", "Soll einfach laufen."]], { l: 2, if: NG() });
+q("opSupport", "Hilfe für Nutzer", "Wie bekommen Nutzer Hilfe?", [
+  ["❓", "FAQ", ""], ["✉️", "Kontaktformular", ""], ["💬", "Chat", ""], ["🎥", "Anleitung oder Video", ""], ["➖", "Brauchen keine", "", "x"]], { l: 3, if: NG() });
+q("opStats", "Nutzungsstatistik", "Willst du sehen, wie es genutzt wird?", [
+  ["➖", "Nein", "", "x"], ["🛡️", "Anonym und datenschutzfreundlich", ""], ["📊", "Ausführlich", ""]], { l: 3, if: NG() });
+q("opLater", "Später", "Was könnte später dazukommen?", [
+  ["👥", "Viel mehr Nutzer", ""], ["🧩", "Weitere Funktionen", ""], ["📱", "App-Version", ""], ["🌍", "Weitere Sprachen", ""], ["➖", "Nichts geplant", "", "x"]], { l: 4, if: NG() });
+
 /* Fragen, die die KI sich selbst ausdenkt, landen in diesem Bereich (siehe ai.js) */
 sec("ai", "Feinschliff durch die KI", "🤖", "Fragen, die die KI passend zu deinem Projekt stellt, bis keine Lücken mehr offen sind.");
 
@@ -848,7 +1166,8 @@ Object.entries(MOVE).forEach(([id, s]) => { Q.find(q => q.id === id).sec = s; })
 Q.find(q => q.id === "nameStyle").sec = "launch";
 Q.find(q => q.id === "perspective").sec = "graphics";
 S.splice(S.findIndex(s => s.id === "camera"), 1);
-const ORDER = ["kind", "thoughts", "gbasics", "gplatform", "gdata", "gbiz", "audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
+const ORDER = ["kind", "thoughts", "gbasics", "gplatform", "wsite", "app", "work", "shop", "bot", "auto", "learn", "dash",
+  "gdata", "acc", "dmod", "notify", "design", "a11y", "legal", "gbiz", "ops", "audience", "platform", "vision", "idea", "core", "mechanics", "controls", "difficulty", "progression", "multiplayer",
   "world", "story", "graphics", "audio", "ui", "access", "rules", "data", "monetization", "tech", "launch", "liveops", "ai", "final"];
 const SEQ = {
   audience: ["age", "skill", "whereplay", "reading"],

@@ -4,7 +4,7 @@ const LEVELS = [
   { n: 1, name: "Schnell", tag: "Nur das Wichtigste", desc: "Die großen Entscheidungen. Den Rest übernimmt die KI beim Bauen.", ai: "ca. 10 KI-Fragen" },
   { n: 2, name: "Standard", tag: "Gute Balance", desc: "Alle wichtigen Punkte, ohne dich mit Kleinkram aufzuhalten.", ai: "ca. 25 KI-Fragen" },
   { n: 3, name: "Detailliert", tag: "Für Planer", desc: "Auch die Details: Sonderfälle, Abläufe, Feinheiten.", ai: "ca. 50 KI-Fragen" },
-  { n: 4, name: "Alles", tag: "Jede Kleinigkeit", desc: "Die KI fragt so lange, bis wirklich nichts mehr offen ist.", ai: "bis alles geklärt ist" }
+  { n: 4, name: "Alles", tag: "Jede Kleinigkeit", desc: "Wirklich jedes Detail, ganz ohne Fachwissen.", ai: "bis alles geklärt ist" }
 ];
 const blank = level => ({ view: "start", level: level || 2, off: {}, a: {}, notes: {}, noteOpen: {}, sugg: {}, fromThoughts: {}, skipKnown: false, cur: null, tab: "prompt", done: {}, resetArm: false, pid: null, title: "" });
 let st = blank();
@@ -17,9 +17,10 @@ const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.codePointAt(0))
 const secOf = id => S.find(s => s.id === id);
 const qOf = id => Q.find(q => q.id === id) || aiQs().find(q => q.id === id);
 
-/* Feste Fragen (nur die nötigen, Stufe 1) + die Fragen der KI, vor „Zum Schluss“ */
+/* Feste Fragen bis zur gewählten Stufe (mit KI nur Stufe 1) + die Fragen der KI, vor „Zum Schluss“ */
 function visible() {
-  const fixed = Q.filter(q => q.l <= 1 && (!q.if || q.if(st.a)));
+  const lv = AI_ON ? 1 : st.level;
+  const fixed = Q.filter(q => q.l <= lv && (!q.if || q.if(st.a)));
   const fin = fixed.filter(q => q.sec === "final");
   return fixed.filter(q => q.sec !== "final").concat(aiQs(), fin);
 }
@@ -118,7 +119,7 @@ function viewStart() {
   const started = Object.keys(st.a).length > 0, kq = qOf("kind"), kinds = Array.isArray(st.a.kind) ? st.a.kind : [];
   const lv = LEVELS.map(L => `<button class="lvl${st.level === L.n ? " on" : ""}" data-act="level" data-n="${L.n}" aria-pressed="${st.level === L.n}">
       <span class="lvl-bars">${[1, 2, 3, 4].map(i => `<i class="${i <= L.n ? "f" : ""}"></i>`).join("")}</span>
-      <b>${L.name}</b><span class="lvl-tag">${L.tag}</span><small>${L.desc}</small>${aiReady() ? `<span class="lvl-n">${L.ai}</span>` : ""}</button>`).join("");
+      <b>${L.name}</b><span class="lvl-tag">${L.tag}</span><small>${L.desc}</small><span class="lvl-n">${aiReady() ? L.ai : `ab ${Q.filter(q => q.l <= L.n && !q.quiz && !q.dyn && q.id !== "kind" && (!q.if || q.if(st.a))).length} Fragen`}</span></button>`).join("");
   const kc = kq.opts.map(o => `<button class="opt kind${kinds.includes(o.v) ? " on" : ""}" data-act="kindpick" data-v="${esc(o.v)}" aria-pressed="${kinds.includes(o.v)}">
       <span class="pic" style="--h:${hue("kind" + o.v)}">${pic(o.i)}</span><span class="otx"><b>${esc(o.v)}</b><small>${esc(o.d)}</small></span><span class="tick" aria-hidden="true"></span></button>`).join("");
   return `<section class="start">
@@ -133,7 +134,7 @@ function viewStart() {
       <p class="fine">Mehrfachauswahl möglich, z. B. Spiel + Lern-App für ein Lernspiel.</p></div>
     <div class="step"><h2><span class="stepn">2</span> Wie genau willst du planen?</h2>
       <div class="levels">${lv}</div>
-      <p class="fine">${aiReady() ? "Nach den Grundfragen denkt sich die KI weitere Fragen aus. Die Stufe bestimmt, wie genau sie nachfragt. Du kannst jederzeit aufhören oder später noch genauer werden." : typeof sb !== "undefined" && sb ? "Mit einem kostenlosen Konto denkt sich die KI nach den Grundfragen passende Zusatzfragen aus, bis keine Lücken mehr offen sind." : "Die Stufe bestimmt, wie genau die KI nachfragt."}</p></div>
+      <p class="fine">${aiReady() ? "Nach den Grundfragen denkt sich die KI weitere Fragen aus. Die Stufe bestimmt, wie genau sie nachfragt." : "Die Zahl wächst mit deinen Antworten: Je nachdem, was du wählst, kommen passende Folgefragen dazu. Du kannst später jederzeit noch genauer werden."}</p></div>
     <div class="cta">
       <button class="btn primary big" data-act="go" ${kinds.length ? "" : "disabled"}>${started ? "Weitermachen" : "Los geht's"} →</button>${kinds.length ? "" : `<span class="fine">Wähle zuerst, was du bauen willst.</span>`}
       ${started ? `<button class="btn" data-act="toresult">Zur Auswertung</button>

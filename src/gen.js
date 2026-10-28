@@ -10,6 +10,7 @@ function buildSummaryText() {
   const doc = genConcept();
   return [`ZUSAMMENFASSUNG: ${doc.title}`, ""].concat(conceptMD(doc, []), ["", "— Launch-Checkliste —"], genLaunchItems().map(i => `☐ ${i.t}: ${i.d}`)).join("\n");
 }
+const GEN_BASE = ["kind", "thoughts", "gbasics", "gplatform", "gdata", "gbiz", "final"];
 /* Beantwortete Fragen eines Bereichs (ohne Gedanken/Schluss) */
 const answeredIn = secId => visible().filter(q => q.sec === secId && answered(q) && q.id !== "thoughts" && q.id !== "finalNotes");
 
@@ -32,8 +33,11 @@ function genConcept() {
     if (ai.verbindungen && ai.verbindungen.length) { H("Verbindungen zu anderen Diensten"); UL(ai.verbindungen); }
     if (ai.technik) { H("Empfohlene Technik"); UL(ai.technik); }
   } else {
-    const det = answeredIn("ai");
-    if (det.length) { H("Details aus den KI-Fragen"); UL(det.map(q => `${q.label}: ${fmt(q)}`)); }
+    /* Alle Fachbereiche (Website, Shop, Konten, …) mit ihren Antworten */
+    S.filter(s => !GEN_BASE.includes(s.id)).forEach(s => {
+      const det = answeredIn(s.id).filter(q => !q.game || isGame(st.a));
+      if (det.length) { H(`${s.icon} ${s.name}`); UL(det.map(q => `${q.label}: ${fmt(q)}${noteOf(q.id) ? ` (📝 ${noteOf(q.id)})` : ""}`)); }
+    });
     H("Technik & Daten");
     KV([["Anmeldung", val("gAccounts")], ["Gespeicherte Daten", val("gData")], ["Verbindungen", val("gConnect")], ["Ohne Internet", val("gOffline")], ["Datenschutz", val("gPrivacy")]]);
   }

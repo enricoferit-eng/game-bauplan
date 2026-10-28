@@ -1,5 +1,8 @@
 /* Ovio – KI: findet offene Stellen im Bauplan und denkt sich passende Fragen aus.
    In claude.ai läuft das über die Seite selbst (CAPS.sample), auf der Website über die Supabase-Funktion „ai“. */
+/* KI-Folgefragen sind vorerst ausgeschaltet: alles läuft über feste Fragen mit Verzweigungen.
+   Zum Einschalten AI_ON auf true setzen (Website braucht dann Guthaben auf dem Anthropic-Konto). */
+const AI_ON = false;
 const AI_MAX_ROUNDS = 20;
 const DEPTH = {
   1: "nur die entscheidenden Lücken; insgesamt höchstens etwa 10 KI-Fragen",
@@ -7,7 +10,7 @@ const DEPTH = {
   3: "auch Details, Sonderfälle und Feinheiten; insgesamt etwa 50 KI-Fragen",
   4: "jede Kleinigkeit, bis wirklich nichts mehr offen ist; so viele Fragen wie nötig"
 };
-const aiReady = () => !!CAPS.sample || (typeof sb !== "undefined" && !!sb && signedIn());
+const aiReady = () => AI_ON && (!!CAPS.sample || (typeof sb !== "undefined" && !!sb && signedIn()));
 const aiWant = () => aiReady() && !st.aiDone && (st.aiRounds || 0) < AI_MAX_ROUNDS;
 
 async function aiCall(task, prompt) {
@@ -132,7 +135,7 @@ function viewThinking() {
 /* Kasten auf der Auswertung: Stand der Lücken */
 function aiBox() {
   if (!aiReady()) {
-    if (typeof sb === "undefined" || !sb) return "";
+    if (!AI_ON || typeof sb === "undefined" || !sb) return "";
     return `<div class="cloud aibox"><div><b>🤖 Lücken mit KI schließen</b><small>Mit einem kostenlosen Konto liest die KI deinen Bauplan, findet offene Stellen und stellt dir genau die Fragen, die noch fehlen.</small></div>
       <button class="btn sm primary" data-act="tostart">Konto erstellen oder anmelden</button></div>`;
   }
