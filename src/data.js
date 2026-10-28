@@ -61,7 +61,7 @@ const SYS = [
 const SYSN = Object.fromEntries(SYS.map(s => [s[0], s[2]]));
 const QUIZ_OPT = "Unsicher – kurzes Quiz machen";
 const coreName = a => a.core === QUIZ_OPT ? a.coreQuiz : a.core;
-const coreIs = (...keys) => a => keys.some(k => SYSN[k] === coreName(a) || SYSN[k] === a.coreMix);
+const coreIs = (...keys) => a => { const all = [].concat(coreName(a), a.coreMix); return keys.some(k => all.includes(SYSN[k])); };
 const sysOpts = () => SYS.map(s => [s[1], s[2], s[3]]);
 
 /* ---------- Bild-Vorschauen (SVG) ---------- */
@@ -765,6 +765,17 @@ S.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
 const _lv = q => q.sec === "core" ? 0 : q.l;
 const _rk = _rank;
 Q.sort((a, b) => ORDER.indexOf(a.sec) - ORDER.indexOf(b.sec) || _lv(a) - _lv(b) || _rk(a) - _rk(b));
+
+/* Überall unbegrenzte Mehrfachauswahl. Frühere Einzelfragen (one) speichern eine einzelne Wahl weiter als Text,
+   erst ab zwei Antworten als Liste. „Keine“, „Gar nicht“, „Nein“ usw. schließen die anderen Antworten aus. */
+const _excl = /^(Kein(e|er)?\b|Gar nicht|Nein\b|Nichts\b|Nie$|Ohne Limit|Ohne Waffen)/;
+Q.forEach(q => {
+  if (q.t === "t") return;
+  if (q.t === "s") { q.one = true; q.t = "m"; }
+  delete q.max;
+  if (q.h) q.h = q.h.replace(/^(Wähle bis zu (zwei|drei)\.|Bis zu drei\.) ?/, "");
+  q.opts.forEach(o => { if (o.v === QUIZ_OPT || _excl.test(o.v)) o.x = true; });
+});
 
 /* Satzbausteine für die wachsende Spielidee */
 const PH = {

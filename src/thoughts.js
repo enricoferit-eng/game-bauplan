@@ -65,7 +65,7 @@ function analyzeThoughts(raw) {
     if (!hits.length) return;
     hits.sort((a, b) => b[1] - a[1]);
     const q = qOf(id);
-    if (q.t === "m") hits.slice(0, q.max || 4).forEach(h => add(id, h[0]));
+    if (q.t === "m") hits.slice(0, q.one ? 1 : 4).forEach(h => add(id, h[0]));
     else add(id, hits[0][0]);
   });
   NEG.forEach(([stems, res]) => stems.split("|").forEach(s => findAll(t, s).forEach(p => { if (negated(t, p)) Object.entries(res).forEach(([id, v]) => add(id, v)); })));
@@ -80,7 +80,7 @@ function suggList() {
 function applySugg(skip) {
   suggList().forEach(({ q, vs }) => {
     if (answered(q) && st.a[q.id] !== AI) return;
-    st.a[q.id] = q.t === "m" ? vs.slice(0, q.max || vs.length) : vs[0];
+    st.a[q.id] = q.one && vs.length === 1 ? vs[0] : vs;
     st.fromThoughts[q.id] = true;
   });
   st.skipKnown = !!skip;
@@ -128,7 +128,7 @@ ${cat}`;
     Object.entries(res).forEach(([id, v]) => {
       const q = qOf(id); if (!q || !q.opts.length) return;
       const vs = (Array.isArray(v) ? v : [v]).filter(x => q.opts.some(o => o.v === x));
-      if (vs.length) sugg[id] = q.t === "m" ? vs : [vs[0]];
+      if (vs.length) sugg[id] = vs;
     });
     st.sugg = sugg;
   } catch (e) { st.thinkErr = "Die Auswertung durch Claude hat nicht geklappt. Die automatisch erkannten Antworten bleiben erhalten."; }

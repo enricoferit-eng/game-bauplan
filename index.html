@@ -347,7 +347,7 @@ const SYS = [
 const SYSN = Object.fromEntries(SYS.map(s => [s[0], s[2]]));
 const QUIZ_OPT = "Unsicher – kurzes Quiz machen";
 const coreName = a => a.core === QUIZ_OPT ? a.coreQuiz : a.core;
-const coreIs = (...keys) => a => keys.some(k => SYSN[k] === coreName(a) || SYSN[k] === a.coreMix);
+const coreIs = (...keys) => a => { const all = [].concat(coreName(a), a.coreMix); return keys.some(k => all.includes(SYSN[k])); };
 const sysOpts = () => SYS.map(s => [s[1], s[2], s[3]]);
 
 /* ---------- Bild-Vorschauen (SVG) ---------- */
@@ -1052,6 +1052,17 @@ const _lv = q => q.sec === "core" ? 0 : q.l;
 const _rk = _rank;
 Q.sort((a, b) => ORDER.indexOf(a.sec) - ORDER.indexOf(b.sec) || _lv(a) - _lv(b) || _rk(a) - _rk(b));
 
+/* Überall unbegrenzte Mehrfachauswahl. Frühere Einzelfragen (one) speichern eine einzelne Wahl weiter als Text,
+   erst ab zwei Antworten als Liste. „Keine“, „Gar nicht“, „Nein“ usw. schließen die anderen Antworten aus. */
+const _excl = /^(Kein(e|er)?\b|Gar nicht|Nein\b|Nichts\b|Nie$|Ohne Limit|Ohne Waffen)/;
+Q.forEach(q => {
+  if (q.t === "t") return;
+  if (q.t === "s") { q.one = true; q.t = "m"; }
+  delete q.max;
+  if (q.h) q.h = q.h.replace(/^(Wähle bis zu (zwei|drei)\.|Bis zu drei\.) ?/, "");
+  q.opts.forEach(o => { if (o.v === QUIZ_OPT || _excl.test(o.v)) o.x = true; });
+});
+
 /* Satzbausteine für die wachsende Spielidee */
 const PH = {
   verb: { "Springen": "springst", "Laufen & Ausweichen": "weichst|aus", "Schießen & Werfen": "schießt|und wirfst", "Kämpfen": "kämpfst", "Bauen": "baust", "Sammeln": "sammelst",
@@ -1156,7 +1167,8 @@ function renderTop() {
 /* Projektname: selbst vergeben oder aus den Antworten abgeleitet */
 function projTitle() {
   if (st.title) return st.title;
-  const core = val(st.a.core === QUIZ_OPT ? "coreQuiz" : "core"), set = val("setting");
+  const first = id => { const v = val(id); return v && (Array.isArray(st.a[id]) ? st.a[id].find(x => x !== AI) : v); };
+  const core = first(st.a.core === QUIZ_OPT ? "coreQuiz" : "core"), set = first("setting");
   return core && set ? `${core} · ${set}` : core || set || "Neues Spiel";
 }
 function startQuiz() {
@@ -1236,7 +1248,7 @@ function viewQuiz() {
     }).join("")}</div>`;
   }
   const canNext = q.t === "t" || answered(q) || !!noteOf(q.id);
-  const hint = q.h || (q.t === "m" ? (q.max ? `Bis zu ${q.max} auswählen.` : "Mehrfachauswahl möglich.") : "");
+  const hint = q.h || (q.t === "m" ? "Wähle so viele, wie du willst." : "");
   return `<div class="layout">
     <nav class="secnav" aria-label="Bereiche">${nav}</nav>
     <div class="qcol">${ideaPanel()}<section class="qcard" data-sec="${q.sec}">
@@ -1287,22 +1299,17 @@ function pick(i) {
   const os = optsFor(q).slice(); if (!q.noAi) os.push({ v: AI, ai: 1 });
   const o = os[i]; if (!o) return;
   if (q.t === "m") {
-    let cur = Array.isArray(st.a[q.id]) ? st.a[q.id].slice() : [];
+    const was = st.a[q.id];
+    let cur = Array.isArray(was) ? was.slice() : was !== undefined ? [was] : [];
     if (cur.includes(o.v)) cur = cur.filter(x => x !== o.v);
     else if (o.ai || o.x) cur = [o.v];
     else {
       cur = cur.filter(x => x !== AI && !(q.opts.find(p => p.v === x) || {}).x);
       cur.push(o.v);
-      if (q.max && cur.length > q.max) cur.shift();
     }
-    st.a[q.id] = cur;
+    if (q.one) { if (cur.length === 1) st.a[q.id] = cur[0]; else if (cur.length) st.a[q.id] = cur; else delete st.a[q.id]; }
+    else st.a[q.id] = cur;
     render();
-  } else {
-    st.a[q.id] = o.v;
-    render();
-    clearTimeout(pick.t);
-    const id = q.id;
-    if (!st.noteOpen[id] && !st.notes[id]) pick.t = setTimeout(() => { if (st.view === "quiz" && st.cur === id) go(1); }, 260);
   }
 }
 document.addEventListener("click", e => {
@@ -2267,7 +2274,7 @@ function analyzeThoughts(raw) {
     if (!hits.length) return;
     hits.sort((a, b) => b[1] - a[1]);
     const q = qOf(id);
-    if (q.t === "m") hits.slice(0, q.max || 4).forEach(h => add(id, h[0]));
+    if (q.t === "m") hits.slice(0, q.one ? 1 : 4).forEach(h => add(id, h[0]));
     else add(id, hits[0][0]);
   });
   NEG.forEach(([stems, res]) => stems.split("|").forEach(s => findAll(t, s).forEach(p => { if (negated(t, p)) Object.entries(res).forEach(([id, v]) => add(id, v)); })));
@@ -2282,7 +2289,7 @@ function suggList() {
 function applySugg(skip) {
   suggList().forEach(({ q, vs }) => {
     if (answered(q) && st.a[q.id] !== AI) return;
-    st.a[q.id] = q.t === "m" ? vs.slice(0, q.max || vs.length) : vs[0];
+    st.a[q.id] = q.one && vs.length === 1 ? vs[0] : vs;
     st.fromThoughts[q.id] = true;
   });
   st.skipKnown = !!skip;
@@ -2330,7 +2337,7 @@ ${cat}`;
     Object.entries(res).forEach(([id, v]) => {
       const q = qOf(id); if (!q || !q.opts.length) return;
       const vs = (Array.isArray(v) ? v : [v]).filter(x => q.opts.some(o => o.v === x));
-      if (vs.length) sugg[id] = q.t === "m" ? vs : [vs[0]];
+      if (vs.length) sugg[id] = vs;
     });
     st.sugg = sugg;
   } catch (e) { st.thinkErr = "Die Auswertung durch Claude hat nicht geklappt. Die automatisch erkannten Antworten bleiben erhalten."; }

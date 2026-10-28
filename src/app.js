@@ -87,7 +87,8 @@ function renderTop() {
 /* Projektname: selbst vergeben oder aus den Antworten abgeleitet */
 function projTitle() {
   if (st.title) return st.title;
-  const core = val(st.a.core === QUIZ_OPT ? "coreQuiz" : "core"), set = val("setting");
+  const first = id => { const v = val(id); return v && (Array.isArray(st.a[id]) ? st.a[id].find(x => x !== AI) : v); };
+  const core = first(st.a.core === QUIZ_OPT ? "coreQuiz" : "core"), set = first("setting");
   return core && set ? `${core} · ${set}` : core || set || "Neues Spiel";
 }
 function startQuiz() {
@@ -167,7 +168,7 @@ function viewQuiz() {
     }).join("")}</div>`;
   }
   const canNext = q.t === "t" || answered(q) || !!noteOf(q.id);
-  const hint = q.h || (q.t === "m" ? (q.max ? `Bis zu ${q.max} auswählen.` : "Mehrfachauswahl möglich.") : "");
+  const hint = q.h || (q.t === "m" ? "Wähle so viele, wie du willst." : "");
   return `<div class="layout">
     <nav class="secnav" aria-label="Bereiche">${nav}</nav>
     <div class="qcol">${ideaPanel()}<section class="qcard" data-sec="${q.sec}">
@@ -218,22 +219,17 @@ function pick(i) {
   const os = optsFor(q).slice(); if (!q.noAi) os.push({ v: AI, ai: 1 });
   const o = os[i]; if (!o) return;
   if (q.t === "m") {
-    let cur = Array.isArray(st.a[q.id]) ? st.a[q.id].slice() : [];
+    const was = st.a[q.id];
+    let cur = Array.isArray(was) ? was.slice() : was !== undefined ? [was] : [];
     if (cur.includes(o.v)) cur = cur.filter(x => x !== o.v);
     else if (o.ai || o.x) cur = [o.v];
     else {
       cur = cur.filter(x => x !== AI && !(q.opts.find(p => p.v === x) || {}).x);
       cur.push(o.v);
-      if (q.max && cur.length > q.max) cur.shift();
     }
-    st.a[q.id] = cur;
+    if (q.one) { if (cur.length === 1) st.a[q.id] = cur[0]; else if (cur.length) st.a[q.id] = cur; else delete st.a[q.id]; }
+    else st.a[q.id] = cur;
     render();
-  } else {
-    st.a[q.id] = o.v;
-    render();
-    clearTimeout(pick.t);
-    const id = q.id;
-    if (!st.noteOpen[id] && !st.notes[id]) pick.t = setTimeout(() => { if (st.view === "quiz" && st.cur === id) go(1); }, 260);
   }
 }
 document.addEventListener("click", e => {
