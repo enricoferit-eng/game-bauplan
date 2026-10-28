@@ -101,6 +101,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError) return reply(429, { error: "rate_limited" });
     if (e instanceof Anthropic.AuthenticationError) return reply(500, { error: "config" });
+    if (e instanceof Anthropic.BadRequestError && /credit balance/i.test(e.message)) return reply(402, { error: "credits" });
     if (e instanceof Anthropic.APIError) return reply(502, { error: "upstream", status: e.status });
     if (e instanceof SyntaxError) return reply(502, { error: "format" });
     return reply(500, { error: "unknown" });

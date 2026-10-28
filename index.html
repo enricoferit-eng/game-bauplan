@@ -2683,6 +2683,7 @@ function aiErrText(e, fallback) {
     : c === "rate_limited" ? "Gerade zu viele Anfragen. Versuch es in einer Minute noch einmal."
     : c === "not_granted" ? "Die Nutzung von Claude wurde nicht erlaubt."
     : c === "auth" ? "Bitte melde dich erneut an."
+    : c === "credits" ? "Die KI ist gerade nicht verfügbar. Bitte versuch es später noch einmal."
     : c === "config" ? "Die KI ist auf dem Server noch nicht eingerichtet."
     : fallback;
 }
