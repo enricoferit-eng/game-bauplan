@@ -1,4 +1,4 @@
-/* Nordlicht – Gedanken sammeln und daraus Antworten erkennen */
+/* Ovio – Gedanken sammeln und daraus Antworten erkennen */
 /* Schlüsselwörter je Antwort. Jedes Wort passt auch auf Verlängerungen („spring“ → springt, springen). */
 const KW = {
   age: { "3–6 Jahre": "kleinkind|kita|kindergarten|vorschul|3 jahr|4 jahr|5 jahr", "6–10 Jahre": "grundschul|kinder|kids|6 jahr|7 jahr|8 jahr|9 jahr", "10–13 Jahre": "10 jahr|11 jahr|12 jahr", "13–17 Jahre": "jugendlich|teenager|teens|schüler|13 jahr|14 jahr|15 jahr|16 jahr", "Erwachsene 18+": "erwachsen", "Alle Altersgruppen": "familie|jung und alt|alle alter|jeden alters" },

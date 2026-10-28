@@ -1,4 +1,4 @@
-/* Nordlicht – Fragenkatalog */
+/* Ovio – Fragenkatalog */
 const AI = "__ai";
 const S = [], Q = [];
 let _sec;

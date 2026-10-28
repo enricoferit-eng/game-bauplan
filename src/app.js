@@ -1,4 +1,4 @@
-/* Nordlicht – App */
+/* Ovio – App */
 const KEY = "gamebauplan.v1";
 const LEVELS = [
   { n: 1, name: "Schnell", tag: "Nur das Wichtigste", desc: "Die großen Entscheidungen. Den Rest übernimmt die KI beim Bauen.", ai: "ca. 10 KI-Fragen" },
@@ -123,7 +123,7 @@ function viewStart() {
       <span class="pic" style="--h:${hue("kind" + o.v)}">${pic(o.i)}</span><span class="otx"><b>${esc(o.v)}</b><small>${esc(o.d)}</small></span><span class="tick" aria-hidden="true"></span></button>`).join("");
   return `<section class="start">
     <div class="hero">
-      <p class="eyebrow">Nordlicht</p>
+      <p class="eyebrow">Ovio</p>
       <h1>Von der Idee zum <span class="hl">exakten Bauplan</span> für die KI.</h1>
       <p class="lead">Spiel, App, Website, Shop oder Programm für die Arbeit: Du beantwortest ein paar Fragen mit Bildern, danach sucht die KI nach offenen Stellen und stellt dir genau die Fragen, die noch fehlen. Am Ende hast du einen lückenlosen Bauauftrag, mit dem eine KI dein Projekt baut.</p>
     </div>

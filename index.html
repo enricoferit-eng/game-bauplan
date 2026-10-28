@@ -1,7 +1,7 @@
 <!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Fragebogen, der deine Spielidee Schritt für Schritt aufbaut und daraus ein Spielkonzept und einen exakten KI-Bauauftrag macht.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
-<title>Nordlicht</title>
+<title>Ovio</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -278,7 +278,7 @@ pre.code { margin: 0; background: var(--code-bg); color: var(--code-ink); font: 
 </head><body>
 
 <header class="top"><div class="wrap">
-  <button class="logo" data-act="tostart" aria-label="Zum Start"><i>NL</i><span>Nordlicht</span></button>
+  <button class="logo" data-act="tostart" aria-label="Zum Start"><i>OV</i><span>Ovio</span></button>
   <div class="prog" id="prog" hidden><div class="bar"><span id="progFill"></span></div><small id="progTxt"></small></div>
   <div class="topbtns">
     <button class="btn sm" id="btnResult" data-act="toresult" hidden>Auswertung</button>
@@ -290,7 +290,7 @@ pre.code { margin: 0; background: var(--code-bg); color: var(--code-ink); font: 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-/* Nordlicht – Fragenkatalog */
+/* Ovio – Fragenkatalog */
 const AI = "__ai";
 const S = [], Q = [];
 let _sec;
@@ -1190,7 +1190,7 @@ const PH = {
     "Knifflige Logik": "jede Aufgabe eine Denkaufgabe ist", "Andere Spieler": "andere Spieler dasselbe wollen", "Immer mehr gleichzeitig": "immer mehr gleichzeitig passiert", "Unberechenbare Physik": "die Physik unberechenbar ist" }
 };
 
-/* Nordlicht – App */
+/* Ovio – App */
 const KEY = "gamebauplan.v1";
 const LEVELS = [
   { n: 1, name: "Schnell", tag: "Nur das Wichtigste", desc: "Die großen Entscheidungen. Den Rest übernimmt die KI beim Bauen.", ai: "ca. 10 KI-Fragen" },
@@ -1315,7 +1315,7 @@ function viewStart() {
       <span class="pic" style="--h:${hue("kind" + o.v)}">${pic(o.i)}</span><span class="otx"><b>${esc(o.v)}</b><small>${esc(o.d)}</small></span><span class="tick" aria-hidden="true"></span></button>`).join("");
   return `<section class="start">
     <div class="hero">
-      <p class="eyebrow">Nordlicht</p>
+      <p class="eyebrow">Ovio</p>
       <h1>Von der Idee zum <span class="hl">exakten Bauplan</span> für die KI.</h1>
       <p class="lead">Spiel, App, Website, Shop oder Programm für die Arbeit: Du beantwortest ein paar Fragen mit Bildern, danach sucht die KI nach offenen Stellen und stellt dir genau die Fragen, die noch fehlen. Am Ende hast du einen lückenlosen Bauauftrag, mit dem eine KI dein Projekt baut.</p>
     </div>
@@ -1787,7 +1787,7 @@ const signedIn = () => typeof AUTH !== "undefined" && !!AUTH.user;
 function boot(d) { if (d && d.st) st = d.st; render(); }
 
 
-/* Nordlicht – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
+/* Ovio – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
 const CAPS = { downloads: null, sample: null };
 const inClaude = !!(window.claude && window.claude.use);
 const canPDF = () => !!(window.jspdf && (CAPS.downloads || !inClaude));
@@ -2053,7 +2053,7 @@ async function savePDF(btn) {
   pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.text(isGame(st.a) ? "SPIELKONZEPT" : "KONZEPT", M, 30);
   pdf.setFontSize(30); pdf.splitTextToSize(pdfTxt(doc.title), CW).forEach((l, i) => pdf.text(l, M, 48 + i * 12));
   pdf.setFont("helvetica", "normal"); pdf.setFontSize(11);
-  pdf.text(pdfTxt(`Erstellt mit Nordlicht am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
+  pdf.text(pdfTxt(`Erstellt mit Ovio am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
   y = 104;
   doc.blocks.forEach(b => {
     if (b.t === "h2") { need(18); y += 6; pdf.setDrawColor(...acc); pdf.setLineWidth(0.6); pdf.line(M, y, M + 14, y); y += 3; text(b.x, 15, "bold", acc); y += 1.5; }
@@ -2103,7 +2103,7 @@ async function savePDF(btn) {
   if (st.view === "result") render();
 })();
 
-/* Nordlicht – ausführlicher KI-Bauauftrag + PDF */
+/* Ovio – ausführlicher KI-Bauauftrag + PDF */
 function conceptMD(doc, skip) {
   const L = [];
   let skipping = false;
@@ -2339,7 +2339,7 @@ async function savePromptPDF(btn) {
   setTimeout(() => btn.textContent = old, 2500);
 }
 
-/* Nordlicht – Gedanken sammeln und daraus Antworten erkennen */
+/* Ovio – Gedanken sammeln und daraus Antworten erkennen */
 /* Schlüsselwörter je Antwort. Jedes Wort passt auch auf Verlängerungen („spring“ → springt, springen). */
 const KW = {
   age: { "3–6 Jahre": "kleinkind|kita|kindergarten|vorschul|3 jahr|4 jahr|5 jahr", "6–10 Jahre": "grundschul|kinder|kids|6 jahr|7 jahr|8 jahr|9 jahr", "10–13 Jahre": "10 jahr|11 jahr|12 jahr", "13–17 Jahre": "jugendlich|teenager|teens|schüler|13 jahr|14 jahr|15 jahr|16 jahr", "Erwachsene 18+": "erwachsen", "Alle Altersgruppen": "familie|jung und alt|alle alter|jeden alters" },
@@ -2497,7 +2497,7 @@ const STARTERS = ["Das Spiel handelt von …", "Der Spieler muss …", "Die Spie
 const STARTERS_GEN = ["Es soll …", "Benutzen sollen es …", "Man soll damit …", "Das Wichtigste ist …", "Es nervt mich gerade, dass …", "Ähnlich wie …", "Es soll laufen auf …", "Besonders cool wäre …", "Auf keinen Fall soll …"];
 function starterChips() { return `<div class="starters" aria-label="Satzanfänge">${(isGame(st.a) ? STARTERS : STARTERS_GEN).map(s => `<button class="chip" data-act="starter" data-s="${esc(s.replace(" …", ""))}">${esc(s)}</button>`).join("")}</div>`; }
 
-/* Nordlicht – Konzept, Bauauftrag und Checkliste für alles außer Spielen.
+/* Ovio – Konzept, Bauauftrag und Checkliste für alles außer Spielen.
    Die Spiel-Varianten (gameConcept, buildGamePrompt, …) bleiben unverändert; hier wird je nach Projektart verteilt. */
 const kindText = () => val("kind") || "Software-Projekt";
 const concept = () => isGame(st.a) ? gameConcept() : genConcept();
@@ -2655,7 +2655,7 @@ function genLaunchItems() {
   return L;
 }
 
-/* Nordlicht – KI: findet offene Stellen im Bauplan und denkt sich passende Fragen aus.
+/* Ovio – KI: findet offene Stellen im Bauplan und denkt sich passende Fragen aus.
    In claude.ai läuft das über die Seite selbst (CAPS.sample), auf der Website über die Supabase-Funktion „ai“. */
 const AI_MAX_ROUNDS = 20;
 const DEPTH = {
@@ -2830,7 +2830,7 @@ ${buildGenPrompt()}`;
   elaborate.busy = false; render();
 }
 
-/* Nordlicht – Online speichern & teilen (Supabase) */
+/* Ovio – Online speichern & teilen (Supabase) */
 const SUPABASE_URL = "https://vzoggokzibymbwnmgbqk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_2ZjnZYQzM7Sw9x0d1M1sNA_2QGUI82b";
 let sb = null;

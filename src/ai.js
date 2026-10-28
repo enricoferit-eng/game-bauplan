@@ -1,4 +1,4 @@
-/* Nordlicht – KI: findet offene Stellen im Bauplan und denkt sich passende Fragen aus.
+/* Ovio – KI: findet offene Stellen im Bauplan und denkt sich passende Fragen aus.
    In claude.ai läuft das über die Seite selbst (CAPS.sample), auf der Website über die Supabase-Funktion „ai“. */
 const AI_MAX_ROUNDS = 20;
 const DEPTH = {

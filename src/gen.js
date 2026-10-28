@@ -1,4 +1,4 @@
-/* Nordlicht – Konzept, Bauauftrag und Checkliste für alles außer Spielen.
+/* Ovio – Konzept, Bauauftrag und Checkliste für alles außer Spielen.
    Die Spiel-Varianten (gameConcept, buildGamePrompt, …) bleiben unverändert; hier wird je nach Projektart verteilt. */
 const kindText = () => val("kind") || "Software-Projekt";
 const concept = () => isGame(st.a) ? gameConcept() : genConcept();

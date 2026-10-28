@@ -1,4 +1,4 @@
-/* Nordlicht – Online speichern & teilen (Supabase) */
+/* Ovio – Online speichern & teilen (Supabase) */
 const SUPABASE_URL = "https://vzoggokzibymbwnmgbqk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_2ZjnZYQzM7Sw9x0d1M1sNA_2QGUI82b";
 let sb = null;

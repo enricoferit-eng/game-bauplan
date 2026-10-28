@@ -1,4 +1,4 @@
-/* Nordlicht – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
+/* Ovio – Spielkonzept (erstes Spiel aus den Antworten) + PDF */
 const CAPS = { downloads: null, sample: null };
 const inClaude = !!(window.claude && window.claude.use);
 const canPDF = () => !!(window.jspdf && (CAPS.downloads || !inClaude));
@@ -264,7 +264,7 @@ async function savePDF(btn) {
   pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.text(isGame(st.a) ? "SPIELKONZEPT" : "KONZEPT", M, 30);
   pdf.setFontSize(30); pdf.splitTextToSize(pdfTxt(doc.title), CW).forEach((l, i) => pdf.text(l, M, 48 + i * 12));
   pdf.setFont("helvetica", "normal"); pdf.setFontSize(11);
-  pdf.text(pdfTxt(`Erstellt mit Nordlicht am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
+  pdf.text(pdfTxt(`Erstellt mit Ovio am ${new Date().toLocaleDateString("de-DE")}${st.ai ? " - ausgearbeitet mit Claude" : ""}`), M, 85);
   y = 104;
   doc.blocks.forEach(b => {
     if (b.t === "h2") { need(18); y += 6; pdf.setDrawColor(...acc); pdf.setLineWidth(0.6); pdf.line(M, y, M + 14, y); y += 3; text(b.x, 15, "bold", acc); y += 1.5; }
