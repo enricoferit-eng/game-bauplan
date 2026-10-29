@@ -1895,7 +1895,9 @@ function newProject() {
   if (typeof projFlush === "function") projFlush();
   st = blank(st.level);
   if (typeof cloudForget === "function") cloudForget();
-  startQuiz();
+  /* Zurück zur Startseite: dort Projektart und Detailstufe wählen */
+  render(); window.scrollTo(0, 0);
+  const k = document.querySelector(".kinds"); if (k) k.scrollIntoView({ block: "center" });
 }
 
 function viewStart() {
